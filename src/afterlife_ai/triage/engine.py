@@ -24,6 +24,7 @@ def triage_inventory_lot(
     triage_policy_version: str,
     expiry_monitor_threshold_days: int = 14,
     cold_chain_evidence_required: bool = False,
+    declared_surplus_allowed: bool = False,
 ) -> InventoryTriageResult:
     """Route one validated lot using deterministic triage rules."""
 
@@ -115,6 +116,55 @@ def triage_inventory_lot(
                 TriageConfidenceStatus.LOW
             ),
             urgency_level=UrgencyLevel.HIGH,
+            estimated_current_value=(
+                lot.current_quantity * lot.unit_cost
+            ),
+            triage_policy_version=triage_policy_version,
+        )
+
+    declared_quantity = lot.declared_surplus_quantity
+
+    valid_partial_declared_surplus = (
+        declared_surplus_allowed
+        and lot.declared_surplus is True
+        and declared_quantity is not None
+        and declared_quantity > ZERO
+        and declared_quantity < lot.current_quantity
+    )
+
+    if valid_partial_declared_surplus:
+        review_quantity = (
+            lot.current_quantity - declared_quantity
+        )
+
+        return InventoryTriageResult(
+            source_lot_id=lot.lot_id,
+            analysis_date=analysis_at.date(),
+            remaining_shelf_life_days=(
+                remaining_shelf_life_days
+            ),
+            remaining_safe_window_hours=None,
+            remaining_commercial_window_days=None,
+            average_daily_sales=None,
+            effective_sales_window_days=None,
+            expected_normal_sales=None,
+            protected_normal_stock_quantity=ZERO,
+            monitor_quantity=ZERO,
+            surplus_candidate_quantity=declared_quantity,
+            planning_quantity=declared_quantity,
+            expired_quantity=ZERO,
+            review_quantity=review_quantity,
+            inventory_status=(
+                InventoryStatus.SURPLUS_CANDIDATE
+            ),
+            surplus_source=SurplusSource.USER_DECLARED,
+            triage_reason_codes=[
+                "VALID_PARTIAL_USER_DECLARED_SURPLUS"
+            ],
+            triage_confidence_status=(
+                TriageConfidenceStatus.MEDIUM
+            ),
+            urgency_level=UrgencyLevel.MEDIUM,
             estimated_current_value=(
                 lot.current_quantity * lot.unit_cost
             ),
