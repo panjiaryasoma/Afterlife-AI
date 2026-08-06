@@ -125,9 +125,36 @@ def triage_inventory_lot(
         lot.units_sold_observation_window is None
         or lot.observation_days is None
     ):
-        raise ValueError(
-            "Data penjualan historis diperlukan untuk "
-            "menjalankan triage healthy stock."
+        return InventoryTriageResult(
+            source_lot_id=lot.lot_id,
+            analysis_date=analysis_at.date(),
+            remaining_shelf_life_days=(
+                remaining_shelf_life_days
+            ),
+            remaining_safe_window_hours=None,
+            remaining_commercial_window_days=None,
+            average_daily_sales=None,
+            effective_sales_window_days=None,
+            expected_normal_sales=None,
+            protected_normal_stock_quantity=ZERO,
+            monitor_quantity=ZERO,
+            surplus_candidate_quantity=ZERO,
+            planning_quantity=ZERO,
+            expired_quantity=ZERO,
+            review_quantity=lot.current_quantity,
+            inventory_status=InventoryStatus.NEEDS_REVIEW,
+            surplus_source=None,
+            triage_reason_codes=[
+                "SALES_EVIDENCE_MISSING"
+            ],
+            triage_confidence_status=(
+                TriageConfidenceStatus.LOW
+            ),
+            urgency_level=UrgencyLevel.MEDIUM,
+            estimated_current_value=(
+                lot.current_quantity * lot.unit_cost
+            ),
+            triage_policy_version=triage_policy_version,
         )
 
     observation_days = Decimal(lot.observation_days)
