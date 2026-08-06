@@ -80,7 +80,7 @@ known-first-party = ["afterlife_ai"]
 
 
 [tool.mypy]
-python_version = "3.12.7"
+python_version = "3.12"
 mypy_path = "src"
 check_untyped_defs = true
 disallow_untyped_defs = true
