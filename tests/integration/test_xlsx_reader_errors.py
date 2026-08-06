@@ -116,3 +116,24 @@ def test_extension_column_is_accepted(tmp_path: Path) -> None:
 
     assert len(records) == 1
     assert records[0].lot_id == "LOT-001"
+
+
+def test_exact_duplicate_rows_are_rejected(tmp_path: Path) -> None:
+    path = tmp_path / "duplicate_rows.xlsx"
+
+    workbook = Workbook()
+    worksheet = workbook.active
+    worksheet.title = SHEET_NAME
+    worksheet.append(list(REQUIRED_COLUMNS))
+
+    row = valid_row()
+    values = [row[column] for column in REQUIRED_COLUMNS]
+
+    worksheet.append(values)
+    worksheet.append(values)
+
+    workbook.save(path)
+    workbook.close()
+
+    with pytest.raises(ValueError, match="Baris duplikat"):
+        read_inventory_workbook(path)

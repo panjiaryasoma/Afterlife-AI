@@ -1,5 +1,6 @@
 ﻿"""Read inventory XLSX workbooks into validated inventory contracts."""
 
+import json
 from pathlib import Path
 
 from openpyxl import load_workbook
@@ -82,6 +83,7 @@ def read_inventory_workbook(file_path: str | Path) -> list[RawInventoryLot]:
             raise ValueError(f"Kolom tidak dikenal: {unknown}")
 
         records: list[RawInventoryLot] = []
+        seen_records: dict[str, int] = {}
 
         for row_number, row in enumerate(rows, start=2):
             if all(
@@ -105,6 +107,21 @@ def read_inventory_workbook(file_path: str | Path) -> list[RawInventoryLot]:
                     f"Baris {row_number} tidak valid: {exc}"
                 ) from exc
 
+            signature = json.dumps(
+                record.model_dump(mode="json"),
+                ensure_ascii=False,
+                separators=(",", ":"),
+                sort_keys=True,
+            )
+
+            if signature in seen_records:
+                first_row = seen_records[signature]
+                raise ValueError(
+                    f"Baris duplikat ditemukan pada baris {row_number}; "
+                    f"sama dengan baris {first_row}."
+                )
+
+            seen_records[signature] = row_number
             records.append(record)
 
         if not records:
