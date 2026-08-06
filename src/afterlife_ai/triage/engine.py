@@ -21,6 +21,7 @@ def triage_inventory_lot(
     analysis_at: datetime,
     effective_sales_window_days: Decimal,
     triage_policy_version: str,
+    expiry_monitor_threshold_days: int = 14,
 ) -> InventoryTriageResult:
     """Route one validated lot using deterministic triage rules."""
 
@@ -28,6 +29,17 @@ def triage_inventory_lot(
         raise ValueError(
             "effective_sales_window_days tidak boleh negatif."
         )
+
+    if expiry_monitor_threshold_days < 0:
+        raise ValueError(
+            "expiry_monitor_threshold_days tidak boleh negatif."
+        )
+
+    remaining_shelf_life_days = (
+        (lot.expiry_date - analysis_at.date()).days
+        if lot.expiry_date is not None
+        else None
+    )
 
     if (
         lot.units_sold_observation_window is None
@@ -55,6 +67,50 @@ def triage_inventory_lot(
         protected_stock_limit,
     )
 
+    is_within_monitor_window = (
+        remaining_shelf_life_days is not None
+        and 0 <= remaining_shelf_life_days
+        <= expiry_monitor_threshold_days
+    )
+    expected_to_sell_normally = (
+        lot.current_quantity <= expected_normal_sales
+    )
+
+    if is_within_monitor_window and expected_to_sell_normally:
+        return InventoryTriageResult(
+            source_lot_id=lot.lot_id,
+            analysis_date=analysis_at.date(),
+            remaining_shelf_life_days=(
+                remaining_shelf_life_days
+            ),
+            remaining_safe_window_hours=None,
+            remaining_commercial_window_days=None,
+            average_daily_sales=average_daily_sales,
+            effective_sales_window_days=(
+                effective_sales_window_days
+            ),
+            expected_normal_sales=expected_normal_sales,
+            protected_normal_stock_quantity=ZERO,
+            monitor_quantity=lot.current_quantity,
+            surplus_candidate_quantity=ZERO,
+            planning_quantity=ZERO,
+            expired_quantity=ZERO,
+            review_quantity=ZERO,
+            inventory_status=InventoryStatus.MONITOR,
+            surplus_source=None,
+            triage_reason_codes=[
+                "WITHIN_EXPIRY_MONITOR_WINDOW"
+            ],
+            triage_confidence_status=(
+                TriageConfidenceStatus.HIGH
+            ),
+            urgency_level=UrgencyLevel.MEDIUM,
+            estimated_current_value=(
+                lot.current_quantity * lot.unit_cost
+            ),
+            triage_policy_version=triage_policy_version,
+        )
+
     if lot.current_quantity > protected_stock_limit:
         surplus_quantity = (
             lot.current_quantity
@@ -64,7 +120,7 @@ def triage_inventory_lot(
         return InventoryTriageResult(
             source_lot_id=lot.lot_id,
             analysis_date=analysis_at.date(),
-            remaining_shelf_life_days=None,
+            remaining_shelf_life_days=remaining_shelf_life_days,
             remaining_safe_window_hours=None,
             remaining_commercial_window_days=None,
             average_daily_sales=average_daily_sales,
@@ -100,7 +156,7 @@ def triage_inventory_lot(
     return InventoryTriageResult(
         source_lot_id=lot.lot_id,
         analysis_date=analysis_at.date(),
-        remaining_shelf_life_days=None,
+        remaining_shelf_life_days=remaining_shelf_life_days,
         remaining_safe_window_hours=None,
         remaining_commercial_window_days=None,
         average_daily_sales=average_daily_sales,
