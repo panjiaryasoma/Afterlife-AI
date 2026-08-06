@@ -111,6 +111,54 @@ def triage_inventory_lot(
             triage_policy_version=triage_policy_version,
         )
 
+    if (
+        is_within_monitor_window
+        and lot.current_quantity > expected_normal_sales
+    ):
+        monitor_quantity = min(
+            lot.current_quantity,
+            expected_normal_sales,
+        )
+        surplus_quantity = (
+            lot.current_quantity - monitor_quantity
+        )
+
+        return InventoryTriageResult(
+            source_lot_id=lot.lot_id,
+            analysis_date=analysis_at.date(),
+            remaining_shelf_life_days=(
+                remaining_shelf_life_days
+            ),
+            remaining_safe_window_hours=None,
+            remaining_commercial_window_days=None,
+            average_daily_sales=average_daily_sales,
+            effective_sales_window_days=(
+                effective_sales_window_days
+            ),
+            expected_normal_sales=expected_normal_sales,
+            protected_normal_stock_quantity=ZERO,
+            monitor_quantity=monitor_quantity,
+            surplus_candidate_quantity=surplus_quantity,
+            planning_quantity=surplus_quantity,
+            expired_quantity=ZERO,
+            review_quantity=ZERO,
+            inventory_status=(
+                InventoryStatus.SURPLUS_CANDIDATE
+            ),
+            surplus_source=SurplusSource.CALCULATED,
+            triage_reason_codes=[
+                "PARTIAL_EXCESS_WITH_MONITORED_NORMAL_STOCK"
+            ],
+            triage_confidence_status=(
+                TriageConfidenceStatus.HIGH
+            ),
+            urgency_level=UrgencyLevel.HIGH,
+            estimated_current_value=(
+                lot.current_quantity * lot.unit_cost
+            ),
+            triage_policy_version=triage_policy_version,
+        )
+
     if lot.current_quantity > protected_stock_limit:
         surplus_quantity = (
             lot.current_quantity
