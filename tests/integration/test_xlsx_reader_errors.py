@@ -137,3 +137,36 @@ def test_exact_duplicate_rows_are_rejected(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError, match="Baris duplikat"):
         read_inventory_workbook(path)
+
+
+def test_same_sku_with_different_lot_is_accepted(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "same_sku_different_lot.xlsx"
+
+    workbook = Workbook()
+    worksheet = workbook.active
+    worksheet.title = SHEET_NAME
+    worksheet.append(list(REQUIRED_COLUMNS))
+
+    first_row = valid_row()
+    second_row = {
+        **first_row,
+        "lot_id": "LOT-002",
+    }
+
+    worksheet.append(
+        [first_row[column] for column in REQUIRED_COLUMNS]
+    )
+    worksheet.append(
+        [second_row[column] for column in REQUIRED_COLUMNS]
+    )
+
+    workbook.save(path)
+    workbook.close()
+
+    records = read_inventory_workbook(path)
+
+    assert len(records) == 2
+    assert records[0].sku == records[1].sku
+    assert records[0].lot_id != records[1].lot_id
