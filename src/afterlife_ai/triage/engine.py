@@ -5,6 +5,7 @@ from decimal import Decimal
 
 from afterlife_ai.contracts.enums import (
     InventoryStatus,
+    StorageHistoryStatus,
     SurplusSource,
     TriageConfidenceStatus,
     UrgencyLevel,
@@ -22,6 +23,7 @@ def triage_inventory_lot(
     effective_sales_window_days: Decimal,
     triage_policy_version: str,
     expiry_monitor_threshold_days: int = 14,
+    cold_chain_evidence_required: bool = False,
 ) -> InventoryTriageResult:
     """Route one validated lot using deterministic triage rules."""
 
@@ -69,6 +71,48 @@ def triage_inventory_lot(
             ],
             triage_confidence_status=(
                 TriageConfidenceStatus.HIGH
+            ),
+            urgency_level=UrgencyLevel.HIGH,
+            estimated_current_value=(
+                lot.current_quantity * lot.unit_cost
+            ),
+            triage_policy_version=triage_policy_version,
+        )
+
+    critical_storage_evidence_missing = (
+        cold_chain_evidence_required
+        and (
+            lot.storage_history_status
+            is not StorageHistoryStatus.VERIFIED_ACCEPTABLE
+            or lot.temperature_log_available is not True
+        )
+    )
+
+    if critical_storage_evidence_missing:
+        return InventoryTriageResult(
+            source_lot_id=lot.lot_id,
+            analysis_date=analysis_at.date(),
+            remaining_shelf_life_days=(
+                remaining_shelf_life_days
+            ),
+            remaining_safe_window_hours=None,
+            remaining_commercial_window_days=None,
+            average_daily_sales=None,
+            effective_sales_window_days=None,
+            expected_normal_sales=None,
+            protected_normal_stock_quantity=ZERO,
+            monitor_quantity=ZERO,
+            surplus_candidate_quantity=ZERO,
+            planning_quantity=ZERO,
+            expired_quantity=ZERO,
+            review_quantity=lot.current_quantity,
+            inventory_status=InventoryStatus.NEEDS_REVIEW,
+            surplus_source=None,
+            triage_reason_codes=[
+                "UNKNOWN_STORAGE_HISTORY"
+            ],
+            triage_confidence_status=(
+                TriageConfidenceStatus.LOW
             ),
             urgency_level=UrgencyLevel.HIGH,
             estimated_current_value=(
