@@ -1,0 +1,1455 @@
+schema_name: Afterlife AI Executable Data and Feature Contract
+version: 2.0.0
+status: LOCKED_FOR_PREPRODUCTION_FINAL
+effective_date: '2026-08-05'
+scope:
+- single-file inventory intake
+- deterministic inventory triage
+- capability-aware rescue candidate generation
+- deterministic safety, coverage, verification, and feasibility gates
+- single rescue-success scoring model
+- global batch allocation optimization
+- rescue decision report and human approval state
+claim_boundary: All rescue-success labels and probabilities are synthetic or fixture-based until validated with real operational outcomes. The schema must not be used to imply real-world probability validation.
+source_of_truth_order:
+- PROBLEM_BRIEF_v1.0.md
+- SIMPLE_PRD_v1.1_UPDATED.md
+- SIMPLE_PRD_SCHEMA_ALIGNMENT_ADDENDUM_v1.0.md
+- FEATURE_SCHEMA_FINAL_v2.0.yaml
+- domain_rules_v1.0.yaml
+- evaluation_spec_v1.0.yaml
+- TRIAGE_EVALUATION_SUITE_v1.0.md
+- INTEGRATION-001.md
+canonical_runtime_contract:
+  request_mode: ONE_SYNCHRONOUS_REQUEST
+  canonical_input_format: XLSX
+  canonical_input_sheet: inventory_lots
+  one_input_row_semantics: one traceable physical lot or batch; mixed expiry or mixed age must not be merged
+  ai_model_count: 1
+  database_required: false
+  runtime_internet_required: false
+  execution_required: false
+  human_final_approval_required: true
+enums:
+  ValidationStatus:
+  - PASSED
+  - FAILED
+  - PARTIAL
+  InventoryStatus:
+  - HEALTHY_STOCK
+  - MONITOR
+  - SURPLUS_CANDIDATE
+  - EXPIRED
+  - NEEDS_REVIEW
+  SurplusSource:
+  - CALCULATED
+  - USER_DECLARED
+  - RULE_TRIGGERED
+  TriageConfidenceStatus:
+  - HIGH
+  - MEDIUM
+  - LOW
+  - NOT_APPLICABLE
+  VerificationStatus:
+  - LOW
+  - PARTIALLY_VERIFIED
+  - VERIFIED
+  - PHYSICALLY_INSPECTED
+  CoverageStatus:
+  - SUPPORTED
+  - UNSUPPORTED
+  - INSUFFICIENT_FEATURE_COVERAGE
+  SafetyStatus:
+  - ACCEPTABLE
+  - ACCEPTABLE_WITH_URGENCY
+  - UNVERIFIED
+  - HARD_REJECT
+  FeasibilityStatus:
+  - FEASIBLE
+  - INFEASIBLE
+  - NEEDS_REVIEW
+  - UNSUPPORTED
+  ModelScoringStatus:
+  - ALLOWED
+  - SKIPPED
+  - DEFERRED
+  - BLOCKED
+  OptimizationObjective:
+  - MAXIMIZE_RECOVERY_VALUE
+  - MINIMIZE_WASTE
+  - BALANCED
+  ActionType:
+  - LOCAL_DISCOUNT
+  - BUNDLE
+  - PROMOTIONAL_BONUS
+  - INTERNAL_REPURPOSE
+  - INTERNAL_USE
+  - RETURN_TO_SUPPLIER
+  - BRANCH_TRANSFER
+  - WHOLESALE
+  - EXTERNAL_PARTNER
+  - DONATION
+  - SAFE_DISPOSAL
+  StorageType:
+  - DRY_AMBIENT
+  - ROOM_TEMPERATURE
+  - CHILLED
+  - FROZEN
+  - UNKNOWN
+  StorageRequirementMode:
+  - NONE
+  - AMBIENT_ALLOWED
+  - CHILLED_PREFERRED
+  - COLD_REQUIRED_FOR_QUALITY_WINDOW
+  - SAFETY_CRITICAL_COLD_CHAIN
+  StorageHistoryStatus:
+  - VERIFIED_ACCEPTABLE
+  - VERIFIED_FAILURE
+  - UNKNOWN
+  - UNRESOLVED
+  - NOT_APPLICABLE
+  ProductCondition:
+  - GOOD
+  - VISUALLY_NORMAL
+  - COSMETIC_DEFECT
+  - AMBIGUOUS
+  - DAMAGED
+  - UNKNOWN
+  PackagingCondition:
+  - INTACT
+  - COSMETIC_LABEL_DAMAGE
+  - AMBIGUOUS_DAMAGE
+  - PRIMARY_BARRIER_DAMAGED
+  - LEAKING
+  - OPEN_SEAL
+  - UNKNOWN
+  - NOT_APPLICABLE
+  DefectSeverity:
+  - NONE
+  - COSMETIC_ONLY
+  - MANUAL_REVIEW
+  - SAFETY_CRITICAL
+  QualityInspectionStatus:
+  - PASSED
+  - FAILED
+  - NOT_PERFORMED
+  - NOT_APPLICABLE
+  UrgencyLevel:
+  - LOW
+  - MEDIUM
+  - HIGH
+  - CRITICAL
+  SeasonalityStatus:
+  - IN_SEASON
+  - POST_SEASON
+  - PRE_SEASON
+  - NOT_APPLICABLE
+  - UNKNOWN
+  RegistryStatus:
+  - ACTIVE
+  - STALE
+  - EXPIRED
+  - SUSPENDED
+  - UNVERIFIED
+  DemandStatus:
+  - ACTIVE
+  - ZERO
+  - STALE
+  - EXPIRED
+  - UNKNOWN
+  MatchStatus:
+  - MATCH
+  - MISMATCH
+  - UNKNOWN
+  - NOT_APPLICABLE
+  ApprovalStatus:
+  - PENDING
+  - APPROVED
+  - ADJUSTED
+  - REJECTED
+  SolverStatus:
+  - OPTIMAL
+  - FEASIBLE
+  - INFEASIBLE
+  - MODEL_INVALID
+  - UNKNOWN
+  - FALLBACK_USED
+  UnitCode:
+  - UNIT
+  - PIECE
+  - PACK
+  - SACHET
+  - BOTTLE
+  - CAN
+  - CUP
+  - BOX
+  - TRAY
+  - KG
+  - GRAM
+  - LITER
+  - ML
+  - OTHER
+  BusinessType:
+  - SMALL_RETAIL
+  - MEDIUM_RETAIL
+  - SMALL_FNB
+  - MEDIUM_FNB
+  - MEDIUM_WHOLESALER
+  ProductCategory:
+  - PACKAGED_FOOD
+  - PACKAGED_BEVERAGE
+  - BAKERY
+  - READY_TO_EAT_MEAL
+  - FROZEN_PREPARED_FOOD
+  - CHILLED_DAIRY
+  - FRESH_PRODUCE
+  - HOUSEHOLD_CLEANING
+  - PERSONAL_CARE
+  - CONDIMENT
+  - BABY_CARE
+  - CHOCOLATE
+  - OTHER_SUPPORTED
+  SourceType:
+  - SYNTHETIC_GENERATED
+  - EVALUATION_FIXTURE
+  - USER_INPUT
+  - STATIC_REGISTRY
+  - STATIC_POLICY
+  IntegrityStatus:
+  - INTACT
+  - COMPROMISED
+  - UNKNOWN
+  - NOT_APPLICABLE
+entities:
+  ANALYSIS_REQUEST:
+    description: Dynamic request context submitted together with the inventory file.
+    fields:
+      request_id:
+        type: string
+        required: false
+        source: SYSTEM_GENERATED
+        pattern: ^[A-Za-z0-9_-]+$
+      analysis_timestamp:
+        type: datetime
+        required: false
+        source: SYSTEM_GENERATED
+      inventory_file_name:
+        type: string
+        required: true
+        source: USER_INPUT
+      optimization_objective:
+        type: OptimizationObjective
+        required: true
+        source: USER_INPUT
+      max_logistics_budget:
+        type: decimal
+        required: false
+        source: USER_INPUT
+        minimum: 0
+        currency: IDR
+      rescue_deadline_at:
+        type: datetime
+        required: false
+        source: USER_INPUT
+      minimum_expected_rescue_ratio:
+        type: decimal
+        required: false
+        source: USER_INPUT_OR_STATIC_DEFAULT
+        minimum: 0
+        maximum: 1
+        required_when: optimization_objective == BALANCED
+      objective_policy_version:
+        type: string
+        required: true
+        source: STATIC_POLICY
+      random_seed:
+        type: integer
+        required: true
+        source: STATIC_POLICY
+        default: 42
+  INVENTORY_LOT:
+    description: One raw inventory row. A row is not assumed to be surplus.
+    fields:
+      lot_id:
+        type: string
+        required: true
+        source: USER_INPUT
+        unique_within_request: true
+      sku:
+        type: string
+        required: true
+        source: USER_INPUT
+      batch_or_reference_id:
+        type: string
+        required: false
+        source: USER_INPUT
+      product_name:
+        type: string
+        required: true
+        source: USER_INPUT
+      product_category:
+        type: ProductCategory
+        required: true
+        source: USER_INPUT
+      product_subcategory:
+        type: string
+        required: false
+        source: USER_INPUT
+      current_quantity:
+        type: decimal
+        required: true
+        source: USER_INPUT
+        minimum: 0
+      unit:
+        type: UnitCode
+        required: true
+        source: USER_INPUT
+      unit_cost:
+        type: decimal
+        required: true
+        source: USER_INPUT
+        minimum: 0
+        currency: IDR
+      normal_selling_price:
+        type: decimal
+        required: true
+        source: USER_INPUT
+        minimum: 0
+        currency: IDR
+      minimum_recovery_price:
+        type: decimal
+        required: false
+        source: USER_INPUT
+        minimum: 0
+        currency: IDR
+      source_location:
+        type: string
+        required: true
+        source: USER_INPUT
+      purchase_date:
+        type: date
+        required: false
+        source: USER_INPUT
+      last_receipt_date:
+        type: date
+        required: false
+        source: USER_INPUT
+      production_date:
+        type: date
+        required: false
+        source: USER_INPUT
+      expiry_date:
+        type: date
+        required: false
+        source: USER_INPUT
+        conditional: required for expiry-managed categories
+      safe_use_by_at:
+        type: datetime
+        required: false
+        source: USER_INPUT
+        conditional: required for time-sensitive ready-to-eat categories when applicable
+      commercial_sale_cutoff_at:
+        type: datetime
+        required: false
+        source: USER_INPUT
+      units_sold_observation_window:
+        type: decimal
+        required: false
+        source: USER_INPUT
+        minimum: 0
+      observation_days:
+        type: integer
+        required: false
+        source: USER_INPUT
+        minimum_exclusive: 0
+        required_when: units_sold_observation_window is present
+      safety_stock:
+        type: decimal
+        required: false
+        source: USER_INPUT
+        minimum: 0
+        default: 0
+      declared_surplus:
+        type: boolean
+        required: false
+        source: USER_INPUT
+        default: false
+      declared_surplus_quantity:
+        type: decimal
+        required: false
+        source: USER_INPUT
+        minimum: 0
+        required_when: declared_surplus == true
+      storage_type:
+        type: StorageType
+        required: true
+        source: USER_INPUT
+      storage_history_status:
+        type: StorageHistoryStatus
+        required: false
+        source: USER_INPUT
+      temperature_log_available:
+        type: boolean
+        required: false
+        source: USER_INPUT
+      product_condition:
+        type: ProductCondition
+        required: false
+        source: USER_INPUT
+      packaging_condition:
+        type: PackagingCondition
+        required: false
+        source: USER_INPUT
+      quality_inspection_status:
+        type: QualityInspectionStatus
+        required: false
+        source: USER_INPUT
+      seal_integrity:
+        type: IntegrityStatus
+        required: false
+        source: USER_INPUT
+      primary_container_integrity:
+        type: IntegrityStatus
+        required: false
+        source: USER_INPUT
+      expiry_label_readable:
+        type: boolean
+        required: false
+        source: USER_INPUT
+      lot_code_readable:
+        type: boolean
+        required: false
+        source: USER_INPUT
+      package_volume_ml:
+        type: decimal
+        required: false
+        source: USER_INPUT
+        minimum: 0
+      package_weight_g:
+        type: decimal
+        required: false
+        source: USER_INPUT
+        minimum: 0
+      package_format:
+        type: string
+        required: false
+        source: USER_INPUT
+      verification_status:
+        type: VerificationStatus
+        required: true
+        source: USER_INPUT
+    row_constraints:
+    - declared_surplus_quantity <= current_quantity
+    - minimum_recovery_price <= normal_selling_price unless an explicit premium recovery policy exists
+    - purchase_date <= analysis_timestamp when present
+    - expiry_date must be parseable when present
+    - mixed batch, mixed expiry, or mixed storage history must be split into separate rows; otherwise route to NEEDS_REVIEW
+    - unknown safety-critical fields are never imputed optimistically
+    - zero-quantity rows are reported and excluded from planning, not silently processed
+  INVENTORY_TRIAGE_RESULT:
+    description: Deterministic routing result before rescue planning.
+    fields:
+      source_lot_id:
+        type: string
+        required: true
+        source: SYSTEM_DERIVED
+      analysis_date:
+        type: date
+        required: true
+        source: SYSTEM_DERIVED
+      remaining_shelf_life_days:
+        type: integer
+        required: false
+        source: SYSTEM_DERIVED
+      remaining_safe_window_hours:
+        type: decimal
+        required: false
+        source: SYSTEM_DERIVED
+        minimum: 0
+      remaining_commercial_window_days:
+        type: decimal
+        required: false
+        source: SYSTEM_DERIVED
+        minimum: 0
+      average_daily_sales:
+        type: decimal
+        required: false
+        source: SYSTEM_DERIVED
+        minimum: 0
+      effective_sales_window_days:
+        type: decimal
+        required: false
+        source: SYSTEM_DERIVED
+        minimum: 0
+      expected_normal_sales:
+        type: decimal
+        required: false
+        source: SYSTEM_DERIVED
+        minimum: 0
+      protected_normal_stock_quantity:
+        type: decimal
+        required: true
+        source: SYSTEM_DERIVED
+        minimum: 0
+      monitor_quantity:
+        type: decimal
+        required: true
+        source: SYSTEM_DERIVED
+        minimum: 0
+        default: 0
+      surplus_candidate_quantity:
+        type: decimal
+        required: true
+        source: SYSTEM_DERIVED
+        minimum: 0
+        default: 0
+      planning_quantity:
+        type: decimal
+        required: true
+        source: SYSTEM_DERIVED
+        minimum: 0
+        default: 0
+        description: Only quantity eligible to emit SURPLUS_PLANNING_LOT. A positive planning quantity does not make protected, monitor, expired, or review quantities planner-eligible.
+      expired_quantity:
+        type: decimal
+        required: true
+        source: SYSTEM_DERIVED
+        minimum: 0
+        default: 0
+      review_quantity:
+        type: decimal
+        required: true
+        source: SYSTEM_DERIVED
+        minimum: 0
+        default: 0
+        description: Quantity held outside rescue planning because evidence remains unresolved. May be positive for a fully review-routed NEEDS_REVIEW lot or for the unresolved remainder of a mixed-routing SURPLUS_CANDIDATE lot.
+      inventory_status:
+        type: InventoryStatus
+        required: true
+        source: SYSTEM_DERIVED
+      surplus_source:
+        type: SurplusSource
+        required: false
+        source: SYSTEM_DERIVED
+      triage_reason_codes:
+        type: list[string]
+        required: true
+        source: SYSTEM_DERIVED
+      triage_confidence_status:
+        type: TriageConfidenceStatus
+        required: true
+        source: SYSTEM_DERIVED
+      urgency_level:
+        type: UrgencyLevel
+        required: true
+        source: SYSTEM_DERIVED
+      estimated_current_value:
+        type: decimal
+        required: true
+        source: SYSTEM_DERIVED
+        minimum: 0
+        currency: IDR
+      triage_policy_version:
+        type: string
+        required: true
+        source: STATIC_POLICY
+    derivations:
+      average_daily_sales: units_sold_observation_window / observation_days
+      expected_normal_sales: average_daily_sales * effective_sales_window_days
+      protected_normal_stock_quantity: min(current_quantity, expected_normal_sales + safety_stock)
+      surplus_candidate_quantity: max(0, current_quantity - protected_normal_stock_quantity)
+      planning_quantity_user_declared: declared_surplus_quantity when valid
+      planning_quantity_calculated: surplus_candidate_quantity when calculation is supported
+    invariants:
+    - protected_normal_stock_quantity + monitor_quantity + planning_quantity + expired_quantity + review_quantity == current_quantity
+    - planning_quantity > 0 only when inventory_status == SURPLUS_CANDIDATE
+    - expired_quantity > 0 only when inventory_status == EXPIRED
+    - review_quantity > 0 only when inventory_status in {NEEDS_REVIEW, SURPLUS_CANDIDATE}
+    - when inventory_status == SURPLUS_CANDIDATE and review_quantity > 0, only planning_quantity may emit SURPLUS_PLANNING_LOT; review_quantity remains review-pending
+    - model scoring is forbidden for HEALTHY_STOCK, MONITOR, EXPIRED, and NEEDS_REVIEW
+  SURPLUS_PLANNING_LOT:
+    description: Internal lot snapshot emitted only for SURPLUS_CANDIDATE planning quantity.
+    fields:
+      planning_lot_id:
+        type: string
+        required: true
+        source: SYSTEM_DERIVED
+        unique_within_request: true
+      source_lot_id:
+        type: string
+        required: true
+        source: SYSTEM_DERIVED
+      sku:
+        type: string
+        required: true
+        source: COPIED_FROM_INVENTORY_LOT
+      product_name:
+        type: string
+        required: true
+        source: COPIED_FROM_INVENTORY_LOT
+      product_category:
+        type: ProductCategory
+        required: true
+        source: COPIED_FROM_INVENTORY_LOT
+      product_subcategory:
+        type: string
+        required: false
+        source: COPIED_FROM_INVENTORY_LOT
+      planning_quantity:
+        type: decimal
+        required: true
+        source: COPIED_FROM_TRIAGE_RESULT
+        minimum_exclusive: 0
+      unit:
+        type: UnitCode
+        required: true
+        source: COPIED_FROM_INVENTORY_LOT
+      unit_cost:
+        type: decimal
+        required: true
+        source: COPIED_FROM_INVENTORY_LOT
+        minimum: 0
+        currency: IDR
+      normal_selling_price:
+        type: decimal
+        required: true
+        source: COPIED_FROM_INVENTORY_LOT
+        minimum: 0
+        currency: IDR
+      minimum_recovery_price:
+        type: decimal
+        required: false
+        source: COPIED_FROM_INVENTORY_LOT
+        minimum: 0
+        currency: IDR
+      source_location:
+        type: string
+        required: true
+        source: COPIED_FROM_INVENTORY_LOT
+      remaining_shelf_life_days:
+        type: integer
+        required: false
+        source: COPIED_FROM_TRIAGE_RESULT
+      remaining_safe_window_hours:
+        type: decimal
+        required: false
+        source: COPIED_FROM_TRIAGE_RESULT
+        minimum: 0
+      remaining_commercial_window_days:
+        type: decimal
+        required: false
+        source: COPIED_FROM_TRIAGE_RESULT
+        minimum: 0
+      urgency_level:
+        type: UrgencyLevel
+        required: true
+        source: COPIED_FROM_TRIAGE_RESULT
+      surplus_source:
+        type: SurplusSource
+        required: true
+        source: COPIED_FROM_TRIAGE_RESULT
+      seasonality_status:
+        type: SeasonalityStatus
+        required: false
+        source: SYSTEM_DERIVED
+      storage_type:
+        type: StorageType
+        required: true
+        source: COPIED_FROM_INVENTORY_LOT
+      storage_requirement_mode:
+        type: StorageRequirementMode
+        required: true
+        source: DOMAIN_RULE_DERIVED
+      storage_history_status:
+        type: StorageHistoryStatus
+        required: false
+        source: COPIED_FROM_INVENTORY_LOT
+      product_condition:
+        type: ProductCondition
+        required: false
+        source: COPIED_FROM_INVENTORY_LOT
+      packaging_condition:
+        type: PackagingCondition
+        required: false
+        source: COPIED_FROM_INVENTORY_LOT
+      defect_severity:
+        type: DefectSeverity
+        required: true
+        source: DOMAIN_RULE_DERIVED
+      quality_inspection_status:
+        type: QualityInspectionStatus
+        required: false
+        source: COPIED_FROM_INVENTORY_LOT
+      verification_status:
+        type: VerificationStatus
+        required: true
+        source: COPIED_FROM_INVENTORY_LOT
+      package_volume_ml:
+        type: decimal
+        required: false
+        source: COPIED_FROM_INVENTORY_LOT
+        minimum: 0
+      package_weight_g:
+        type: decimal
+        required: false
+        source: COPIED_FROM_INVENTORY_LOT
+        minimum: 0
+      package_format:
+        type: string
+        required: false
+        source: COPIED_FROM_INVENTORY_LOT
+      estimated_current_value:
+        type: decimal
+        required: true
+        source: COPIED_FROM_TRIAGE_RESULT
+        minimum: 0
+        currency: IDR
+  BUSINESS_CAPABILITY_PROFILE:
+    description: Static internal snapshot describing what the source business can actually execute.
+    fields:
+      business_id:
+        type: string
+        required: true
+        source: STATIC_ARTIFACT
+      business_type:
+        type: BusinessType
+        required: true
+        source: STATIC_ARTIFACT
+      snapshot_version:
+        type: string
+        required: true
+        source: STATIC_ARTIFACT
+      snapshot_timestamp:
+        type: datetime
+        required: true
+        source: STATIC_ARTIFACT
+      source_locations:
+        type: list[string]
+        required: true
+        source: STATIC_ARTIFACT
+      enabled_actions:
+        type: list[ActionType]
+        required: true
+        source: STATIC_ARTIFACT
+      resource_capacities:
+        type: map[string,decimal]
+        required: true
+        source: STATIC_ARTIFACT
+        examples:
+        - labor_hours
+        - equipment_units
+        - ingredient_units
+        - bundle_companion_units
+        - cold_storage_units
+      verified_internal_needs:
+        type: map[string,decimal]
+        required: true
+        source: STATIC_ARTIFACT
+      branch_destinations:
+        type: list[object]
+        required: true
+        source: STATIC_ARTIFACT
+      supplier_return_policies:
+        type: list[object]
+        required: true
+        source: STATIC_ARTIFACT
+      logistics_modes:
+        type: list[object]
+        required: true
+        source: STATIC_ARTIFACT
+      default_action_costs:
+        type: map[ActionType,object]
+        required: true
+        source: STATIC_ARTIFACT
+  PARTNER_DEMAND_ENTRY:
+    description: One verified partner-category demand snapshot. Registry is closed and static during a request.
+    fields:
+      partner_entry_id:
+        type: string
+        required: true
+        source: STATIC_ARTIFACT
+        unique: true
+      partner_id:
+        type: string
+        required: true
+        source: STATIC_ARTIFACT
+      partner_name:
+        type: string
+        required: true
+        source: STATIC_ARTIFACT
+      partner_type:
+        type: string
+        required: true
+        source: STATIC_ARTIFACT
+      registry_status:
+        type: RegistryStatus
+        required: true
+        source: STATIC_ARTIFACT
+      verification_status:
+        type: VerificationStatus
+        required: true
+        source: STATIC_ARTIFACT
+      valid_from:
+        type: datetime
+        required: true
+        source: STATIC_ARTIFACT
+      valid_until:
+        type: datetime
+        required: true
+        source: STATIC_ARTIFACT
+      accepted_categories:
+        type: list[ProductCategory]
+        required: true
+        source: STATIC_ARTIFACT
+      accepted_subcategories:
+        type: list[string]
+        required: true
+        source: STATIC_ARTIFACT
+      accepted_package_formats:
+        type: list[string]
+        required: true
+        source: STATIC_ARTIFACT
+      minimum_package_volume_ml:
+        type: decimal
+        required: false
+        source: STATIC_ARTIFACT
+        minimum: 0
+      maximum_package_volume_ml:
+        type: decimal
+        required: false
+        source: STATIC_ARTIFACT
+        minimum: 0
+      customer_segment:
+        type: string
+        required: false
+        source: STATIC_ARTIFACT
+      demand_status:
+        type: DemandStatus
+        required: true
+        source: STATIC_ARTIFACT
+      active_demand_quantity:
+        type: decimal
+        required: true
+        source: STATIC_ARTIFACT
+        minimum: 0
+      available_capacity:
+        type: decimal
+        required: true
+        source: STATIC_ARTIFACT
+        minimum: 0
+      minimum_order_quantity:
+        type: decimal
+        required: false
+        source: STATIC_ARTIFACT
+        minimum: 0
+      offered_price_per_unit:
+        type: decimal
+        required: false
+        source: STATIC_ARTIFACT
+        minimum: 0
+        currency: IDR
+      accepted_storage_types:
+        type: list[StorageType]
+        required: true
+        source: STATIC_ARTIFACT
+      minimum_remaining_shelf_life_days:
+        type: integer
+        required: false
+        source: STATIC_ARTIFACT
+        minimum: 0
+      pickup_available:
+        type: boolean
+        required: true
+        source: STATIC_ARTIFACT
+      estimated_pickup_hours:
+        type: decimal
+        required: false
+        source: STATIC_ARTIFACT
+        minimum: 0
+      estimated_distribution_hours:
+        type: decimal
+        required: false
+        source: STATIC_ARTIFACT
+        minimum: 0
+      destination_location:
+        type: string
+        required: true
+        source: STATIC_ARTIFACT
+      estimated_distance_km:
+        type: decimal
+        required: false
+        source: STATIC_ARTIFACT
+        minimum: 0
+      logistics_cost:
+        type: decimal
+        required: false
+        source: STATIC_ARTIFACT
+        minimum: 0
+        currency: IDR
+    invariants:
+    - valid_from <= valid_until
+    - allocatable quantity <= min(active_demand_quantity, available_capacity)
+    - STALE, EXPIRED, SUSPENDED, or UNVERIFIED entries cannot be automatically allocated
+  DOMAIN_ACTION_RULE:
+    description: Static rule-pack entry defining action eligibility, required evidence, and fallback behavior.
+    fields:
+      rule_id:
+        type: string
+        required: true
+        source: STATIC_ARTIFACT
+        unique: true
+      rule_version:
+        type: string
+        required: true
+        source: STATIC_ARTIFACT
+      action_type:
+        type: ActionType
+        required: false
+        source: STATIC_ARTIFACT
+      stage:
+        type: string
+        required: true
+        source: STATIC_ARTIFACT
+      severity:
+        type: string
+        required: true
+        source: STATIC_ARTIFACT
+      required_fields:
+        type: list[string]
+        required: true
+        source: STATIC_ARTIFACT
+      condition_expression:
+        type: string
+        required: true
+        source: STATIC_ARTIFACT
+      decision_expression:
+        type: string
+        required: true
+        source: STATIC_ARTIFACT
+      model_override_allowed:
+        type: boolean
+        required: true
+        source: STATIC_ARTIFACT
+        const: false
+      reason_code:
+        type: string
+        required: true
+        source: STATIC_ARTIFACT
+      source_cases:
+        type: list[string]
+        required: true
+        source: STATIC_ARTIFACT
+  CANDIDATE_ACTION:
+    description: One generated rescue action candidate for one surplus planning lot.
+    fields:
+      candidate_id:
+        type: string
+        required: true
+        source: SYSTEM_GENERATED
+        unique_within_request: true
+      planning_lot_id:
+        type: string
+        required: true
+        source: SYSTEM_DERIVED
+      action_type:
+        type: ActionType
+        required: true
+        source: SYSTEM_GENERATED
+      destination_id:
+        type: string
+        required: false
+        source: SYSTEM_GENERATED
+      destination_type:
+        type: string
+        required: false
+        source: SYSTEM_GENERATED
+      maximum_feasible_quantity:
+        type: decimal
+        required: true
+        source: SYSTEM_DERIVED
+        minimum: 0
+      offered_or_selling_price_per_unit:
+        type: decimal
+        required: false
+        source: SYSTEM_DERIVED
+        minimum: 0
+        currency: IDR
+      direct_action_cost:
+        type: decimal
+        required: true
+        source: SYSTEM_DERIVED
+        minimum: 0
+        currency: IDR
+      logistics_cost:
+        type: decimal
+        required: true
+        source: SYSTEM_DERIVED
+        minimum: 0
+        currency: IDR
+      handling_cost:
+        type: decimal
+        required: true
+        source: SYSTEM_DERIVED
+        minimum: 0
+        currency: IDR
+      estimated_completion_hours:
+        type: decimal
+        required: false
+        source: SYSTEM_DERIVED
+        minimum: 0
+      active_demand_quantity:
+        type: decimal
+        required: false
+        source: SYSTEM_DERIVED
+        minimum: 0
+      available_capacity:
+        type: decimal
+        required: false
+        source: SYSTEM_DERIVED
+        minimum: 0
+      minimum_order_quantity:
+        type: decimal
+        required: false
+        source: SYSTEM_DERIVED
+        minimum: 0
+      capability_resource_ratio:
+        type: decimal
+        required: false
+        source: SYSTEM_DERIVED
+        minimum: 0
+      demand_coverage_ratio:
+        type: decimal
+        required: false
+        source: SYSTEM_DERIVED
+        minimum: 0
+      demand_freshness_hours:
+        type: decimal
+        required: false
+        source: SYSTEM_DERIVED
+        minimum: 0
+      distance_km:
+        type: decimal
+        required: false
+        source: SYSTEM_DERIVED
+        minimum: 0
+      category_match_status:
+        type: MatchStatus
+        required: true
+        source: SYSTEM_DERIVED
+      package_size_match_status:
+        type: MatchStatus
+        required: true
+        source: SYSTEM_DERIVED
+      customer_segment_match_status:
+        type: MatchStatus
+        required: true
+        source: SYSTEM_DERIVED
+      storage_compatibility_status:
+        type: MatchStatus
+        required: true
+        source: SYSTEM_DERIVED
+      validation_status:
+        type: ValidationStatus
+        required: true
+        source: GATE_OUTPUT
+      coverage_status:
+        type: CoverageStatus
+        required: true
+        source: GATE_OUTPUT
+      safety_status:
+        type: SafetyStatus
+        required: true
+        source: GATE_OUTPUT
+      verification_status:
+        type: VerificationStatus
+        required: true
+        source: GATE_OUTPUT
+      feasibility_status:
+        type: FeasibilityStatus
+        required: true
+        source: GATE_OUTPUT
+      model_scoring_status:
+        type: ModelScoringStatus
+        required: true
+        source: GATE_OUTPUT
+      rejection_reason_codes:
+        type: list[string]
+        required: true
+        source: GATE_OUTPUT
+      fixture_rescue_success_score:
+        type: decimal
+        required: false
+        source: EVALUATION_FIXTURE_ONLY
+        minimum: 0
+        maximum: 1
+      estimated_rescue_success_score:
+        type: decimal
+        required: false
+        source: MODEL_OUTPUT
+        minimum: 0
+        maximum: 1
+        required_when: model_scoring_status == ALLOWED
+      model_version:
+        type: string
+        required: false
+        source: MODEL_OUTPUT
+      expected_cash_recovery:
+        type: decimal
+        required: true
+        source: POST_MODEL_DERIVED
+        minimum: 0
+        currency: IDR
+      expected_future_branch_recovery:
+        type: decimal
+        required: true
+        source: POST_MODEL_DERIVED
+        minimum: 0
+        currency: IDR
+      expected_avoided_purchase_cost:
+        type: decimal
+        required: true
+        source: POST_MODEL_DERIVED
+        minimum: 0
+        currency: IDR
+      expected_physical_rescue_quantity:
+        type: decimal
+        required: true
+        source: POST_MODEL_DERIVED
+        minimum: 0
+      expected_waste_quantity:
+        type: decimal
+        required: true
+        source: POST_MODEL_DERIVED
+        minimum: 0
+      expected_net_recovery:
+        type: decimal
+        required: true
+        source: POST_MODEL_DERIVED
+        currency: IDR
+    scoring_eligibility:
+    - validation_status == PASSED
+    - coverage_status == SUPPORTED
+    - safety_status in {ACCEPTABLE, ACCEPTABLE_WITH_URGENCY}
+    - verification_status in category-approved sufficient levels
+    - feasibility_status == FEASIBLE
+  ALLOCATION_DECISION:
+    description: Optimizer-selected quantity for a candidate action.
+    fields:
+      allocation_id:
+        type: string
+        required: true
+        source: OPTIMIZER_OUTPUT
+        unique_within_request: true
+      candidate_id:
+        type: string
+        required: true
+        source: OPTIMIZER_OUTPUT
+      planning_lot_id:
+        type: string
+        required: true
+        source: OPTIMIZER_OUTPUT
+      allocated_quantity:
+        type: decimal
+        required: true
+        source: OPTIMIZER_OUTPUT
+        minimum_exclusive: 0
+      solver_status:
+        type: SolverStatus
+        required: true
+        source: OPTIMIZER_OUTPUT
+      binding_constraint_codes:
+        type: list[string]
+        required: true
+        source: OPTIMIZER_OUTPUT
+      expected_cash_recovery:
+        type: decimal
+        required: true
+        source: OPTIMIZER_OUTPUT
+        minimum: 0
+        currency: IDR
+      expected_future_branch_recovery:
+        type: decimal
+        required: true
+        source: OPTIMIZER_OUTPUT
+        minimum: 0
+        currency: IDR
+      expected_avoided_purchase_cost:
+        type: decimal
+        required: true
+        source: OPTIMIZER_OUTPUT
+        minimum: 0
+        currency: IDR
+      expected_physical_rescue_quantity:
+        type: decimal
+        required: true
+        source: OPTIMIZER_OUTPUT
+        minimum: 0
+      expected_waste_quantity:
+        type: decimal
+        required: true
+        source: OPTIMIZER_OUTPUT
+        minimum: 0
+      fallback_rank:
+        type: integer
+        required: false
+        source: OPTIMIZER_OR_FALLBACK_OUTPUT
+        minimum: 0
+  DECISION_REPORT:
+    description: Single user-visible report. It is advisory and does not execute logistics or transactions.
+    fields:
+      request_id:
+        type: string
+        required: true
+        source: SYSTEM_GENERATED
+      analysis_timestamp:
+        type: datetime
+        required: true
+        source: SYSTEM_GENERATED
+      input_snapshot_sha256:
+        type: string
+        required: true
+        source: SYSTEM_GENERATED
+      model_version:
+        type: string
+        required: true
+        source: STATIC_ARTIFACT
+      model_sha256:
+        type: string
+        required: true
+        source: STATIC_ARTIFACT
+      ruleset_version:
+        type: string
+        required: true
+        source: STATIC_ARTIFACT
+      capability_snapshot_version:
+        type: string
+        required: true
+        source: STATIC_ARTIFACT
+      partner_registry_snapshot_timestamp:
+        type: datetime
+        required: true
+        source: STATIC_ARTIFACT
+      objective_policy_version:
+        type: string
+        required: true
+        source: STATIC_ARTIFACT
+      optimization_objective:
+        type: OptimizationObjective
+        required: true
+        source: USER_INPUT
+      validation_summary:
+        type: object
+        required: true
+        source: SYSTEM_DERIVED
+      triage_summary:
+        type: object
+        required: true
+        source: SYSTEM_DERIVED
+      healthy_stock:
+        type: list[object]
+        required: true
+        source: SYSTEM_DERIVED
+      monitor_only:
+        type: list[object]
+        required: true
+        source: SYSTEM_DERIVED
+      surplus_planning_lots:
+        type: list[object]
+        required: true
+        source: SYSTEM_DERIVED
+      expired_routes:
+        type: list[object]
+        required: true
+        source: SYSTEM_DERIVED
+      review_required_lots:
+        type: list[object]
+        required: true
+        source: SYSTEM_DERIVED
+      selected_allocations:
+        type: list[ALLOCATION_DECISION]
+        required: true
+        source: OPTIMIZER_OUTPUT
+      rejected_candidates:
+        type: list[object]
+        required: true
+        source: SYSTEM_DERIVED
+      fallback_chain:
+        type: list[object]
+        required: true
+        source: SYSTEM_DERIVED
+      batch_metrics:
+        type: object
+        required: true
+        source: SYSTEM_DERIVED
+      baseline_comparison:
+        type: object
+        required: false
+        source: OFFLINE_EVALUATION_ONLY
+      limitations:
+        type: list[string]
+        required: true
+        source: SYSTEM_DERIVED
+      human_exception_review_required:
+        type: boolean
+        required: true
+        source: SYSTEM_DERIVED
+      human_final_approval_status:
+        type: ApprovalStatus
+        required: true
+        source: USER_ACTION
+        default: PENDING
+      execution_performed:
+        type: boolean
+        required: true
+        source: SYSTEM_CONSTANT
+        const: false
+model_feature_contract:
+  row_granularity: one feasible candidate action for one surplus planning lot in one synthetic scenario
+  canonical_target: simulated_rescue_outcome
+  target_type: binary integer {0,1}
+  deprecated_target_alias: simulated_rescue_success
+  latent_generator_field: generator_success_probability
+  inference_output: estimated_rescue_success_score
+  acceptance_fixture_score: fixture_rescue_success_score
+  group_split_fields:
+  - scenario_group_id
+  - business_profile_id
+  allowed_categorical_features:
+  - product_category
+  - product_subcategory
+  - action_type
+  - business_type
+  - storage_requirement_mode
+  - urgency_level
+  - surplus_source
+  - destination_type
+  - seasonality_status
+  - package_format
+  allowed_numeric_features:
+  - planning_quantity
+  - remaining_shelf_life_days
+  - remaining_safe_window_hours
+  - remaining_commercial_window_days
+  - unit_cost
+  - normal_selling_price
+  - offered_or_selling_price_per_unit
+  - direct_action_cost
+  - logistics_cost
+  - handling_cost
+  - estimated_completion_hours
+  - active_demand_quantity
+  - available_capacity
+  - minimum_order_quantity
+  - capability_resource_ratio
+  - demand_coverage_ratio
+  - demand_freshness_hours
+  - distance_km
+  - package_volume_ml
+  - package_weight_g
+  forbidden_model_inputs:
+  - generator_success_probability
+  - simulated_rescue_outcome
+  - simulated_rescue_success
+  - fixture_rescue_success_score
+  - estimated_rescue_success_score
+  - selected_action
+  - allocated_quantity
+  - final_allocation_quantity
+  - solver_status
+  - binding_constraint_codes
+  - expected_cash_recovery
+  - expected_future_branch_recovery
+  - expected_avoided_purchase_cost
+  - expected_physical_rescue_quantity
+  - expected_waste_quantity
+  - expected_net_recovery
+  - rejection_reason_codes
+  - outcome_after_decision
+  - source_type
+  - scenario_group_id
+  - business_profile_id
+  - request_id
+  - lot_id
+  - candidate_id
+  training_only_fields:
+  - scenario_id
+  - scenario_group_id
+  - business_profile_id
+  - period_id
+  - generator_success_probability
+  - simulated_rescue_outcome
+  - source_type
+  claim_boundary: The output is calibrated only to the synthetic generation and evaluation process.
+cross_entity_invariants:
+- Every source lot appears exactly once in INVENTORY_TRIAGE_RESULT.
+- Only SURPLUS_CANDIDATE with planning_quantity > 0 can emit SURPLUS_PLANNING_LOT.
+- Every CANDIDATE_ACTION references an existing SURPLUS_PLANNING_LOT.
+- Infeasible, unsupported, hard-reject, expired, or review-pending candidates receive no model score.
+- Sum of allocations plus fallback and unallocated quantity equals planning_quantity for each planning lot.
+- Partner allocations across all lots do not exceed active demand or available capacity.
+- Global logistics cost does not exceed max_logistics_budget when provided.
+- Global cold-storage use does not exceed available capacity after reservations.
+- The optimization objective never overrides validation, coverage, safety, verification, or feasibility rules.
+- The report separates cash recovery, future branch recovery, avoided purchase cost, physical rescue, waste, inventory loss, and social allocation.
+- Human approval changes approval state only; it does not execute any real-world action.
+- review_quantity never emits SURPLUS_PLANNING_LOT and never enters candidate generation, model scoring, or allocation.
+- For mixed-routing SURPLUS_CANDIDATE lots, planning_quantity and review_quantity remain disjoint and their downstream routes must be independently traceable.
+- fixture_rescue_success_score may be populated only for evaluation fixtures and does not imply that a trained model was executed.
+spreadsheet_contract:
+  sheet_name: inventory_lots
+  required_columns:
+  - lot_id
+  - sku
+  - product_name
+  - product_category
+  - current_quantity
+  - unit
+  - unit_cost
+  - normal_selling_price
+  - source_location
+  - storage_type
+  - verification_status
+  conditional_columns:
+  - batch_or_reference_id
+  - product_subcategory
+  - purchase_date
+  - last_receipt_date
+  - production_date
+  - expiry_date
+  - safe_use_by_at
+  - commercial_sale_cutoff_at
+  - units_sold_observation_window
+  - observation_days
+  - safety_stock
+  - minimum_recovery_price
+  - declared_surplus
+  - declared_surplus_quantity
+  - storage_history_status
+  - temperature_log_available
+  - product_condition
+  - packaging_condition
+  - quality_inspection_status
+  - seal_integrity
+  - primary_container_integrity
+  - expiry_label_readable
+  - lot_code_readable
+  - package_volume_ml
+  - package_weight_g
+  - package_format
+  unknown_column_policy: REJECT_BY_DEFAULT; allow only explicitly documented extension columns prefixed with x_
+  empty_row_policy: DROP fully empty rows; report count
+  duplicate_policy: Exact duplicate rows are validation errors; repeated SKU is allowed only when lot_id or batch differs
+versioning_policy:
+  breaking_change: increment major version
+  new optional field or enum value: increment minor version
+  documentation-only correction: increment patch version
+  artifact_rule: model, ruleset, schema, capability snapshot, and partner registry must each carry version or hash metadata
+validation_debt:
+- TRIAGE-001 through TRIAGE-008 are locked and validate deterministic triage routing.
+- INTEGRATION-001 is locked and validates raw inventory through expected Rescue Decision Report.
+- Malformed-input acceptance cases remain documented validation debt for production tests.
+- Category-specific required-field policies remain configurable and must be finalized during implementation without weakening conservative routing.
+- Real capability, partner demand, model probability, and report usability remain field-validation debt and are not claimed by this schema.
+supersedes: FEATURE_SCHEMA_FINAL_v1.1.yaml
+change_requests_applied:
+- SCHEMA-CR-001
