@@ -98,9 +98,9 @@ def read_inventory_workbook(file_path: str | Path) -> list[RawInventoryLot]:
                 for header, value in zip(headers, row, strict=True)
                 if header in ALL_CANONICAL_COLUMNS
             }
-            payload = normalize_inventory_row(raw_payload)
 
             try:
+                payload = normalize_inventory_row(raw_payload)
                 record = RawInventoryLot.model_validate(payload)
             except Exception as exc:
                 raise ValueError(

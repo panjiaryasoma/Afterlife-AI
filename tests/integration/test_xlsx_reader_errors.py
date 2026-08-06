@@ -170,3 +170,30 @@ def test_same_sku_with_different_lot_is_accepted(
     assert len(records) == 2
     assert records[0].sku == records[1].sku
     assert records[0].lot_id != records[1].lot_id
+
+
+def test_invalid_numeric_value_reports_row_and_field(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "invalid_numeric_value.xlsx"
+
+    workbook = Workbook()
+    worksheet = workbook.active
+    worksheet.title = SHEET_NAME
+    worksheet.append(list(REQUIRED_COLUMNS))
+
+    row = valid_row()
+    row["current_quantity"] = "sepuluh"
+
+    worksheet.append(
+        [row[column] for column in REQUIRED_COLUMNS]
+    )
+
+    workbook.save(path)
+    workbook.close()
+
+    with pytest.raises(
+        ValueError,
+        match=r"Baris 2.*current_quantity.*harus berupa angka",
+    ):
+        read_inventory_workbook(path)
