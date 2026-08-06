@@ -74,3 +74,41 @@ def test_sales_observation_requires_observation_days() -> None:
 
     with pytest.raises(ValidationError):
         RawInventoryLot.model_validate(payload)
+
+
+
+def test_expiry_date_before_production_date_is_rejected() -> None:
+    from datetime import date
+
+    import pytest
+    from pydantic import ValidationError
+
+    from afterlife_ai.contracts import (
+        ProductCategory,
+        RawInventoryLot,
+        StorageType,
+        UnitCode,
+        VerificationStatus,
+    )
+
+    payload = {
+        "lot_id": "LOT-DATE-001",
+        "sku": "SKU-DATE-001",
+        "product_name": "Date Validation Product",
+        "product_category": next(iter(ProductCategory)).value,
+        "current_quantity": 10,
+        "unit": next(iter(UnitCode)).value,
+        "unit_cost": 1000,
+        "normal_selling_price": 1500,
+        "source_location": "STORE-01",
+        "storage_type": next(iter(StorageType)).value,
+        "verification_status": next(iter(VerificationStatus)).value,
+        "production_date": date(2026, 8, 10),
+        "expiry_date": date(2026, 8, 9),
+    }
+
+    with pytest.raises(
+        ValidationError,
+        match="expiry_date tidak boleh lebih awal",
+    ):
+        RawInventoryLot.model_validate(payload)

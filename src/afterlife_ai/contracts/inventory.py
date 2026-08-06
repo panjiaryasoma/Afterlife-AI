@@ -111,4 +111,23 @@ class RawInventoryLot(BaseModel):
         return self
 
 
+    @model_validator(mode="after")
+    def validate_production_and_expiry_dates(
+        self,
+    ) -> "RawInventoryLot":
+        """Ensure expiry does not precede production."""
+
+        if (
+            self.production_date is not None
+            and self.expiry_date is not None
+            and self.expiry_date < self.production_date
+        ):
+            raise ValueError(
+                "expiry_date tidak boleh lebih awal "
+                "daripada production_date."
+            )
+
+        return self
+
+
 __all__ = ["RawInventoryLot"]
