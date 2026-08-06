@@ -11,6 +11,7 @@ from afterlife_ai.contracts.spreadsheet import (
     REQUIRED_COLUMNS,
     SHEET_NAME,
 )
+from afterlife_ai.intake.normalization import normalize_inventory_row
 
 
 def read_inventory_workbook(file_path: str | Path) -> list[RawInventoryLot]:
@@ -90,11 +91,12 @@ def read_inventory_workbook(file_path: str | Path) -> list[RawInventoryLot]:
             ):
                 continue
 
-            payload = {
+            raw_payload = {
                 header: value
                 for header, value in zip(headers, row, strict=True)
                 if header in ALL_CANONICAL_COLUMNS
             }
+            payload = normalize_inventory_row(raw_payload)
 
             try:
                 record = RawInventoryLot.model_validate(payload)
