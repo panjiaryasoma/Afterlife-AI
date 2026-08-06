@@ -4,7 +4,6 @@ import yaml
 
 from afterlife_ai.contracts import enums
 
-
 SCHEMA_PATH = (
     Path(__file__).resolve().parents[2]
     / "docs"
