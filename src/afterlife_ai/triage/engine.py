@@ -42,6 +42,42 @@ def triage_inventory_lot(
     )
 
     if (
+        remaining_shelf_life_days is not None
+        and remaining_shelf_life_days < 0
+    ):
+        return InventoryTriageResult(
+            source_lot_id=lot.lot_id,
+            analysis_date=analysis_at.date(),
+            remaining_shelf_life_days=(
+                remaining_shelf_life_days
+            ),
+            remaining_safe_window_hours=None,
+            remaining_commercial_window_days=None,
+            average_daily_sales=None,
+            effective_sales_window_days=None,
+            expected_normal_sales=None,
+            protected_normal_stock_quantity=ZERO,
+            monitor_quantity=ZERO,
+            surplus_candidate_quantity=ZERO,
+            planning_quantity=ZERO,
+            expired_quantity=lot.current_quantity,
+            review_quantity=ZERO,
+            inventory_status=InventoryStatus.EXPIRED,
+            surplus_source=None,
+            triage_reason_codes=[
+                "EXPIRED_HARD_REJECT"
+            ],
+            triage_confidence_status=(
+                TriageConfidenceStatus.HIGH
+            ),
+            urgency_level=UrgencyLevel.HIGH,
+            estimated_current_value=(
+                lot.current_quantity * lot.unit_cost
+            ),
+            triage_policy_version=triage_policy_version,
+        )
+
+    if (
         lot.units_sold_observation_window is None
         or lot.observation_days is None
     ):
