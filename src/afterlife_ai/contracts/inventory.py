@@ -130,4 +130,23 @@ class RawInventoryLot(BaseModel):
         return self
 
 
+    @model_validator(mode="after")
+    def validate_commercial_cutoff_and_safe_use_by(
+        self,
+    ) -> "RawInventoryLot":
+        """Ensure the commercial cutoff does not exceed safe use."""
+
+        if (
+            self.commercial_sale_cutoff_at is not None
+            and self.safe_use_by_at is not None
+            and self.commercial_sale_cutoff_at > self.safe_use_by_at
+        ):
+            raise ValueError(
+                "commercial_sale_cutoff_at tidak boleh melewati "
+                "safe_use_by_at."
+            )
+
+        return self
+
+
 __all__ = ["RawInventoryLot"]

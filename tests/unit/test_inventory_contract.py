@@ -112,3 +112,41 @@ def test_expiry_date_before_production_date_is_rejected() -> None:
         match="expiry_date tidak boleh lebih awal",
     ):
         RawInventoryLot.model_validate(payload)
+
+
+
+def test_commercial_cutoff_after_safe_use_by_is_rejected() -> None:
+    from datetime import datetime
+
+    import pytest
+    from pydantic import ValidationError
+
+    from afterlife_ai.contracts import (
+        ProductCategory,
+        RawInventoryLot,
+        StorageType,
+        UnitCode,
+        VerificationStatus,
+    )
+
+    payload = {
+        "lot_id": "LOT-DATE-002",
+        "sku": "SKU-DATE-002",
+        "product_name": "Cutoff Validation Product",
+        "product_category": next(iter(ProductCategory)).value,
+        "current_quantity": 10,
+        "unit": next(iter(UnitCode)).value,
+        "unit_cost": 1000,
+        "normal_selling_price": 1500,
+        "source_location": "STORE-01",
+        "storage_type": next(iter(StorageType)).value,
+        "verification_status": next(iter(VerificationStatus)).value,
+        "safe_use_by_at": datetime(2026, 8, 10, 12, 0),
+        "commercial_sale_cutoff_at": datetime(2026, 8, 10, 14, 0),
+    }
+
+    with pytest.raises(
+        ValidationError,
+        match="commercial_sale_cutoff_at tidak boleh melewati",
+    ):
+        RawInventoryLot.model_validate(payload)
