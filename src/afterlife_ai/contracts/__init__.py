@@ -33,6 +33,7 @@ from .enums import (
     VerificationStatus,
 )
 from .inventory import RawInventoryLot
+from .request import AnalysisRequest
 
 __all__ = [
     "ValidationStatus",
@@ -65,5 +66,6 @@ __all__ = [
     "ProductCategory",
     "SourceType",
     "IntegrityStatus",
+    "AnalysisRequest",
     "RawInventoryLot",
 ]
