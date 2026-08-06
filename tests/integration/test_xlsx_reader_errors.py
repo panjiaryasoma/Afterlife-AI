@@ -197,3 +197,30 @@ def test_invalid_numeric_value_reports_row_and_field(
         match=r"Baris 2.*current_quantity.*harus berupa angka",
     ):
         read_inventory_workbook(path)
+
+
+def test_invalid_category_reports_row_and_field(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "invalid_category.xlsx"
+
+    workbook = Workbook()
+    worksheet = workbook.active
+    worksheet.title = SHEET_NAME
+    worksheet.append(list(REQUIRED_COLUMNS))
+
+    row = valid_row()
+    row["product_category"] = "kategori_rekaan_manusia"
+
+    worksheet.append(
+        [row[column] for column in REQUIRED_COLUMNS]
+    )
+
+    workbook.save(path)
+    workbook.close()
+
+    with pytest.raises(
+        ValueError,
+        match=r"Baris 2.*product_category.*nilai yang tidak diizinkan",
+    ):
+        read_inventory_workbook(path)

@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from openpyxl import load_workbook
+from pydantic import ValidationError
 
 from afterlife_ai.contracts.inventory import RawInventoryLot
 from afterlife_ai.contracts.spreadsheet import (
@@ -13,6 +14,32 @@ from afterlife_ai.contracts.spreadsheet import (
     SHEET_NAME,
 )
 from afterlife_ai.intake.normalization import normalize_inventory_row
+
+
+def _format_contract_validation_error(
+    error: ValidationError,
+) -> str:
+    """Convert the first Pydantic error into a readable message."""
+
+    errors = error.errors()
+
+    if not errors:
+        return "Data inventori tidak valid."
+
+    first_error = errors[0]
+    location = first_error.get("loc", ())
+    field_name = ".".join(str(part) for part in location)
+    error_type = first_error.get("type")
+    invalid_value = first_error.get("input")
+    message = str(first_error.get("msg", "nilai tidak valid"))
+
+    if error_type == "enum":
+        return (
+            f"Field '{field_name}' memiliki nilai yang tidak diizinkan: "
+            f"{invalid_value!r}"
+        )
+
+    return f"Field '{field_name}' tidak valid: {message}"
 
 
 def read_inventory_workbook(file_path: str | Path) -> list[RawInventoryLot]:
@@ -102,7 +129,12 @@ def read_inventory_workbook(file_path: str | Path) -> list[RawInventoryLot]:
             try:
                 payload = normalize_inventory_row(raw_payload)
                 record = RawInventoryLot.model_validate(payload)
-            except Exception as exc:
+            except ValidationError as exc:
+                message = _format_contract_validation_error(exc)
+                raise ValueError(
+                    f"Baris {row_number} tidak valid: {message}"
+                ) from exc
+            except ValueError as exc:
                 raise ValueError(
                     f"Baris {row_number} tidak valid: {exc}"
                 ) from exc
