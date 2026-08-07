@@ -22,7 +22,7 @@ def test_production_synthetic_config_loads() -> None:
     )
     assert config.randomness.primary_seed == 42
     assert config.randomness.robustness_seeds == [42, 137, 2026]
-    assert config.generation.scenario_groups == 2000
+    assert config.generation.scenario_groups == 2400
     assert config.split.unit == "scenario_group_id"
     assert config.split.random_row_split_allowed is False
     assert config.split.train == pytest.approx(0.70)

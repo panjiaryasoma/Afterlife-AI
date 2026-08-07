@@ -16,7 +16,7 @@ randomness:
     - 2026
 
 generation:
-  scenario_groups: 2000
+  scenario_groups: 2400
   candidate_rows_min: 10000
   candidate_rows_max: 15000
   candidates_per_planning_lot_min: 2
