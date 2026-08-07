@@ -36,7 +36,7 @@ Progress awal:
 - [x] XLSX intake implemented
 - [x] Input validation implemented
 - [x] Deterministic inventory triage implemented
-- [x] Rescue planner implemented
+- [ ] Rescue planner implemented
 - [ ] Synthetic dataset generator implemented
 - [ ] Candidate models evaluated
 - [ ] FastAPI and minimal UI integrated
@@ -217,13 +217,18 @@ runtime_internet_dependency: none
 
 ```text
 Afterlife-AI/
-├── app/
+├── backend/
 │   ├── api/
+│   ├── main.py
+│   └── __init__.py
+│
+├── frontend/
 │   ├── static/
 │   │   ├── css/
 │   │   ├── images/
 │   │   └── js/
 │   └── templates/
+│
 ├── configs/
 ├── data/
 │   ├── fixtures/
