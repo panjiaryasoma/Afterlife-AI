@@ -1,0 +1,41 @@
+recipe_version: "1.0.0"
+
+claim_boundary: >
+  Synthetic latent probability used only for dataset generation and model
+  evaluation. It is not a validated real-world rescue-success probability.
+
+intercept: -0.35
+
+weights:
+  price_recovery_ratio: 1.10
+  shelf_life_log: 0.28
+  demand_fit: 0.85
+  capability_fit: 0.70
+  completion_pressure: -1.05
+  logistics_pressure: -0.35
+  distance_log: -0.18
+  urgency_high: -0.18
+  urgency_critical: -0.42
+  post_season: -0.15
+
+action_offsets:
+  LOCAL_DISCOUNT: 0.18
+  BUNDLE: 0.12
+  PROMOTIONAL_BONUS: 0.05
+  INTERNAL_REPURPOSE: 0.08
+  INTERNAL_USE: 0.22
+  RETURN_TO_SUPPLIER: 0.16
+  BRANCH_TRANSFER: 0.10
+  WHOLESALE: -0.04
+  EXTERNAL_PARTNER: 0.02
+  DONATION: 0.20
+
+nonlinear:
+  strong_demand_bonus: 0.30
+  weak_demand_penalty: -0.40
+  urgent_short_window_penalty: -0.35
+  long_distance_fragile_penalty: -0.28
+
+probability_bounds:
+  minimum: 0.03
+  maximum: 0.97
