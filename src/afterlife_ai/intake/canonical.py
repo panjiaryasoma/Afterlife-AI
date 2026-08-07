@@ -1,10 +1,8 @@
-﻿"""Build JSON-safe canonical inventory records."""
-
-from typing import TypeAlias
+"""Build JSON-safe canonical inventory records."""
 
 from afterlife_ai.contracts.inventory import RawInventoryLot
 
-CanonicalInventoryRecord: TypeAlias = dict[str, object]
+type CanonicalInventoryRecord = dict[str, object]
 
 CANONICAL_INVENTORY_FIELDS = tuple(RawInventoryLot.model_fields)
 

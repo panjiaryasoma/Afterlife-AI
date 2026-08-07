@@ -1,4 +1,4 @@
-﻿"""Deterministic inventory triage engine."""
+"""Deterministic inventory triage engine."""
 
 from datetime import datetime
 from decimal import Decimal
@@ -133,6 +133,8 @@ def triage_inventory_lot(
     )
 
     if valid_partial_declared_surplus:
+        assert declared_quantity is not None
+
         review_quantity = (
             lot.current_quantity - declared_quantity
         )
