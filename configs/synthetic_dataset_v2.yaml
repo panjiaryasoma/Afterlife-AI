@@ -1,0 +1,37 @@
+config_version: "1.0.0"
+
+feature_schema:
+  path: "docs/contracts/FEATURE_SCHEMA_FINAL_v2.0.yaml"
+  version: "2.0.0"
+
+target:
+  field: "simulated_rescue_outcome"
+  latent_oracle_field: "generator_success_probability"
+
+randomness:
+  primary_seed: 42
+  robustness_seeds:
+    - 42
+    - 137
+    - 2026
+
+generation:
+  scenario_groups: 2000
+  candidate_rows_min: 10000
+  candidate_rows_max: 15000
+  candidates_per_planning_lot_min: 2
+  candidates_per_planning_lot_max: 8
+
+split:
+  train: 0.70
+  validation: 0.15
+  test: 0.15
+  unit: "scenario_group_id"
+  random_row_split_allowed: false
+  test_split_policy: "LOCKED_FINAL_EVALUATION"
+
+artifacts:
+  candidate_table: "data/generated/synthetic_candidates_v2.csv"
+  oracle_table: "data/generated/synthetic_oracle_v2.csv"
+  split_manifest: "data/processed/synthetic_split_manifest_v2.csv"
+  dataset_manifest: "data/processed/synthetic_dataset_manifest_v2.json"
