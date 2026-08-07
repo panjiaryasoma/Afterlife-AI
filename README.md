@@ -32,11 +32,11 @@ Progress awal:
 - [x] Final repository structure initialized
 - [x] Python project configuration added
 - [x] Git ignore policy defined
-- [ ] Python package initialized
-- [ ] XLSX intake implemented
-- [ ] Input validation implemented
-- [ ] Deterministic inventory triage implemented
-- [ ] Rescue planner implemented
+- [x] Python package initialized
+- [x] XLSX intake implemented
+- [x] Input validation implemented
+- [x] Deterministic inventory triage implemented
+- [x] Rescue planner implemented
 - [ ] Synthetic dataset generator implemented
 - [ ] Candidate models evaluated
 - [ ] FastAPI and minimal UI integrated
