@@ -1,0 +1,13 @@
+{
+  "input_quantity": "102",
+  "protected_quantity": "30",
+  "monitor_quantity": "10",
+  "planning_quantity": "18",
+  "expired_quantity": "12",
+  "review_quantity": "32",
+  "partition_total": "102",
+  "inventory_quantity_conserved": true,
+  "allocated_planning_quantity": "18",
+  "unallocated_planning_quantity": "0",
+  "planning_quantity_conserved": true
+}

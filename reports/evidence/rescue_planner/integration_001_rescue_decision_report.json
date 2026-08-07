@@ -1,0 +1,93 @@
+{
+  "request_id": "INTEGRATION-001",
+  "analysis_timestamp": "2026-08-05T00:00:00Z",
+  "feature_schema_version": "2.0.0",
+  "input_snapshot_sha256": "61400124e490b7f8a811aa7ce0777685a7c48e3cf53402eab6dbe921e32c4afd",
+  "ruleset_version": "integration-001-fixture-rules-v1.0",
+  "capability_snapshot_version": "BCP-STORE-01-INTEGRATION-001",
+  "objective_policy_version": "STATIC_FIXTURE_NO_RANDOMNESS",
+  "optimization_objective": "BALANCED",
+  "score_provenance": {
+    "provider_name": "FixtureScoreProvider",
+    "score_type": "FIXTURE_EXPECTED_SCORE",
+    "source_type": "EVALUATION_FIXTURE",
+    "fixture_version": "INTEGRATION-001-v1"
+  },
+  "model_execution_performed": false,
+  "batch_metrics": {
+    "input_lots": 6,
+    "input_quantity": "102",
+    "protected_quantity": "30",
+    "monitor_quantity": "10",
+    "planning_quantity": "18",
+    "expired_quantity": "12",
+    "review_quantity": "32",
+    "allocated_planning_quantity": "18",
+    "unallocated_planning_quantity": "0",
+    "expected_total_economic_value": "26624.00"
+  },
+  "review_required_lots": [
+    {
+      "source_lot_id": "LOT-005",
+      "review_quantity": "20",
+      "reason_codes": [
+        "CRITICAL_STORAGE_EVIDENCE_MISSING"
+      ]
+    },
+    {
+      "source_lot_id": "LOT-006",
+      "review_quantity": "12",
+      "reason_codes": [
+        "SALES_EVIDENCE_MISSING_FOR_UNDECLARED_REMAINDER"
+      ]
+    }
+  ],
+  "selected_allocations": [
+    {
+      "allocation_id": "ALLOC-003-BUNDLE",
+      "candidate_id": "CAND-003-BUNDLE",
+      "planning_lot_id": "PLAN-LOT-003",
+      "source_lot_id": "LOT-003",
+      "action_type": "BUNDLE",
+      "allocated_quantity": "4",
+      "expected_net_recovery": "5120.0"
+    },
+    {
+      "allocation_id": "ALLOC-003-REPURPOSE",
+      "candidate_id": "CAND-003-REPURPOSE",
+      "planning_lot_id": "PLAN-LOT-003",
+      "source_lot_id": "LOT-003",
+      "action_type": "INTERNAL_REPURPOSE",
+      "allocated_quantity": "6",
+      "expected_net_recovery": "12384.00"
+    },
+    {
+      "allocation_id": "ALLOC-006-DISCOUNT",
+      "candidate_id": "CAND-006-DISCOUNT",
+      "planning_lot_id": "PLAN-LOT-006",
+      "source_lot_id": "LOT-006",
+      "action_type": "LOCAL_DISCOUNT",
+      "allocated_quantity": "8",
+      "expected_net_recovery": "9120.00"
+    }
+  ],
+  "rejected_candidates": [
+    {
+      "candidate_id": "CAND-006-BONUS",
+      "planning_lot_id": "PLAN-LOT-006",
+      "action_type": "PROMOTIONAL_BONUS",
+      "rejection_reason_codes": [
+        "NO_QUALIFYING_TRANSACTION"
+      ]
+    }
+  ],
+  "fallback_chain": [],
+  "limitations": [
+    "Fixture scores are synthetic evaluation parameters and are not validated real-world probabilities.",
+    "Capability, capacity, demand, cost, and recovery values are synthetic fixture parameters.",
+    "No logistics, transaction, repurpose, bundle, discount, donation, or disposal is automatically executed."
+  ],
+  "human_exception_review_required": true,
+  "human_final_approval_status": "PENDING",
+  "execution_performed": false
+}

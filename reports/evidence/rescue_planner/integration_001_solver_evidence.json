@@ -1,0 +1,52 @@
+{
+  "solver_status": "OPTIMAL",
+  "objective_value": "26624.00",
+  "allocations": [
+    {
+      "allocation_id": "ALLOC-003-BUNDLE",
+      "candidate_id": "CAND-003-BUNDLE",
+      "planning_lot_id": "PLAN-LOT-003",
+      "action_type": "BUNDLE",
+      "allocated_quantity": "4",
+      "expected_value_per_unit": "1280.0",
+      "expected_net_recovery": "5120.0",
+      "solver_status": "OPTIMAL",
+      "binding_constraint_codes": [
+        "CANDIDATE_CAPACITY"
+      ]
+    },
+    {
+      "allocation_id": "ALLOC-003-REPURPOSE",
+      "candidate_id": "CAND-003-REPURPOSE",
+      "planning_lot_id": "PLAN-LOT-003",
+      "action_type": "INTERNAL_REPURPOSE",
+      "allocated_quantity": "6",
+      "expected_value_per_unit": "2064.00",
+      "expected_net_recovery": "12384.00",
+      "solver_status": "OPTIMAL",
+      "binding_constraint_codes": [
+        "CANDIDATE_CAPACITY",
+        "SHARED_ACTION_CAPACITY"
+      ]
+    },
+    {
+      "allocation_id": "ALLOC-006-DISCOUNT",
+      "candidate_id": "CAND-006-DISCOUNT",
+      "planning_lot_id": "PLAN-LOT-006",
+      "action_type": "LOCAL_DISCOUNT",
+      "allocated_quantity": "8",
+      "expected_value_per_unit": "1140.00",
+      "expected_net_recovery": "9120.00",
+      "solver_status": "OPTIMAL",
+      "binding_constraint_codes": [
+        "CANDIDATE_CAPACITY"
+      ]
+    }
+  ],
+  "unallocated_quantities": {
+    "PLAN-LOT-003": "0",
+    "PLAN-LOT-006": "0"
+  },
+  "total_logistics_cost": "0",
+  "shared_resource_usage": {}
+}

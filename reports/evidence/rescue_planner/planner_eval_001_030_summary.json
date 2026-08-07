@@ -1,0 +1,188 @@
+{
+  "case_count": 30,
+  "passed_count": 30,
+  "failed_count": 0,
+  "hard_constraint_violation_count": 0,
+  "cases": [
+    {
+      "case_id": "EVAL-001",
+      "passed": true,
+      "assertion_failures": [],
+      "hard_constraint_violations": []
+    },
+    {
+      "case_id": "EVAL-002",
+      "passed": true,
+      "assertion_failures": [],
+      "hard_constraint_violations": []
+    },
+    {
+      "case_id": "EVAL-003",
+      "passed": true,
+      "assertion_failures": [],
+      "hard_constraint_violations": []
+    },
+    {
+      "case_id": "EVAL-004",
+      "passed": true,
+      "assertion_failures": [],
+      "hard_constraint_violations": []
+    },
+    {
+      "case_id": "EVAL-005",
+      "passed": true,
+      "assertion_failures": [],
+      "hard_constraint_violations": []
+    },
+    {
+      "case_id": "EVAL-006",
+      "passed": true,
+      "assertion_failures": [],
+      "hard_constraint_violations": []
+    },
+    {
+      "case_id": "EVAL-007",
+      "passed": true,
+      "assertion_failures": [],
+      "hard_constraint_violations": []
+    },
+    {
+      "case_id": "EVAL-008",
+      "passed": true,
+      "assertion_failures": [],
+      "hard_constraint_violations": []
+    },
+    {
+      "case_id": "EVAL-009",
+      "passed": true,
+      "assertion_failures": [],
+      "hard_constraint_violations": []
+    },
+    {
+      "case_id": "EVAL-010",
+      "passed": true,
+      "assertion_failures": [],
+      "hard_constraint_violations": []
+    },
+    {
+      "case_id": "EVAL-011",
+      "passed": true,
+      "assertion_failures": [],
+      "hard_constraint_violations": []
+    },
+    {
+      "case_id": "EVAL-012",
+      "passed": true,
+      "assertion_failures": [],
+      "hard_constraint_violations": []
+    },
+    {
+      "case_id": "EVAL-013",
+      "passed": true,
+      "assertion_failures": [],
+      "hard_constraint_violations": []
+    },
+    {
+      "case_id": "EVAL-014",
+      "passed": true,
+      "assertion_failures": [],
+      "hard_constraint_violations": []
+    },
+    {
+      "case_id": "EVAL-015",
+      "passed": true,
+      "assertion_failures": [],
+      "hard_constraint_violations": []
+    },
+    {
+      "case_id": "EVAL-016",
+      "passed": true,
+      "assertion_failures": [],
+      "hard_constraint_violations": []
+    },
+    {
+      "case_id": "EVAL-017",
+      "passed": true,
+      "assertion_failures": [],
+      "hard_constraint_violations": []
+    },
+    {
+      "case_id": "EVAL-018",
+      "passed": true,
+      "assertion_failures": [],
+      "hard_constraint_violations": []
+    },
+    {
+      "case_id": "EVAL-019",
+      "passed": true,
+      "assertion_failures": [],
+      "hard_constraint_violations": []
+    },
+    {
+      "case_id": "EVAL-020",
+      "passed": true,
+      "assertion_failures": [],
+      "hard_constraint_violations": []
+    },
+    {
+      "case_id": "EVAL-021",
+      "passed": true,
+      "assertion_failures": [],
+      "hard_constraint_violations": []
+    },
+    {
+      "case_id": "EVAL-022",
+      "passed": true,
+      "assertion_failures": [],
+      "hard_constraint_violations": []
+    },
+    {
+      "case_id": "EVAL-023",
+      "passed": true,
+      "assertion_failures": [],
+      "hard_constraint_violations": []
+    },
+    {
+      "case_id": "EVAL-024",
+      "passed": true,
+      "assertion_failures": [],
+      "hard_constraint_violations": []
+    },
+    {
+      "case_id": "EVAL-025",
+      "passed": true,
+      "assertion_failures": [],
+      "hard_constraint_violations": []
+    },
+    {
+      "case_id": "EVAL-026",
+      "passed": true,
+      "assertion_failures": [],
+      "hard_constraint_violations": []
+    },
+    {
+      "case_id": "EVAL-027",
+      "passed": true,
+      "assertion_failures": [],
+      "hard_constraint_violations": []
+    },
+    {
+      "case_id": "EVAL-028",
+      "passed": true,
+      "assertion_failures": [],
+      "hard_constraint_violations": []
+    },
+    {
+      "case_id": "EVAL-029",
+      "passed": true,
+      "assertion_failures": [],
+      "hard_constraint_violations": []
+    },
+    {
+      "case_id": "EVAL-030",
+      "passed": true,
+      "assertion_failures": [],
+      "hard_constraint_violations": []
+    }
+  ]
+}

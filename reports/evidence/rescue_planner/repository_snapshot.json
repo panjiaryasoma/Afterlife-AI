@@ -1,0 +1,32 @@
+{
+  "branch": "main",
+  "repository_head_at_evidence_capture": "a186098c0ea76c425cf14fd1ee1c4e2c3e50cb45",
+  "day2_implementation_commit": "PENDING_LOCAL_COMMIT",
+  "working_tree_clean": false,
+  "working_tree_status": [
+    "M pyproject.toml",
+    " M src/afterlife_ai/intake/normalization.py",
+    " M tests/unit/test_xlsx_normalization.py",
+    "?? docs/evaluation_source_v1.0/",
+    "?? reports/evidence/rescue_planner/",
+    "?? src/afterlife_ai/contracts/candidate.py",
+    "?? src/afterlife_ai/contracts/planning.py",
+    "?? src/afterlife_ai/evaluation/",
+    "?? src/afterlife_ai/integration/",
+    "?? src/afterlife_ai/planner/",
+    "?? tests/evaluation/",
+    "?? tests/fixtures/integration_001/",
+    "?? tests/integration/test_integration_001.py",
+    "?? tests/unit/test_candidate_action_contract.py",
+    "?? tests/unit/test_candidate_generation.py",
+    "?? tests/unit/test_cp_sat_optimizer.py",
+    "?? tests/unit/test_deterministic_fallback.py",
+    "?? tests/unit/test_eval_discovered_hard_constraints.py",
+    "?? tests/unit/test_expected_value.py",
+    "?? tests/unit/test_fixture_score_provider.py",
+    "?? tests/unit/test_hard_gates.py",
+    "?? tests/unit/test_planning_lot_builder.py",
+    "?? tests/unit/test_planning_lot_contract.py",
+    "?? tests/unit/test_rescue_decision_report.py"
+  ]
+}
