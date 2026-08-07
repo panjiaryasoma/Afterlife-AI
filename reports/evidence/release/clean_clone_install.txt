@@ -1,0 +1,15 @@
+﻿CLEAN CLONE INSTALL EVIDENCE
+============================
+
+Temporary clone: C:\Users\MULYAD~1\AppData\Local\Temp\afterlife-ai-clean-clone
+Repository source: local Git clone
+Python expected: 3.12.7
+Package expected: afterlife_ai 0.1.0
+
+Clean clone exists: True
+Virtual environment exists after uv sync: True
+Imported package version: 0.1.0
+uv.lock exists: True
+pyproject.toml exists: True
+
+Result: PASS
