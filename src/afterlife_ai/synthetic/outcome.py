@@ -2,7 +2,7 @@
 
 from math import exp, log1p
 from pathlib import Path
-from typing import Self
+from typing import Literal, Self
 
 import numpy as np
 import yaml
@@ -247,13 +247,13 @@ def sample_synthetic_outcome(
     probability: float,
     *,
     rng: np.random.Generator,
-) -> int:
+) -> Literal[0, 1]:
     """Sample one binary synthetic outcome from latent probability."""
 
     if not 0.0 <= probability <= 1.0:
         raise ValueError("Probability harus berada pada interval [0, 1].")
 
-    return int(float(rng.random()) < probability)
+    return 1 if float(rng.random()) < probability else 0
 
 
 __all__ = [
