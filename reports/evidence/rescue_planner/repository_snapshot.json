@@ -1,7 +1,7 @@
 {
   "branch": "main",
   "repository_head_at_evidence_capture": "a186098c0ea76c425cf14fd1ee1c4e2c3e50cb45",
-  "day2_implementation_commit": "PENDING_LOCAL_COMMIT",
+  "day2_implementation_commit": "423ece2daf27acf94627f17ce27867c7c6e0ea23",
   "working_tree_clean": false,
   "working_tree_status": [
     "M pyproject.toml",
@@ -28,5 +28,30 @@
     "?? tests/unit/test_planning_lot_builder.py",
     "?? tests/unit/test_planning_lot_contract.py",
     "?? tests/unit/test_rescue_decision_report.py"
+  ],
+  "baseline_commit": "a186098c0ea76c425cf14fd1ee1c4e2c3e50cb45",
+  "day2_evidence_commit": "bef330f8061f772a76ed29cdf271313c10b37033",
+  "current_head_before_closure": "bef330f8061f772a76ed29cdf271313c10b37033",
+  "day2_commits": [
+    {
+      "sha": "cc37a0b956c46656c5c4b40ae21f69e204141f39",
+      "subject": "feat: add rescue planning lots and candidate generation"
+    },
+    {
+      "sha": "47eb0b4b6f00b78486996de2d427f21b74e01bdf",
+      "subject": "feat: add hard gates fixture scoring and expected value"
+    },
+    {
+      "sha": "c600f5369b2b14dd10275c7a6ed32c427989d598",
+      "subject": "feat: add rescue optimizer fallback and decision report"
+    },
+    {
+      "sha": "423ece2daf27acf94627f17ce27867c7c6e0ea23",
+      "subject": "test: add end-to-end rescue planning integration"
+    },
+    {
+      "sha": "bef330f8061f772a76ed29cdf271313c10b37033",
+      "subject": "docs: add Day 2 rescue planner evidence"
+    }
   ]
 }
