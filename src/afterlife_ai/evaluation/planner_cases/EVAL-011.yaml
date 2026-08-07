@@ -1,0 +1,119 @@
+contract_version: 1.0.0
+case_id: EVAL-011
+title: Stale Partner Demand Harus Dikeluarkan
+case_type: STALE_DEMAND
+evaluation_layer: CORE_RESCUE_PLANNER
+input_entity: SURPLUS_PLANNING_LOT
+purpose: Menguji registry freshness sebagai hard feasibility condition.
+optimization_objective: BALANCED
+fixtures:
+  lots:
+  - lot_id: PL-SNACK-011
+    source_lot_id: null
+    quantity: 30
+    unit: PACK
+    attributes:
+      product_name: Snack kemasan
+      product_category: PACKAGED_SNACK
+      remaining_shelf_life_days: 40
+  batch_context: {}
+  capability_facts:
+    can_discount: true
+    can_wholesale: true
+  capability_notes: []
+  partners:
+  - partner_id: P-HIGH
+    attributes: {}
+    description: 'P-HIGH: price tinggi, capacity 30, demand_valid_until sudah lewat'
+  - partner_id: P-ACTIVE
+    attributes: {}
+    description: 'P-ACTIVE: price lebih rendah, capacity 20, registry aktif'
+  context_notes:
+  - analysis_timestamp setelah expiry demand P-HIGH
+expected:
+  route:
+    statuses: {}
+    notes:
+    - Input lot sudah berada pada layer Core Rescue Planner.
+    - Jalankan validation, coverage, safety, verification, dan feasibility gate sebelum model scoring.
+  allocations:
+  - lot_id: PL-SNACK-011
+    source_lot_ids: &id001 []
+    action: EXTERNAL_PARTNER
+    quantity: 20
+    destination: P-ACTIVE
+    attributes: {}
+  - lot_id: PL-SNACK-011
+    source_lot_ids: &id002 []
+    action: LOCAL_DISCOUNT
+    quantity: 10
+    destination: null
+    attributes: {}
+  metrics: {}
+  objective_runs: {}
+  required_fields: []
+  rejected_alternative: null
+  rejected_partner: P-HIGH
+  possible_outcomes: []
+  feasible_actions:
+  - P-ACTIVE maksimal 20
+  - LOCAL_DISCOUNT remainder 10
+  forbidden_actions:
+  - P-HIGH allocation
+  - rescoring stale partner tanpa confirmation
+  acceptable_decision: Partner aktif 20 dan local discount 10.
+  binding_constraints:
+  - Demand freshness
+  - Capacity
+  - Quantity
+  explanation: '> Partner dengan harga tertinggi dikeluarkan karena snapshot demand sudah kedaluwarsa.'
+  failure_conditions:
+  - menganggap last_updated hanya metadata
+  - memilih stale price
+  - mengarang demand reconfirmation
+traceability:
+  rule_ids:
+  - DEMAND-RULE-001
+  feature_terms:
+  - demand_valid_until
+  - registry_freshness_status
+  - reconfirmation_required
+  source_markdown: EVAL-011.md
+  source_references:
+  - AFTERLIFE_AI_MASTER_BLUEPRINT.md
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  uncertainty_and_source_boundary: 'Tidak ada klaim bahwa stale demand pasti nol; sistem hanya tidak boleh
+    mengandalkannya otomatis.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara
+    eksplisit berasal dari catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak
+    membuktikan probabilitas keberhasilan dunia nyata.'
+assertions:
+- type: CASE_ID_MATCHES_FILE
+  params:
+    expected_case_id: EVAL-011
+- type: HAS_RULE_TRACEABILITY
+  params:
+    minimum_rule_count: 1
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: PL-SNACK-011
+    action: EXTERNAL_PARTNER
+    quantity: 20
+    destination: P-ACTIVE
+    source_lot_ids: *id001
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: PL-SNACK-011
+    action: LOCAL_DISCOUNT
+    quantity: 10
+    destination: null
+    source_lot_ids: *id002
+- type: QUANTITY_CONSERVATION
+  params:
+    lot_id: PL-SNACK-011
+    input_quantity: 30
+    expected_allocated_quantity: 30.0
+    expected_unallocated_quantity: 0

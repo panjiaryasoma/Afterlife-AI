@@ -1,0 +1,21 @@
+integration_id: INTEGRATION-001
+version: 1.0.0
+phase: PREPRODUCTION_ACCEPTANCE
+status: LOCKED_FOR_PREPRODUCTION
+source_document: INTEGRATION-001.md
+source_type: EVALUATION_FIXTURE
+production_default: false
+automatic_execution_allowed: false
+human_approval_required: true
+artifact: PARTNER_DEMAND_REGISTRY_FIXTURE
+registry_snapshot_id: PDR-INTEGRATION-001-EMPTY-MATCH
+snapshot_mode: STATIC_OFFLINE
+runtime_internet_required: false
+matching_records: []
+matching_external_partner_found: false
+matching_active_demand_found: false
+external_candidate_generation_allowed: false
+explanation: Pada snapshot acceptance fixture ini tidak ada kebutuhan eksternal aktif dan terverifikasi untuk PBEV-003 atau PBEV-006. Sistem tidak boleh menciptakan partner, recipient, demand, atau capacity yang tidak tersedia.
+claim_boundary:
+  means_no_partner_exists_in_real_world: false
+  means_no_verified_match_in_fixture_snapshot: true

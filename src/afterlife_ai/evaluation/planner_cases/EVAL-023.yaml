@@ -1,0 +1,122 @@
+contract_version: 1.0.0
+case_id: EVAL-023
+title: Riwayat Suhu atau Penyimpanan Tidak Diketahui
+case_type: UNKNOWN_STORAGE_HISTORY
+evaluation_layer: CORE_RESCUE_PLANNER
+input_entity: SURPLUS_PLANNING_LOT
+purpose: Menguji verification hold untuk produk storage-sensitive meskipun kondisi saat ini tampak normal.
+optimization_objective: BALANCED
+fixtures:
+  lots:
+  - lot_id: PL-DIMSUM-023
+    source_lot_id: null
+    quantity: 24
+    unit: PACK
+    attributes:
+      product_name: Dimsum ayam beku
+      product_category: FROZEN_PREPARED_FOOD
+      required_storage_type: FROZEN
+      current_storage_type: FROZEN
+      product_condition: VISUALLY_NORMAL
+      packaging_condition: INTACT
+      storage_history_status: UNKNOWN
+      temperature_log_available: false
+      receipt_timestamp_verified: false
+      remaining_shelf_life_days: 60
+      verification_status: PARTIALLY_VERIFIED
+  batch_context: {}
+  capability_facts:
+    has_cold_storage: true
+    can_discount: true
+  capability_notes: []
+  partners:
+  - partner_id: PARTNER-01
+    attributes: {}
+    description: Frozen reseller dan local frozen discount tampak ekonomis tetapi belum eligible.
+  context_notes:
+  - manual review window=2h
+expected:
+  route:
+    statuses: {}
+    notes:
+    - Input lot sudah berada pada layer Core Rescue Planner.
+    - Jalankan validation, coverage, safety, verification, dan feasibility gate sebelum model scoring.
+  allocations: []
+  metrics:
+    automatic_allocated_quantity: 0
+    model_scoring: DEFERRED
+    human_review_required: true
+    review_deadline_hours: 2
+  objective_runs: {}
+  required_fields: []
+  rejected_alternative: null
+  rejected_partner: null
+  possible_outcomes:
+  - VERIFIED_ACCEPTABLE
+  - VERIFIED_FAILURE
+  - UNRESOLVED
+  feasible_actions:
+  - Tidak ada action konsumsi sebelum clearance
+  forbidden_actions:
+  - LOCAL_DISCOUNT
+  - EXTERNAL_PARTNER
+  - DONATION
+  - INTERNAL_USE sebelum review
+  acceptable_decision: PENDING_VERIFICATION; outcome review menentukan release atau hard reject.
+  binding_constraints:
+  - Storage sensitivity
+  - Evidence continuity
+  - No current-state inference
+  explanation: '> Penyimpanan saat ini sesuai tidak membuktikan seluruh riwayat. Sistem meminta log, receipt
+    record, pemeriksaan, dan konfirmasi petugas.'
+  failure_conditions:
+  - menganggap expiry membuktikan cold chain
+  - langsung membuang tanpa review
+  - menganggap unknown aman
+traceability:
+  rule_ids:
+  - VERIFICATION-RULE-001
+  feature_terms:
+  - storage_history_status
+  - temperature_log_available
+  - possible_excursion
+  - safety_clearance_status
+  source_markdown: EVAL-023.md
+  source_references:
+  - External_Incident_001-016_Indonesia(1).md
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  uncertainty_and_source_boundary: 'Control nonperishable dengan kemasan utuh tidak boleh otomatis mengikuti
+    aturan frozen.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara
+    eksplisit berasal dari catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak
+    membuktikan probabilitas keberhasilan dunia nyata.'
+assertions:
+- type: CASE_ID_MATCHES_FILE
+  params:
+    expected_case_id: EVAL-023
+- type: HAS_RULE_TRACEABILITY
+  params:
+    minimum_rule_count: 1
+- type: NO_AUTOMATIC_ALLOCATION
+  params: {}
+- type: HUMAN_REVIEW_REQUIRED
+  params: {}
+- type: EXPECTED_METRIC
+  params:
+    name: automatic_allocated_quantity
+    value: 0
+- type: EXPECTED_METRIC
+  params:
+    name: model_scoring
+    value: DEFERRED
+- type: EXPECTED_METRIC
+  params:
+    name: human_review_required
+    value: true
+- type: EXPECTED_METRIC
+  params:
+    name: review_deadline_hours
+    value: 2

@@ -1,0 +1,130 @@
+contract_version: 1.0.0
+case_id: EVAL-026
+title: Branch Transfer vs Local Markdown
+case_type: BRANCH_TRANSFER_VS_MARKDOWN
+evaluation_layer: CORE_RESCUE_PLANNER
+input_entity: SURPLUS_PLANNING_LOT
+purpose: Menguji transfer hanya sampai demand/capacity tujuan dan hanya bila net future recovery mengalahkan
+  local fallback.
+optimization_objective: BALANCED
+fixtures:
+  lots:
+  - lot_id: PL-DIAPER-026
+    source_lot_id: null
+    quantity: 24
+    unit: PACK
+    attributes:
+      product_name: Popok bayi ukuran S
+      product_category: BABY_DIAPER
+      unit_cost: 37000
+      normal_selling_price: 50000
+      remaining_shelf_life_days: 360
+      source_branch_id: BRANCH-01
+  batch_context: {}
+  capability_facts:
+    can_transfer_branch: true
+    has_delivery_access: true
+    can_discount: true
+  capability_notes: []
+  partners:
+  - partner_id: PARTNER-01
+    attributes: {}
+    description: BRANCH-02 demand=18, capacity=18, expected price 48000, score 0.92, transport+handling=72000
+  context_notes:
+  - Local discount price 41000, score 0.78
+expected:
+  route:
+    statuses: {}
+    notes:
+    - Input lot sudah berada pada layer Core Rescue Planner.
+    - Jalankan validation, coverage, safety, verification, dan feasibility gate sebelum model scoring.
+  allocations:
+  - lot_id: PL-DIAPER-026
+    source_lot_ids: &id001 []
+    action: BRANCH_TRANSFER
+    quantity: 18
+    destination: BRANCH-02
+    attributes:
+      expected_future_branch_recovery: 722880
+  - lot_id: PL-DIAPER-026
+    source_lot_ids: &id002 []
+    action: LOCAL_DISCOUNT
+    quantity: 6
+    destination: null
+    attributes:
+      expected_cash_recovery: 191880
+  metrics:
+    total_expected_economic_recovery: 914760
+  objective_runs: {}
+  required_fields: []
+  rejected_alternative: null
+  rejected_partner: null
+  possible_outcomes: []
+  feasible_actions:
+  - BRANCH_TRANSFER 18
+  - LOCAL_DISCOUNT 6
+  forbidden_actions:
+  - Transfer 24
+  - transfer dicatat sebagai immediate cash
+  acceptable_decision: Transfer 18 dan markdown 6.
+  binding_constraints:
+  - Destination demand/capacity
+  - Transfer cost
+  - Future vs immediate value
+  explanation: '> Transfer memberikan marginal gain Rp147.240 dibanding all-local, tetapi hanya untuk
+    18 pack yang dapat diserap cabang.'
+  failure_conditions:
+  - transfer melebihi 18
+  - cash revenue saat transfer
+  - tetap memilih transfer pada high-cost control
+traceability:
+  rule_ids:
+  - TRANSFER-RULE-001
+  feature_terms:
+  - destination_branch_demand
+  - transfer_cost
+  - future_branch_recovery
+  - marginal_gain_vs_local
+  source_markdown: EVAL-026.md
+  source_references:
+  - Incident-013
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  uncertainty_and_source_boundary: 'Control transport+handling Rp240.000 harus mengubah hasil menjadi
+    all local discount.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara
+    eksplisit berasal dari catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak
+    membuktikan probabilitas keberhasilan dunia nyata.'
+assertions:
+- type: CASE_ID_MATCHES_FILE
+  params:
+    expected_case_id: EVAL-026
+- type: HAS_RULE_TRACEABILITY
+  params:
+    minimum_rule_count: 1
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: PL-DIAPER-026
+    action: BRANCH_TRANSFER
+    quantity: 18
+    destination: BRANCH-02
+    source_lot_ids: *id001
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: PL-DIAPER-026
+    action: LOCAL_DISCOUNT
+    quantity: 6
+    destination: null
+    source_lot_ids: *id002
+- type: EXPECTED_METRIC
+  params:
+    name: total_expected_economic_recovery
+    value: 914760
+- type: QUANTITY_CONSERVATION
+  params:
+    lot_id: PL-DIAPER-026
+    input_quantity: 24
+    expected_allocated_quantity: 24.0
+    expected_unallocated_quantity: 0

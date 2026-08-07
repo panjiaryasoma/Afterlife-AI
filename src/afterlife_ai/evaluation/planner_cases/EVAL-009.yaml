@@ -1,0 +1,130 @@
+contract_version: 1.0.0
+case_id: EVAL-009
+title: Internal Use Mengalahkan Retur dalam Batas Kebutuhan
+case_type: INTERNAL_USE_WITH_VERIFIED_NEED
+evaluation_layer: CORE_RESCUE_PLANNER
+input_entity: SURPLUS_PLANNING_LOT
+purpose: Menguji internal use sebagai avoided purchase cost, bukan revenue, dan dibatasi kebutuhan operasional
+  nyata.
+optimization_objective: BALANCED
+fixtures:
+  lots:
+  - lot_id: PL-DETERGENT-009
+    source_lot_id: null
+    quantity: 30
+    unit: SACHET
+    attributes:
+      product_name: Detergen sachet
+      product_category: HOUSEHOLD_CLEANING
+      remaining_shelf_life_days: 300
+      packaging_condition: INTACT
+  batch_context: {}
+  capability_facts:
+    can_internal_use: true
+    verified_internal_need_quantity: 10
+    can_discount: true
+    can_return_supplier: true
+  capability_notes: []
+  partners:
+  - partner_id: PARTNER-01
+    attributes: {}
+    description: Supplier return tersedia tetapi net value per unit lebih rendah daripada avoided purchase
+      cost untuk 10 unit.
+  context_notes:
+  - Internal need tidak boleh dilebihkan untuk mempercantik recovery.
+expected:
+  route:
+    statuses: {}
+    notes:
+    - Input lot sudah berada pada layer Core Rescue Planner.
+    - Jalankan validation, coverage, safety, verification, dan feasibility gate sebelum model scoring.
+  allocations:
+  - lot_id: PL-DETERGENT-009
+    source_lot_ids: &id001 []
+    action: INTERNAL_USE
+    quantity: 10
+    destination: null
+    attributes:
+      value_type: AVOIDED_PURCHASE_COST
+  - lot_id: PL-DETERGENT-009
+    source_lot_ids: &id002 []
+    action: LOCAL_DISCOUNT
+    quantity: 20
+    destination: null
+    attributes: {}
+  metrics:
+    cash_recovery_and_avoided_cost_reported_separately: true
+  objective_runs: {}
+  required_fields: []
+  rejected_alternative: null
+  rejected_partner: null
+  possible_outcomes: []
+  feasible_actions:
+  - INTERNAL_USE maksimal 10
+  - LOCAL_DISCOUNT untuk remainder
+  - RETURN_TO_SUPPLIER feasible tetapi inferior
+  forbidden_actions:
+  - Internal use >10
+  - mencatat internal use sebagai cash revenue
+  acceptable_decision: Internal use 10; local discount 20.
+  binding_constraints:
+  - Verified need
+  - Avoided cost
+  - Quantity conservation
+  explanation: '> Sepuluh unit menggantikan pembelian operasional yang memang dibutuhkan. Sisa lot tetap
+    masuk kanal penjualan.'
+  failure_conditions:
+  - mengarang internal need
+  - menggabungkan avoided cost dengan cash
+  - menggunakan seluruh lot internal
+traceability:
+  rule_ids:
+  - VALUE-RULE-002
+  feature_terms:
+  - verified_internal_need
+  - replacement_cost
+  - avoided_purchase_cost
+  - cash_recovery_type
+  source_markdown: EVAL-009.md
+  source_references:
+  - Incident-011
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  uncertainty_and_source_boundary: 'Kuantitas sintetis; pola penggunaan non-food internal adalah rule
+    candidate.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara
+    eksplisit berasal dari catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak
+    membuktikan probabilitas keberhasilan dunia nyata.'
+assertions:
+- type: CASE_ID_MATCHES_FILE
+  params:
+    expected_case_id: EVAL-009
+- type: HAS_RULE_TRACEABILITY
+  params:
+    minimum_rule_count: 1
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: PL-DETERGENT-009
+    action: INTERNAL_USE
+    quantity: 10
+    destination: null
+    source_lot_ids: *id001
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: PL-DETERGENT-009
+    action: LOCAL_DISCOUNT
+    quantity: 20
+    destination: null
+    source_lot_ids: *id002
+- type: EXPECTED_METRIC
+  params:
+    name: cash_recovery_and_avoided_cost_reported_separately
+    value: true
+- type: QUANTITY_CONSERVATION
+  params:
+    lot_id: PL-DETERGENT-009
+    input_quantity: 30
+    expected_allocated_quantity: 30.0
+    expected_unallocated_quantity: 0

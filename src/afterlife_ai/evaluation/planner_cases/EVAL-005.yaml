@@ -1,0 +1,124 @@
+contract_version: 1.0.0
+case_id: EVAL-005
+title: Safety Override untuk Kaleng Rusak
+case_type: HARD_SAFETY_REJECT
+evaluation_layer: CORE_RESCUE_PLANNER
+input_entity: SURPLUS_PLANNING_LOT
+purpose: Menguji bahwa kerusakan kemasan primer mengalahkan harga, demand, dan objective.
+optimization_objective: BALANCED
+fixtures:
+  lots:
+  - lot_id: PL-CANNED-005
+    source_lot_id: null
+    quantity: 18
+    unit: CAN
+    attributes:
+      product_name: Sarden kaleng
+      product_category: CANNED_FOOD
+      packaging_condition: LEAKING_AND_SEVERE_RUST
+      seal_integrity: COMPROMISED
+      expiry_status: NOT_EXPIRED
+      verification_status: PHYSICALLY_INSPECTED
+  batch_context: {}
+  capability_facts:
+    can_discount: true
+    can_donate: true
+    can_return_supplier: false
+  capability_notes: []
+  partners:
+  - partner_id: PARTNER-01
+    attributes: {}
+    description: Retail reseller menawarkan harga tinggi dan capacity 18.
+  context_notes:
+  - Objective MAXIMIZE_NET_RECOVERY tidak mengubah safety gate.
+expected:
+  route:
+    statuses:
+      safety_status: HARD_REJECT
+      model_scoring_status: SKIPPED
+    notes: []
+  allocations:
+  - lot_id: PL-CANNED-005
+    source_lot_ids: &id001 []
+    action: SAFE_DISPOSAL
+    quantity: 18
+    destination: null
+    attributes: {}
+  metrics:
+    human_consumption_allocation: 0
+  objective_runs: {}
+  required_fields: []
+  rejected_alternative: null
+  rejected_partner: null
+  possible_outcomes: []
+  feasible_actions:
+  - SAFE_DISPOSAL melalui approved route
+  forbidden_actions:
+  - LOCAL_DISCOUNT
+  - BUNDLE
+  - BONUS
+  - INTERNAL_USE
+  - DONATION
+  - WHOLESALE
+  - EXTERNAL_PARTNER
+  acceptable_decision: Safe disposal.
+  binding_constraints:
+  - Primary barrier failure
+  - Seal integrity
+  - No safety override
+  explanation: '> Kaleng bocor dan berkarat berat diblokir dari seluruh jalur konsumsi walaupun belum
+    kedaluwarsa.'
+  failure_conditions:
+  - memberi score komersial
+  - mengizinkan donation
+  - menyamakan cosmetic dent dengan leak
+traceability:
+  rule_ids:
+  - SAFETY-RULE-001
+  feature_terms:
+  - defect_severity
+  - primary_barrier_integrity
+  - seal_integrity
+  - hard_reject_reason
+  source_markdown: EVAL-005.md
+  source_references:
+  - Incident-010
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  uncertainty_and_source_boundary: 'Klasifikasi kerusakan harus membedakan HARD_REJECT, MANUAL_REVIEW,
+    dan COSMETIC_SELLABLE.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara
+    eksplisit berasal dari catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak
+    membuktikan probabilitas keberhasilan dunia nyata.'
+assertions:
+- type: CASE_ID_MATCHES_FILE
+  params:
+    expected_case_id: EVAL-005
+- type: HAS_RULE_TRACEABILITY
+  params:
+    minimum_rule_count: 1
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: PL-CANNED-005
+    action: SAFE_DISPOSAL
+    quantity: 18
+    destination: null
+    source_lot_ids: *id001
+- type: NO_HUMAN_CONSUMPTION_ALLOCATION
+  params: {}
+- type: STATUS_EQUALS
+  params:
+    field: model_scoring_status
+    value: SKIPPED
+- type: EXPECTED_METRIC
+  params:
+    name: human_consumption_allocation
+    value: 0
+- type: QUANTITY_CONSERVATION
+  params:
+    lot_id: PL-CANNED-005
+    input_quantity: 18
+    expected_allocated_quantity: 18.0
+    expected_unallocated_quantity: 0

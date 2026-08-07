@@ -1,0 +1,813 @@
+rulebook_name: Afterlife AI Domain Rulebook
+version: 1.0.0
+status: FINAL_DRAFT
+principles:
+- Hard safety, validation, coverage, verification, feasibility, capacity, and budget constraints cannot be overridden by the
+  model.
+- The model scores only candidates that have already passed deterministic gates.
+- Every rule must be traceable to at least one evaluation case, incident, expert annotation, or explicit schema decision.
+- Synthetic parameters validate logic and consistency, not real-world outcome probability.
+planner_rules:
+- rule_id: VALIDATION-RULE-000
+  rule_class: VALIDATION
+  stage: VALIDATION
+  severity: BLOCKING
+  title: Abstain on critical missing fields
+  condition: Any safety-critical or allocation-critical required field is missing or invalid.
+  decision: Set validation_status=FAILED, automatic allocation=0, model_scoring=BLOCKED, and require human review.
+  required_data:
+  - critical_field_completeness
+  - missing_field_list
+  - validation_status
+  known_exceptions: []
+  model_override_allowed: false
+  source_cases:
+  - EVAL-001
+  source_references:
+  - Incident-001
+  - Incident_001-016_Family_Corroborated(1).txt
+  confidence: EVAL_LOCKED
+  status: FINAL_DRAFT
+  version: 1.0.0
+- rule_id: CAPABILITY-RULE-001
+  rule_class: CAPABILITY
+  stage: FEASIBILITY_GATE
+  severity: BLOCKING
+  title: Internal repurpose requires verified operational capacity and demand
+  condition: INTERNAL_REPURPOSE is proposed.
+  decision: Feasible quantity is bounded by verified equipment, labor, ingredient, execution, and repurpose demand capacity.
+  required_data:
+  - repurpose_equipment_capacity
+  - labor_capacity
+  - ingredient_capacity
+  - repurpose_demand
+  - expected_yield
+  known_exceptions: []
+  model_override_allowed: false
+  source_cases:
+  - EVAL-002
+  source_references:
+  - Incident-001
+  - Incident-004
+  confidence: EVAL_LOCKED
+  status: FINAL_DRAFT
+  version: 1.0.0
+- rule_id: TIMING-RULE-001
+  rule_class: TIMING
+  stage: FEASIBILITY_GATE
+  severity: BLOCKING
+  title: Completion must fit binding safety or commercial window
+  condition: A candidate action has a binding safe or commercial deadline.
+  decision: Reject candidate when estimated completion exceeds the earliest binding deadline.
+  required_data:
+  - estimated_completion_hours
+  - safe_window_hours
+  - pickup_window
+  - distribution_time
+  - timing_feasibility
+  known_exceptions: []
+  model_override_allowed: false
+  source_cases:
+  - EVAL-003
+  source_references:
+  - External-Incident-003
+  - External-Incident-005
+  confidence: EVAL_LOCKED
+  status: FINAL_DRAFT
+  version: 1.0.0
+- rule_id: CAPACITY-RULE-001
+  rule_class: CAPACITY
+  stage: GLOBAL_OPTIMIZER
+  severity: BLOCKING
+  title: Partner demand and capacity are shared globally
+  condition: Multiple lots/actions allocate to the same partner in one request.
+  decision: Sum of selected allocations to the partner must not exceed active demand or available capacity.
+  required_data:
+  - partner_shared_capacity
+  - active_demand_quantity
+  - global_allocation_quantity
+  - marginal_gain_vs_fallback
+  known_exceptions: []
+  model_override_allowed: false
+  source_cases:
+  - EVAL-004
+  source_references:
+  - External-Incident-005
+  - External-Incident-006
+  confidence: EVAL_LOCKED
+  status: FINAL_DRAFT
+  version: 1.0.0
+- rule_id: SAFETY-RULE-001
+  rule_class: SAFETY
+  stage: SAFETY_GATE
+  severity: HARD_REJECT
+  title: Primary barrier failure blocks consumption channels
+  condition: Leak, bulge, open seal, severe seam rust, contamination, or equivalent safety-critical defect is present.
+  decision: Mark HARD_REJECT and block every human-consumption action; only verified recall/non-consumption or safe disposal
+    may remain.
+  required_data:
+  - defect_severity
+  - primary_barrier_integrity
+  - seal_integrity
+  - hard_reject_reason
+  known_exceptions:
+  - Confirmed supplier recall or non-consumption return flow.
+  model_override_allowed: false
+  source_cases:
+  - EVAL-005
+  source_references:
+  - Incident-010
+  confidence: EVAL_LOCKED
+  status: FINAL_DRAFT
+  version: 1.0.0
+- rule_id: TIMING-RULE-002
+  rule_class: TIMING
+  stage: FEASIBILITY_GATE
+  severity: CONSTRAINT
+  title: Commercial seasonality window is separate from expiry
+  condition: A product has a seasonal demand/value window.
+  decision: Evaluate commercial urgency independently from safety expiry; expiry-valid stock may still require faster markdown/bundle
+    action.
+  required_data:
+  - seasonality_status
+  - remaining_commercial_window_days
+  - remaining_shelf_life_days
+  - post_season_discount
+  known_exceptions: []
+  model_override_allowed: false
+  source_cases:
+  - EVAL-006
+  source_references:
+  - Incident-015
+  confidence: EVAL_LOCKED
+  status: FINAL_DRAFT
+  version: 1.0.0
+- rule_id: RETURN-RULE-001
+  rule_class: RETURN
+  stage: FEASIBILITY_GATE
+  severity: BLOCKING
+  title: Supplier return requires verified policy and net value
+  condition: RETURN_TO_SUPPLIER is proposed.
+  decision: Allow only within confirmed policy, purpose, quantity, deadline, and after all return costs are included.
+  required_data:
+  - supplier_return_status
+  - return_eligible_quantity
+  - supplier_credit
+  - return_deadline
+  - return_cost
+  known_exceptions:
+  - Recall/non-consumption return may remain valid when commercial return is not.
+  model_override_allowed: false
+  source_cases:
+  - EVAL-007
+  source_references:
+  - Incident-016
+  confidence: EVAL_LOCKED
+  status: FINAL_DRAFT
+  version: 1.0.0
+- rule_id: VALUE-RULE-001
+  rule_class: VALUE
+  stage: EXPECTED_VALUE
+  severity: SELECTION
+  title: Compare marginal net value against fallback
+  condition: Two or more feasible actions compete for the same units.
+  decision: Select based on net marginal value for the same units after action-specific cost, subject to objective and constraints.
+  required_data:
+  - return_net_recovery
+  - fallback_net_recovery
+  - marginal_gain
+  - return_eligible_quantity
+  known_exceptions:
+  - MINIMIZE_WASTE or BALANCED may choose lower cash value when objective policy explicitly requires it.
+  model_override_allowed: false
+  source_cases:
+  - EVAL-008
+  source_references:
+  - Incident-016
+  confidence: EVAL_LOCKED
+  status: FINAL_DRAFT
+  version: 1.0.0
+- rule_id: VALUE-RULE-002
+  rule_class: VALUE
+  stage: EXPECTED_VALUE
+  severity: CONSTRAINT
+  title: Internal use is avoided purchase cost, not cash revenue
+  condition: INTERNAL_USE is proposed.
+  decision: Allocation cannot exceed verified internal need; report value as avoided purchase cost and cash recovery as zero.
+  required_data:
+  - verified_internal_need
+  - replacement_cost
+  - avoided_purchase_cost
+  - cash_recovery_type
+  known_exceptions: []
+  model_override_allowed: false
+  source_cases:
+  - EVAL-009
+  source_references:
+  - Incident-011
+  confidence: EVAL_LOCKED
+  status: FINAL_DRAFT
+  version: 1.0.0
+- rule_id: ALLOCATION-RULE-001
+  rule_class: ALLOCATION
+  stage: GLOBAL_OPTIMIZER
+  severity: CONSTRAINT
+  title: Mixed allocation is allowed with quantity conservation
+  condition: A lot has multiple feasible actions.
+  decision: Optimizer may split a lot across actions while respecting lot quantity and every action/resource constraint.
+  required_data:
+  - channel_capacity
+  - allocation_mix
+  - cash_recovery
+  - future_branch_recovery
+  - avoided_purchase_cost
+  known_exceptions: []
+  model_override_allowed: false
+  source_cases:
+  - EVAL-010
+  source_references:
+  - Incident-011
+  - Incident-013
+  confidence: EVAL_LOCKED
+  status: FINAL_DRAFT
+  version: 1.0.0
+- rule_id: DEMAND-RULE-001
+  rule_class: DEMAND_FRESHNESS
+  stage: FEASIBILITY_GATE
+  severity: BLOCKING
+  title: Stale partner demand is ineligible without reconfirmation
+  condition: analysis_timestamp > demand_valid_until.
+  decision: Exclude partner candidate or mark NEEDS_REVIEW until explicit human reconfirmation.
+  required_data:
+  - demand_valid_until
+  - registry_freshness_status
+  - reconfirmation_required
+  known_exceptions:
+  - Explicit same-request human reconfirmation.
+  model_override_allowed: false
+  source_cases:
+  - EVAL-011
+  source_references:
+  - AFTERLIFE_AI_MASTER_BLUEPRINT.md
+  confidence: EVAL_LOCKED
+  status: FINAL_DRAFT
+  version: 1.0.0
+- rule_id: PARTNER-RULE-001
+  rule_class: PARTNER_COMPATIBILITY
+  stage: FEASIBILITY_GATE
+  severity: BLOCKING
+  title: Approved category compatibility is mandatory
+  condition: A partner action is proposed.
+  decision: Reject before scoring when product category is not in approved accepted categories.
+  required_data:
+  - category_match_status
+  - accepted_categories
+  - compatibility_rejection_reason
+  known_exceptions: []
+  model_override_allowed: false
+  source_cases:
+  - EVAL-012
+  source_references:
+  - AFTERLIFE_AI_MASTER_BLUEPRINT.md
+  confidence: EVAL_LOCKED
+  status: FINAL_DRAFT
+  version: 1.0.0
+- rule_id: STORAGE-RULE-001
+  rule_class: STORAGE
+  stage: SAFETY_FEASIBILITY_GATE
+  severity: HARD_REJECT_FOR_ACTION
+  title: Storage compatibility must hold end-to-end
+  condition: A storage-sensitive lot is transferred or allocated externally.
+  decision: Source, transport, handling, and destination storage must all satisfy requirement; otherwise reject candidate.
+  required_data:
+  - source_storage
+  - transport_storage
+  - destination_storage
+  - cold_chain_status
+  - maximum_out_of_storage_hours
+  known_exceptions: []
+  model_override_allowed: false
+  source_cases:
+  - EVAL-013
+  source_references:
+  - External-Incident-003
+  - Incident-008
+  confidence: EVAL_LOCKED
+  status: FINAL_DRAFT
+  version: 1.0.0
+- rule_id: BUDGET-RULE-001
+  rule_class: BUDGET
+  stage: GLOBAL_OPTIMIZER
+  severity: BLOCKING
+  title: Logistics budget is global per request
+  condition: One or more selected actions consume logistics budget.
+  decision: Sum selected logistics costs must not exceed max global logistics budget.
+  required_data:
+  - global_logistics_budget
+  - candidate_logistics_cost
+  - marginal_gain_per_budget_unit
+  known_exceptions: []
+  model_override_allowed: false
+  source_cases:
+  - EVAL-014
+  source_references:
+  - AFTERLIFE_AI_MASTER_BLUEPRINT.md
+  confidence: EVAL_LOCKED
+  status: FINAL_DRAFT
+  version: 1.0.0
+- rule_id: TIMING-RULE-003
+  rule_class: TIMING
+  stage: FEASIBILITY_GATE
+  severity: BLOCKING
+  title: Use full action completion time
+  condition: A candidate includes pickup plus downstream handling/distribution.
+  decision: Compare complete execution time, not pickup start alone, against deadline.
+  required_data:
+  - action_completion_time
+  - deadline_slack
+  - timing_rejection_reason
+  known_exceptions: []
+  model_override_allowed: false
+  source_cases:
+  - EVAL-015
+  source_references:
+  - External-Incident-003
+  - External-Incident-009
+  confidence: EVAL_LOCKED
+  status: FINAL_DRAFT
+  version: 1.0.0
+- rule_id: WHOLESALE-RULE-001
+  rule_class: WHOLESALE
+  stage: FEASIBILITY_GATE
+  severity: BLOCKING
+  title: Wholesale MOQ aggregation requires approved compatibility group
+  condition: WHOLESALE quantity is below MOQ for a single lot.
+  decision: Aggregate only when partner policy and domain rule allow the compatibility group; total must meet MOQ and capacity.
+  required_data:
+  - wholesale_moq
+  - aggregation_allowed
+  - compatibility_group
+  - aggregated_quantity
+  known_exceptions: []
+  model_override_allowed: false
+  source_cases:
+  - EVAL-016
+  source_references:
+  - Incident-009
+  confidence: EVAL_LOCKED
+  status: FINAL_DRAFT
+  version: 1.0.0
+- rule_id: CAPABILITY-RULE-002
+  rule_class: CAPABILITY
+  stage: FEASIBILITY_GATE
+  severity: CONSTRAINT
+  title: Repurpose quantity is bounded by the minimum resource
+  condition: INTERNAL_REPURPOSE is feasible in principle.
+  decision: max_repurpose_quantity = min(equipment_capacity, labor_capacity, ingredient_capacity, repurpose_demand).
+  required_data:
+  - equipment_capacity
+  - labor_capacity
+  - ingredient_capacity
+  - repurpose_demand
+  - binding_resource
+  known_exceptions: []
+  model_override_allowed: false
+  source_cases:
+  - EVAL-017
+  source_references:
+  - Incident-004
+  confidence: EVAL_LOCKED
+  status: FINAL_DRAFT
+  version: 1.0.0
+- rule_id: BUNDLE-RULE-001
+  rule_class: BUNDLE
+  stage: FEASIBILITY_GATE
+  severity: CONSTRAINT
+  title: Bundle quantity is bounded by allocatable companion stock
+  condition: BUNDLE is proposed.
+  decision: Bound by companion stock minus reserved quantity, bundle ratio, demand, and execution capacity.
+  required_data:
+  - companion_stock
+  - reserved_companion_stock
+  - bundle_ratio
+  - max_bundle_quantity
+  known_exceptions: []
+  model_override_allowed: false
+  source_cases:
+  - EVAL-018
+  source_references:
+  - Incident-007
+  confidence: EVAL_LOCKED
+  status: FINAL_DRAFT
+  version: 1.0.0
+- rule_id: BONUS-RULE-001
+  rule_class: BONUS
+  stage: FEASIBILITY_AND_REPORTING
+  severity: CONSTRAINT
+  title: Promotional bonus requires qualifying transactions and margin protection
+  condition: PROMOTIONAL_BONUS is proposed.
+  decision: Bound by qualifying transactions, maximum bonus per transaction, and minimum primary margin; do not claim sales
+    uplift without evidence.
+  required_data:
+  - qualifying_transactions
+  - max_bonus_per_transaction
+  - campaign_margin
+  - direct_cash_recovery
+  - uplift_evidence_status
+  known_exceptions: []
+  model_override_allowed: false
+  source_cases:
+  - EVAL-019
+  source_references:
+  - Incident-001
+  - Incident-012
+  confidence: EVAL_LOCKED
+  status: FINAL_DRAFT
+  version: 1.0.0
+- rule_id: DONATION-RULE-001
+  rule_class: DONATION
+  stage: SAFETY_FEASIBILITY_GATE
+  severity: BLOCKING
+  title: Donation requires verified need, capacity, handling, and timely completion
+  condition: DONATION is proposed.
+  decision: Require acceptable quality, verified recipient, active need/capacity, category/storage/handling match, and completion
+    before safe deadline.
+  required_data:
+  - recipient_verification
+  - active_recipient_need
+  - pickup_completion
+  - same_day_distribution
+  - donation_cash_recovery
+  known_exceptions: []
+  model_override_allowed: false
+  source_cases:
+  - EVAL-020
+  source_references:
+  - External-Incident-003
+  - External-Incident-005
+  - External-Incident-007
+  confidence: EVAL_LOCKED
+  status: FINAL_DRAFT
+  version: 1.0.0
+- rule_id: DONATION-RULE-002
+  rule_class: DONATION
+  stage: FEASIBILITY_AND_FALLBACK
+  severity: BLOCKING
+  title: No verified recipient or timely pickup means no automatic donation
+  condition: No partner simultaneously has active verified need and feasible completion.
+  decision: Return NO_FEASIBLE_DONATION_PARTNER, use bounded human reverification, then trigger safe fallback at cutoff.
+  required_data:
+  - active_recipient_need_quantity
+  - available_capacity
+  - total_donation_completion_time
+  - reverification_cutoff
+  known_exceptions:
+  - Verified partner confirmed within bounded review window.
+  model_override_allowed: false
+  source_cases:
+  - EVAL-021
+  source_references:
+  - External-Incident-003
+  - External-Incident-004
+  - External-Incident-005
+  confidence: EVAL_LOCKED
+  status: FINAL_DRAFT
+  version: 1.0.0
+- rule_id: QUALITY-RULE-002
+  rule_class: QUALITY
+  stage: SAFETY_GATE
+  severity: CLASSIFICATION
+  title: Separate cosmetic, ambiguous, and safety-critical defects
+  condition: A product or package defect is present.
+  decision: COSMETIC_ONLY may proceed with disclosure after inspection; AMBIGUOUS requires review; SAFETY_CRITICAL is hard
+    reject.
+  required_data:
+  - defect_type
+  - defect_affects_primary_barrier
+  - traceability_readable
+  - condition_disclosure_required
+  known_exceptions: []
+  model_override_allowed: false
+  source_cases:
+  - EVAL-022
+  source_references:
+  - External-Incident-016
+  - Incident-016
+  confidence: EVAL_LOCKED
+  status: FINAL_DRAFT
+  version: 1.0.0
+- rule_id: VERIFICATION-RULE-001
+  rule_class: VERIFICATION
+  stage: VERIFICATION_GATE
+  severity: BLOCKING
+  title: Unknown required storage history blocks automatic consumption allocation
+  condition: Product is storage-sensitive and required storage history cannot be verified.
+  decision: Set safety status UNVERIFIED, defer model/optimizer, and require bounded human review; unresolved status blocks
+    consumption.
+  required_data:
+  - storage_history_status
+  - temperature_log_available
+  - possible_excursion
+  - safety_clearance_status
+  known_exceptions:
+  - Non-storage-sensitive categories with intact condition may use lower verification burden.
+  model_override_allowed: false
+  source_cases:
+  - EVAL-023
+  source_references:
+  - External_Incident_001-016_Indonesia(1).md
+  confidence: EVAL_LOCKED
+  status: FINAL_DRAFT
+  version: 1.0.0
+- rule_id: EXPIRY-RULE-001
+  rule_class: EXPIRY
+  stage: SAFETY_GATE
+  severity: HARD_REJECT
+  title: Expired stock is blocked from all consumption actions
+  condition: expiry_date < analysis_date.
+  decision: Set EXPIRED/HARD_REJECT and block all human-consumption actions regardless of value, demand, or visual condition.
+  required_data:
+  - analysis_date
+  - expiry_status
+  - supplier_recall_policy_status
+  - inventory_loss
+  known_exceptions:
+  - Verified supplier recall, replacement, or non-consumption return.
+  model_override_allowed: false
+  source_cases:
+  - EVAL-024
+  source_references:
+  - Incident-003
+  confidence: EVAL_LOCKED
+  status: FINAL_DRAFT
+  version: 1.0.0
+- rule_id: STORAGE-RULE-002
+  rule_class: STORAGE_CAPACITY
+  stage: GLOBAL_OPTIMIZER
+  severity: CONSTRAINT
+  title: Shared cold capacity follows storage priority
+  condition: Multiple lots/actions compete for limited cold storage.
+  decision: Allocate first to safety-critical, then quality-critical, then optional chilled value by marginal gain; never
+    use reserved capacity.
+  required_data:
+  - available_cold_capacity
+  - storage_requirement_mode
+  - marginal_value_per_capacity_unit
+  - capacity_shortfall
+  known_exceptions: []
+  model_override_allowed: false
+  source_cases:
+  - EVAL-025
+  source_references:
+  - Incident-006
+  - Incident-008
+  confidence: EVAL_LOCKED
+  status: FINAL_DRAFT
+  version: 1.0.0
+- rule_id: TRANSFER-RULE-001
+  rule_class: BRANCH_TRANSFER
+  stage: FEASIBILITY_AND_VALUE
+  severity: SELECTION
+  title: Branch transfer requires compatible demand, capacity, timing, and positive net gain
+  condition: BRANCH_TRANSFER is proposed.
+  decision: Allow only when destination compatibility, active demand, capacity, storage, deadline, and net gain over local
+    fallback are satisfied; report as future recovery.
+  required_data:
+  - destination_branch_demand
+  - transfer_cost
+  - future_branch_recovery
+  - marginal_gain_vs_local
+  known_exceptions: []
+  model_override_allowed: false
+  source_cases:
+  - EVAL-026
+  source_references:
+  - Incident-013
+  confidence: EVAL_LOCKED
+  status: FINAL_DRAFT
+  version: 1.0.0
+- rule_id: PARTNER-RULE-004
+  rule_class: PARTNER_COMPATIBILITY
+  stage: FEASIBILITY_GATE
+  severity: BLOCKING
+  title: Partner compatibility includes package size and use case
+  condition: A partner candidate is proposed.
+  decision: Require category, package size/format, customer segment, use case, active demand, capacity, storage, and logistics
+    compatibility.
+  required_data:
+  - package_volume
+  - partner_size_range
+  - customer_segment_match
+  - use_case_match
+  known_exceptions: []
+  model_override_allowed: false
+  source_cases:
+  - EVAL-027
+  source_references:
+  - Incident-009
+  confidence: EVAL_LOCKED
+  status: FINAL_DRAFT
+  version: 1.0.0
+- rule_id: COVERAGE-RULE-001
+  rule_class: DOMAIN_COVERAGE
+  stage: COVERAGE_GATE
+  severity: BLOCKING
+  title: Unsupported domain dimensions require abstention
+  condition: Critical business type, category, storage requirement, numeric range, feature combination, or applicable rule
+    set is unsupported.
+  decision: Return UNSUPPORTED_SCENARIO, block model and optimizer, and require domain-expert review.
+  required_data:
+  - supported_business_type
+  - supported_category
+  - supported_storage
+  - critical_feature_coverage
+  - abstention_reason
+  known_exceptions: []
+  model_override_allowed: false
+  source_cases:
+  - EVAL-028
+  source_references:
+  - AFTERLIFE_AI_MASTER_BLUEPRINT.md
+  confidence: EVAL_LOCKED
+  status: FINAL_DRAFT
+  version: 1.0.0
+- rule_id: OBJECTIVE-RULE-001
+  rule_class: OBJECTIVE
+  stage: GLOBAL_OPTIMIZER
+  severity: POLICY
+  title: Objective changes selection but never hard constraints
+  condition: Optimizer receives a valid objective.
+  decision: Choose among feasible candidates using objective-specific formula; hard constraints remain identical. BALANCED
+    requires explicit rescue floor.
+  required_data:
+  - optimization_objective
+  - rescue_floor
+  - expected_net_recovery
+  - expected_physical_rescue
+  - tradeoff_amount
+  known_exceptions: []
+  model_override_allowed: false
+  source_cases:
+  - EVAL-029
+  source_references:
+  - AFTERLIFE_AI_MASTER_BLUEPRINT.md
+  - External_Incident_001-016_Indonesia(1).md
+  confidence: EVAL_LOCKED
+  status: FINAL_DRAFT
+  version: 1.0.0
+- rule_id: PIPELINE-RULE-001
+  rule_class: PIPELINE
+  stage: END_TO_END
+  severity: ARCHITECTURAL
+  title: Enforce deterministic decision order and value-type separation
+  condition: A rescue planning request is processed.
+  decision: Validate → route statuses → generate → gate → score feasible only → optimize globally → fallback → explain → human
+    approval.
+  required_data:
+  - eligible_rescue_denominator
+  - status_routing
+  - global_budget
+  - value_type
+  - rejection_explanation
+  - rescue_floor_status
+  known_exceptions: []
+  model_override_allowed: false
+  source_cases:
+  - EVAL-030
+  source_references:
+  - AFTERLIFE_AI_MASTER_BLUEPRINT.md
+  - External_Incident_001-016_Indonesia(1).md
+  - Incident_001-016_Family_Corroborated(1).txt
+  confidence: EVAL_LOCKED
+  status: FINAL_DRAFT
+  version: 1.0.0
+pre_planner_triage_rules:
+- rule_id: TRIAGE-RULE-001
+  rule_class: TRIAGE
+  stage: INVENTORY_TRIAGE
+  title: Expired inventory bypasses rescue planner
+  condition: expiry_date is present and expiry_date < analysis_date.
+  required_data:
+  - expiry_date
+  - analysis_date
+  decision: inventory_status=EXPIRED; planning_quantity=0; route to recall/non-consumption return or safe disposal.
+  severity: HARD_REJECT
+  model_override_allowed: false
+  source_cases:
+  - EVAL-024
+  - EVAL-030
+  source_references:
+  - SCHEMA_EVALUATION_DAN_DATA_v0.3.md
+  confidence: DESIGN_DECISION
+  status: DRAFT_REQUIRES_TRIAGE_EVAL
+  version: 1.0.0
+  known_exceptions:
+  - Verified recall/non-consumption return.
+- rule_id: TRIAGE-RULE-002
+  rule_class: TRIAGE
+  stage: INVENTORY_TRIAGE
+  title: User-declared surplus is bounded by current stock
+  condition: declared_surplus=true.
+  required_data:
+  - current_quantity
+  - declared_surplus_quantity
+  decision: planning_quantity=declared_surplus_quantity only when 0 <= declared_surplus_quantity <= current_quantity; otherwise
+    validation failure.
+  severity: BLOCKING
+  model_override_allowed: false
+  source_cases: []
+  source_references:
+  - SCHEMA_EVALUATION_DAN_DATA_v0.3.md
+  confidence: DESIGN_DECISION
+  status: DRAFT_REQUIRES_TRIAGE_EVAL
+  version: 1.0.0
+  known_exceptions: []
+- rule_id: TRIAGE-RULE-003
+  rule_class: TRIAGE
+  stage: INVENTORY_TRIAGE
+  title: Calculated surplus protects expected normal stock
+  condition: Sales observation and effective sales window are available.
+  required_data:
+  - current_quantity
+  - units_sold_observation_window
+  - observation_days
+  - effective_sales_window_days
+  - safety_stock
+  decision: surplus_candidate_quantity=max(0,current_quantity-(average_daily_sales*effective_sales_window_days+safety_stock)).
+  severity: CONSTRAINT
+  model_override_allowed: false
+  source_cases: []
+  source_references:
+  - SCHEMA_EVALUATION_DAN_DATA_v0.3.md
+  confidence: DESIGN_DECISION
+  status: DRAFT_REQUIRES_TRIAGE_EVAL
+  version: 1.0.0
+  known_exceptions:
+  - Category-specific policy may define a different effective sales window.
+- rule_id: TRIAGE-RULE-004
+  rule_class: TRIAGE
+  stage: INVENTORY_TRIAGE
+  title: Insufficient lot or sales evidence requires review
+  condition: Surplus quantity cannot be calculated reliably because sales data, batch separation, expiry, or required category
+    data is missing.
+  required_data:
+  - critical_field_completeness
+  - batch_or_reference_id
+  - expiry_date
+  - units_sold_observation_window
+  - observation_days
+  decision: inventory_status=NEEDS_REVIEW; planning_quantity=0 unless a valid user-declared surplus quantity exists.
+  severity: BLOCKING
+  model_override_allowed: false
+  source_cases:
+  - EVAL-001
+  source_references:
+  - SCHEMA_EVALUATION_DAN_DATA_v0.3.md
+  confidence: DESIGN_DECISION
+  status: DRAFT_REQUIRES_TRIAGE_EVAL
+  version: 1.0.0
+  known_exceptions:
+  - Valid user declaration with bounded quantity.
+- rule_id: TRIAGE-RULE-005
+  rule_class: TRIAGE
+  stage: INVENTORY_TRIAGE
+  title: Quantity conservation protects normal stock
+  condition: Any inventory lot is triaged.
+  required_data:
+  - current_quantity
+  - protected_normal_stock_quantity
+  - planning_quantity
+  decision: 0 <= planning_quantity <= current_quantity and protected_normal_stock_quantity + planning_quantity + expired_quantity
+    + review_quantity = current_quantity, subject to mutually exclusive routing.
+  severity: INVARIANT
+  model_override_allowed: false
+  source_cases:
+  - EVAL-010
+  - EVAL-030
+  source_references:
+  - SCHEMA_EVALUATION_DAN_DATA_v0.3.md
+  confidence: DESIGN_DECISION
+  status: DRAFT_REQUIRES_TRIAGE_EVAL
+  version: 1.0.0
+  known_exceptions: []
+- rule_id: TRIAGE-RULE-006
+  rule_class: TRIAGE
+  stage: INVENTORY_TRIAGE
+  title: Recent purchase is context, not automatic exemption
+  condition: purchase_date or last_receipt_date is recent.
+  required_data:
+  - purchase_date
+  - last_receipt_date
+  - current_quantity
+  - average_daily_sales
+  - effective_sales_window_days
+  decision: Recent stock may be MONITOR/HEALTHY only when expected excess is zero; recent overstock may still become SURPLUS_CANDIDATE.
+  severity: POLICY
+  model_override_allowed: false
+  source_cases: []
+  source_references:
+  - SCHEMA_EVALUATION_DAN_DATA_v0.3.md
+  confidence: DESIGN_DECISION
+  status: DRAFT_REQUIRES_TRIAGE_EVAL
+  version: 1.0.0
+  known_exceptions: []

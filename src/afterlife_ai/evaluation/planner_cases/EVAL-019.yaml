@@ -1,0 +1,131 @@
+contract_version: 1.0.0
+case_id: EVAL-019
+title: Bonus Promosi Tidak Boleh Mengarang Sales Uplift
+case_type: PROMOTIONAL_BONUS_WITHOUT_FAKE_UPLIFT
+evaluation_layer: CORE_RESCUE_PLANNER
+input_entity: SURPLUS_PLANNING_LOT
+purpose: Menguji bonus pada item unit kecil dengan constraint transaksi dan pelaporan nilai yang jujur.
+optimization_objective: BALANCED
+fixtures:
+  lots:
+  - lot_id: PL-SACHET-019
+    source_lot_id: null
+    quantity: 40
+    unit: SACHET
+    attributes:
+      product_name: Sampo sachet slow-moving
+      product_category: PERSONAL_CARE_SACHET
+      unit_cost: 1200
+  batch_context: {}
+  capability_facts:
+    can_offer_bonus: true
+    qualifying_transactions: 20
+    max_bonus_per_transaction: 1
+    primary_margin_floor: 5000
+    can_discount: true
+  capability_notes: []
+  partners:
+  - partner_id: PARTNER-01
+    attributes: {}
+    description: Tidak membutuhkan partner.
+  context_notes:
+  - Bonus capacity=20
+  - campaign main margin harus tetap memenuhi floor
+expected:
+  route:
+    statuses: {}
+    notes:
+    - Input lot sudah berada pada layer Core Rescue Planner.
+    - Jalankan validation, coverage, safety, verification, dan feasibility gate sebelum model scoring.
+  allocations:
+  - lot_id: PL-SACHET-019
+    source_lot_ids: &id001 []
+    action: PROMOTIONAL_BONUS
+    quantity: 20
+    destination: null
+    attributes:
+      direct_cash_recovery: 0
+  - lot_id: PL-SACHET-019
+    source_lot_ids: &id002 []
+    action: LOCAL_DISCOUNT
+    quantity: 20
+    destination: null
+    attributes: {}
+  metrics:
+    claimed_sales_uplift: null
+  objective_runs: {}
+  required_fields: []
+  rejected_alternative: null
+  rejected_partner: null
+  possible_outcomes: []
+  feasible_actions:
+  - PROMOTIONAL_BONUS 20
+  - LOCAL_DISCOUNT 20
+  forbidden_actions:
+  - Bonus 40
+  - klaim bonus meningkatkan penjualan sekian persen
+  - cash recovery dari bonus
+  acceptable_decision: Bonus terbatas dan fallback lokal.
+  binding_constraints:
+  - Qualifying transaction
+  - Bonus per transaction
+  - Campaign margin
+  - No invented causal effect
+  explanation: '> Bonus digunakan hanya pada dua puluh transaksi yang memenuhi syarat. Sistem tidak mengatribusi
+    uplift tanpa observasi.'
+  failure_conditions:
+  - menghitung bonus sebagai penjualan
+  - membuat causal uplift sintetis sebagai fakta
+  - melanggar margin floor
+traceability:
+  rule_ids:
+  - BONUS-RULE-001
+  feature_terms:
+  - qualifying_transactions
+  - max_bonus_per_transaction
+  - campaign_margin
+  - direct_cash_recovery
+  - uplift_evidence_status
+  source_markdown: EVAL-019.md
+  source_references:
+  - Incident-001
+  - Incident-012
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  uncertainty_and_source_boundary: 'Pola bonus didukung incident; outcome penjualan tidak diketahui.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara
+    eksplisit berasal dari catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak
+    membuktikan probabilitas keberhasilan dunia nyata.'
+assertions:
+- type: CASE_ID_MATCHES_FILE
+  params:
+    expected_case_id: EVAL-019
+- type: HAS_RULE_TRACEABILITY
+  params:
+    minimum_rule_count: 1
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: PL-SACHET-019
+    action: PROMOTIONAL_BONUS
+    quantity: 20
+    destination: null
+    source_lot_ids: *id001
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: PL-SACHET-019
+    action: LOCAL_DISCOUNT
+    quantity: 20
+    destination: null
+    source_lot_ids: *id002
+- type: EXPECTED_METRIC
+  params:
+    name: claimed_sales_uplift
+    value: null
+- type: QUANTITY_CONSERVATION
+  params:
+    lot_id: PL-SACHET-019
+    input_quantity: 40
+    expected_allocated_quantity: 40.0
+    expected_unallocated_quantity: 0

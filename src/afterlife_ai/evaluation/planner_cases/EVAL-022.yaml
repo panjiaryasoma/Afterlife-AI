@@ -1,0 +1,127 @@
+contract_version: 1.0.0
+case_id: EVAL-022
+title: Cacat Kosmetik Tetap Sellable
+case_type: COSMETIC_DEFECT_SELLABLE
+evaluation_layer: CORE_RESCUE_PLANNER
+input_entity: SURPLUS_PLANNING_LOT
+purpose: Menguji pemisahan cosmetic defect dari primary-barrier damage.
+optimization_objective: BALANCED
+fixtures:
+  lots:
+  - lot_id: PL-SYRUP-022
+    source_lot_id: null
+    quantity: 24
+    unit: BOTTLE
+    attributes:
+      product_name: Sirup botol dengan desain label lama
+      product_category: PACKAGED_BEVERAGE
+      unit_cost: 12000
+      normal_selling_price: 24000
+      remaining_shelf_life_days: 210
+      product_condition: GOOD
+      packaging_condition: COSMETIC_LABEL_DAMAGE
+      primary_container_integrity: INTACT
+      seal_integrity: INTACT
+      leakage_status: NONE
+      expiry_label_readable: true
+      lot_code_readable: true
+      quality_inspection_status: PASSED
+  batch_context: {}
+  capability_facts:
+    can_discount: true
+    can_return_supplier: true
+  capability_notes: []
+  partners:
+  - partner_id: PARTNER-01
+    attributes: {}
+    description: Supplier return feasible dengan net recovery Rp243.000.
+  context_notes:
+  - Local markdown 10%; disclosure required; expected net recovery Rp470.928
+expected:
+  route:
+    statuses: {}
+    notes:
+    - Input lot sudah berada pada layer Core Rescue Planner.
+    - Jalankan validation, coverage, safety, verification, dan feasibility gate sebelum model scoring.
+  allocations:
+  - lot_id: PL-SYRUP-022
+    source_lot_ids: &id001 []
+    action: LOCAL_DISCOUNT
+    quantity: 24
+    destination: null
+    attributes:
+      discount_percent: 10
+      expected_net_recovery: 470928
+  metrics:
+    rejected_return_expected_net_recovery: 243000
+    unnecessary_disposal_quantity: 0
+  objective_runs: {}
+  required_fields: []
+  rejected_alternative: null
+  rejected_partner: null
+  possible_outcomes: []
+  feasible_actions:
+  - LOCAL_DISCOUNT 24
+  forbidden_actions:
+  - SAFE_DISPOSAL sebagai best action
+  - sale tanpa quality inspection/disclosure
+  acceptable_decision: Local discount untuk seluruh lot.
+  binding_constraints:
+  - Cosmetic-only defect
+  - Primary barrier intact
+  - Readable traceability
+  - Disclosure
+  explanation: '> Label lama atau tergores menurunkan nilai komersial tetapi tidak otomatis menghapus
+    sellability setelah quality gate.'
+  failure_conditions:
+  - menyamakan cosmetic dengan leak
+  - menjual control case dengan seal rusak
+  - membuang produk aman
+traceability:
+  rule_ids:
+  - QUALITY-RULE-002
+  feature_terms:
+  - defect_type
+  - defect_affects_primary_barrier
+  - traceability_readable
+  - condition_disclosure_required
+  source_markdown: EVAL-022.md
+  source_references:
+  - Incident-016
+  - External-Incident-016
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  uncertainty_and_source_boundary: 'Control case seal compromised harus berubah menjadi hard reject.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara
+    eksplisit berasal dari catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak
+    membuktikan probabilitas keberhasilan dunia nyata.'
+assertions:
+- type: CASE_ID_MATCHES_FILE
+  params:
+    expected_case_id: EVAL-022
+- type: HAS_RULE_TRACEABILITY
+  params:
+    minimum_rule_count: 1
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: PL-SYRUP-022
+    action: LOCAL_DISCOUNT
+    quantity: 24
+    destination: null
+    source_lot_ids: *id001
+- type: EXPECTED_METRIC
+  params:
+    name: rejected_return_expected_net_recovery
+    value: 243000
+- type: EXPECTED_METRIC
+  params:
+    name: unnecessary_disposal_quantity
+    value: 0
+- type: QUANTITY_CONSERVATION
+  params:
+    lot_id: PL-SYRUP-022
+    input_quantity: 24
+    expected_allocated_quantity: 24.0
+    expected_unallocated_quantity: 0

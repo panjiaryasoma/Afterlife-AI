@@ -1,0 +1,122 @@
+contract_version: 1.0.0
+case_id: EVAL-016
+title: Wholesale Minimum Order dan Aggregation
+case_type: WHOLESALE_MOQ
+evaluation_layer: CORE_RESCUE_PLANNER
+input_entity: SURPLUS_PLANNING_LOT
+purpose: Menguji minimum order quantity dan aggregation lintas lot yang kompatibel.
+optimization_objective: BALANCED
+fixtures:
+  lots:
+  - lot_id: PL-SAUCE-A-016
+    source_lot_id: null
+    quantity: 30
+    unit: BOTTLE
+    attributes:
+      sku: SAUCE-1L-A
+  - lot_id: PL-SAUCE-B-016
+    source_lot_id: null
+    quantity: 25
+    unit: BOTTLE
+    attributes:
+      sku: SAUCE-1L-B
+  batch_context:
+    compatibility_group: LARGE_CONDIMENT
+  capability_facts:
+    can_wholesale: true
+    aggregation_allowed: true
+    can_discount: true
+  capability_notes: []
+  partners:
+  - partner_id: PARTNER-01
+    attributes: {}
+    description: Wholesaler MOQ=50, capacity=50, menerima kedua SKU dalam satu compatible shipment
+  context_notes:
+  - Total compatible quantity=55
+expected:
+  route:
+    statuses: {}
+    notes:
+    - Input lot sudah berada pada layer Core Rescue Planner.
+    - Jalankan validation, coverage, safety, verification, dan feasibility gate sebelum model scoring.
+  allocations:
+  - lot_id: null
+    source_lot_ids: &id001
+    - PL-SAUCE-A-016
+    - PL-SAUCE-B-016
+    action: WHOLESALE
+    quantity: 50
+    destination: null
+    attributes: {}
+  - lot_id: null
+    source_lot_ids: &id002
+    - PL-SAUCE-A-016
+    - PL-SAUCE-B-016
+    action: LOCAL_DISCOUNT
+    quantity: 5
+    destination: null
+    attributes: {}
+  metrics: {}
+  objective_runs: {}
+  required_fields: []
+  rejected_alternative: null
+  rejected_partner: null
+  possible_outcomes: []
+  feasible_actions:
+  - WHOLESALE 50
+  - LOCAL_DISCOUNT 5
+  forbidden_actions:
+  - Wholesale per lot secara terpisah karena 30<50 dan 25<50
+  - allocation > capacity 50
+  acceptable_decision: Aggregate 50 unit dan fallback 5.
+  binding_constraints:
+  - MOQ
+  - Compatibility group
+  - Partner capacity
+  - Aggregation policy
+  explanation: '> Dua lot dapat dikonsolidasikan karena format dan handling kompatibel. Control case aggregation_allowed=false
+    harus menolak wholesale.'
+  failure_conditions:
+  - mengabaikan MOQ
+  - menggabungkan kategori/storage tak kompatibel
+  - melebihi capacity
+traceability:
+  rule_ids:
+  - WHOLESALE-RULE-001
+  feature_terms:
+  - wholesale_moq
+  - aggregation_allowed
+  - compatibility_group
+  - aggregated_quantity
+  source_markdown: EVAL-016.md
+  source_references:
+  - Incident-009
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  uncertainty_and_source_boundary: 'Aggregation policy harus eksplisit, bukan asumsi optimizer.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara
+    eksplisit berasal dari catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak
+    membuktikan probabilitas keberhasilan dunia nyata.'
+assertions:
+- type: CASE_ID_MATCHES_FILE
+  params:
+    expected_case_id: EVAL-016
+- type: HAS_RULE_TRACEABILITY
+  params:
+    minimum_rule_count: 1
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: null
+    action: WHOLESALE
+    quantity: 50
+    destination: null
+    source_lot_ids: *id001
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: null
+    action: LOCAL_DISCOUNT
+    quantity: 5
+    destination: null
+    source_lot_ids: *id002

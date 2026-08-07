@@ -1,0 +1,314 @@
+contract_version: 1.0.0
+case_id: EVAL-030
+title: End-to-End Multi-Lot Stress Test
+case_type: END_TO_END_STRESS_TEST
+evaluation_layer: CORE_RESCUE_PLANNER
+input_entity: SURPLUS_PLANNING_LOT
+purpose: Menguji validation, safety, verification, registry freshness, compatibility,
+  scoring, global budget, objective, optimization, fallback, dan explanation dalam
+  satu request.
+optimization_objective: BALANCED
+fixtures:
+  lots:
+  - lot_id: LOT-A
+    source_lot_id: null
+    quantity: 30
+    unit: null
+    attributes:
+      product: Roti hari ini
+      status: SAFE_URGENT
+  - lot_id: LOT-B
+    source_lot_id: null
+    quantity: 20
+    unit: null
+    attributes:
+      product: Dimsum beku
+      status: SAFE_FROZEN_VERIFIED
+  - lot_id: LOT-C
+    source_lot_id: null
+    quantity: 16
+    unit: null
+    attributes:
+      product: Sirup pascamusim
+      status: SAFE_COMMERCIAL_URGENT
+  - lot_id: LOT-D
+    source_lot_id: null
+    quantity: 40
+    unit: null
+    attributes:
+      product: Detergen sachet
+      status: SAFE_NONPERISHABLE
+  - lot_id: LOT-E
+    source_lot_id: null
+    quantity: 10
+    unit: null
+    attributes:
+      product: Biskuit expired
+      status: HARD_REJECT
+  - lot_id: LOT-F
+    source_lot_id: null
+    quantity: 8
+    unit: null
+    attributes:
+      product: Yogurt chilled
+      status: PENDING_VERIFICATION
+  batch_context:
+    eligible_quantity: 106
+    hard_reject_quantity: 10
+    pending_review_quantity: 8
+  capability_facts: {}
+  capability_notes:
+  - discount, donation, internal use, bundle, frozen handling tersedia sesuai lot
+  partners:
+  - partner_id: PARTNER-01
+    attributes: {}
+    description: Stale canteen rejected
+  - partner_id: PARTNER-02
+    attributes: {}
+    description: P-CAFE active
+  - partner_id: PARTNER-03
+    attributes: {}
+    description: P-FOODBANK active
+  - partner_id: PARTNER-04
+    attributes: {}
+    description: Ambient frozen partner rejected
+  - partner_id: PARTNER-05
+    attributes: {}
+    description: P-FROZEN active
+  - partner_id: PARTNER-06
+    attributes: {}
+    description: Laundry partner feasible but inferior
+  context_notes:
+  - objective=BALANCED
+  - minimum_expected_rescue_ratio=0.90
+  - max_logistics_budget=30000
+expected:
+  route:
+    statuses: {}
+    notes:
+    - Input lot sudah berada pada layer Core Rescue Planner.
+    - Jalankan validation, coverage, safety, verification, dan feasibility gate sebelum
+      model scoring.
+  allocations:
+  - lot_id: LOT-A
+    source_lot_ids: &id001
+    - LOT-A
+    action: EXTERNAL_PARTNER
+    quantity: 20
+    destination: null
+    attributes: {}
+  - lot_id: LOT-A
+    source_lot_ids: &id002
+    - LOT-A
+    action: DONATION
+    quantity: 10
+    destination: null
+    attributes: {}
+  - lot_id: LOT-B
+    source_lot_ids: &id003
+    - LOT-B
+    action: EXTERNAL_PARTNER
+    quantity: 12
+    destination: null
+    attributes: {}
+  - lot_id: LOT-B
+    source_lot_ids: &id004
+    - LOT-B
+    action: LOCAL_DISCOUNT
+    quantity: 8
+    destination: null
+    attributes: {}
+  - lot_id: LOT-C
+    source_lot_ids: &id005
+    - LOT-C
+    action: BUNDLE
+    quantity: 4
+    destination: null
+    attributes: {}
+  - lot_id: LOT-C
+    source_lot_ids: &id006
+    - LOT-C
+    action: LOCAL_DISCOUNT
+    quantity: 12
+    destination: null
+    attributes: {}
+  - lot_id: LOT-D
+    source_lot_ids: &id007
+    - LOT-D
+    action: INTERNAL_USE
+    quantity: 5
+    destination: null
+    attributes: {}
+  - lot_id: LOT-D
+    source_lot_ids: &id008
+    - LOT-D
+    action: LOCAL_DISCOUNT
+    quantity: 35
+    destination: null
+    attributes: {}
+  - lot_id: LOT-E
+    source_lot_ids: &id009
+    - LOT-E
+    action: SAFE_DISPOSAL
+    quantity: 10
+    destination: null
+    attributes: {}
+  metrics:
+    expected_physical_rescue_quantity: 95.95
+    eligible_quantity: 106
+    expected_rescue_ratio: 0.9052
+    expected_cash_and_future_recovery: 568395
+    expected_avoided_purchase_cost: 8500
+    expected_total_economic_value: 576895
+    total_logistics_cost: 30000
+    review_quantity: 8
+    human_review_required: true
+  objective_runs: {}
+  required_fields: []
+  rejected_alternative: null
+  rejected_partner: null
+  possible_outcomes: []
+  feasible_actions:
+  - Eligible lots scored/optimized
+  - expired hard reject
+  - yogurt deferred
+  forbidden_actions:
+  - stale partner
+  - ambient frozen transport
+  - expired consumption
+  - unknown-history yogurt automatic allocation
+  acceptable_decision: Mixed end-to-end plan dengan rescue floor terpenuhi.
+  binding_constraints:
+  - Denominator excludes hard reject and pending review
+  - Global budget
+  - Safety
+  - Demand freshness
+  - Cold chain
+  - Value type separation
+  explanation: '> Empat lot dialokasikan otomatis, expired dibuang aman, dan yogurt
+    ditahan untuk review. Budget 30.000 habis tepat dan rescue floor 90% terlampaui.'
+  failure_conditions:
+  - memasukkan expired/pending ke rescue denominator
+  - budget >30000
+  - donation sebagai cash
+  - internal use sebagai revenue
+  - model score pada LOT-E/F
+traceability:
+  rule_ids:
+  - PIPELINE-RULE-001
+  feature_terms:
+  - eligible_rescue_denominator
+  - status_routing
+  - global_budget
+  - value_type
+  - rejection_explanation
+  - rescue_floor_status
+  source_markdown: EVAL-030.md
+  source_references:
+  - Incident_001-016_Family_Corroborated(1).txt
+  - External_Incident_001-016_Indonesia(1).md
+  - AFTERLIFE_AI_MASTER_BLUEPRINT.md
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  uncertainty_and_source_boundary: 'Semua angka dan scores sintetis; stress test memvalidasi
+    konsistensi pipeline, bukan outcome lapangan.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery
+    yang tidak secara eksplisit berasal dari catatan transaksi adalah parameter sintetis
+    untuk evaluation. Kasus ini tidak membuktikan probabilitas keberhasilan dunia
+    nyata.'
+assertions:
+- type: CASE_ID_MATCHES_FILE
+  params:
+    expected_case_id: EVAL-030
+- type: HAS_RULE_TRACEABILITY
+  params:
+    minimum_rule_count: 1
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: LOT-A
+    action: EXTERNAL_PARTNER
+    quantity: 20
+    destination: null
+    source_lot_ids: *id001
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: LOT-A
+    action: DONATION
+    quantity: 10
+    destination: null
+    source_lot_ids: *id002
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: LOT-B
+    action: EXTERNAL_PARTNER
+    quantity: 12
+    destination: null
+    source_lot_ids: *id003
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: LOT-B
+    action: LOCAL_DISCOUNT
+    quantity: 8
+    destination: null
+    source_lot_ids: *id004
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: LOT-C
+    action: BUNDLE
+    quantity: 4
+    destination: null
+    source_lot_ids: *id005
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: LOT-C
+    action: LOCAL_DISCOUNT
+    quantity: 12
+    destination: null
+    source_lot_ids: *id006
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: LOT-D
+    action: INTERNAL_USE
+    quantity: 5
+    destination: null
+    source_lot_ids: *id007
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: LOT-D
+    action: LOCAL_DISCOUNT
+    quantity: 35
+    destination: null
+    source_lot_ids: *id008
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: LOT-E
+    action: SAFE_DISPOSAL
+    quantity: 10
+    destination: null
+    source_lot_ids: *id009
+- type: EXPECTED_METRIC
+  params:
+    name: expected_rescue_ratio
+    value: 0.9052
+- type: EXPECTED_METRIC
+  params:
+    name: expected_total_economic_value
+    value: 576895
+- type: EXPECTED_METRIC
+  params:
+    name: total_logistics_cost
+    value: 30000
+- type: EXPECTED_METRIC
+  params:
+    name: review_quantity
+    value: 8
+- type: HUMAN_REVIEW_REQUIRED
+  params: {}
+- type: BATCH_ROUTING_CONSERVATION
+  params:
+    input_quantity: 124
+    expected_allocated_quantity: 116
+    routed_metric: review_quantity
+    expected_routed_quantity: 8

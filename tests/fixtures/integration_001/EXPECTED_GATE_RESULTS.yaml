@@ -1,0 +1,176 @@
+integration_id: INTEGRATION-001
+version: 1.0.0
+phase: PREPRODUCTION_ACCEPTANCE
+status: LOCKED_FOR_PREPRODUCTION
+source_document: INTEGRATION-001.md
+source_type: EVALUATION_FIXTURE
+production_default: false
+automatic_execution_allowed: false
+human_approval_required: true
+artifact: EXPECTED_GATE_RESULTS
+gate_order:
+- validation_gate
+- coverage_gate
+- safety_gate
+- verification_gate
+- capability_gate
+- storage_compatibility_gate
+- timing_gate
+- demand_gate
+- capacity_gate
+- quantity_feasibility_gate
+results:
+- candidate_id: CAND-003-REPURPOSE
+  gates:
+    validation_gate: PASS
+    coverage_gate: PASS
+    safety_gate: PASS
+    verification_gate: PASS
+    capability_gate: PASS
+    storage_compatibility_gate: PASS
+    timing_gate: PASS
+    demand_gate: PASS
+    capacity_gate: PASS
+    quantity_feasibility_gate: PASS
+  overall_gate_status: FEASIBLE
+  rejection_reason: null
+  model_score_allowed: true
+  notes:
+  - SHARED_BATCH_CAPACITY_APPLIED_DURING_ALLOCATION
+  validation_status: PASSED
+  coverage_status: SUPPORTED
+  safety_status: ACCEPTABLE
+  verification_status: VERIFIED
+  feasibility_status: FEASIBLE
+  model_scoring_status: DEFERRED
+  rejection_reason_codes: []
+  fixture_scoring_status: APPLIED
+- candidate_id: CAND-003-BUNDLE
+  gates:
+    validation_gate: PASS
+    coverage_gate: PASS
+    safety_gate: PASS
+    verification_gate: PASS
+    capability_gate: PASS
+    storage_compatibility_gate: PASS
+    timing_gate: PASS
+    demand_gate: PASS
+    capacity_gate: PASS
+    quantity_feasibility_gate: PASS
+  overall_gate_status: FEASIBLE
+  rejection_reason: null
+  model_score_allowed: true
+  notes:
+  - MAX_QUANTITY_ALREADY_LIMITED_TO_ALLOCATABLE_COMPANION_STOCK
+  validation_status: PASSED
+  coverage_status: SUPPORTED
+  safety_status: ACCEPTABLE
+  verification_status: VERIFIED
+  feasibility_status: FEASIBLE
+  model_scoring_status: DEFERRED
+  rejection_reason_codes: []
+  fixture_scoring_status: APPLIED
+- candidate_id: CAND-003-DISCOUNT
+  gates:
+    validation_gate: PASS
+    coverage_gate: PASS
+    safety_gate: PASS
+    verification_gate: PASS
+    capability_gate: PASS
+    storage_compatibility_gate: PASS
+    timing_gate: PASS
+    demand_gate: PASS
+    capacity_gate: PASS
+    quantity_feasibility_gate: PASS
+  overall_gate_status: FEASIBLE
+  rejection_reason: null
+  model_score_allowed: true
+  notes: []
+  validation_status: PASSED
+  coverage_status: SUPPORTED
+  safety_status: ACCEPTABLE
+  verification_status: VERIFIED
+  feasibility_status: FEASIBLE
+  model_scoring_status: DEFERRED
+  rejection_reason_codes: []
+  fixture_scoring_status: APPLIED
+- candidate_id: CAND-006-REPURPOSE
+  gates:
+    validation_gate: PASS
+    coverage_gate: PASS
+    safety_gate: PASS
+    verification_gate: PASS
+    capability_gate: PASS
+    storage_compatibility_gate: PASS
+    timing_gate: PASS
+    demand_gate: PASS
+    capacity_gate: PASS
+    quantity_feasibility_gate: PASS
+  overall_gate_status: FEASIBLE
+  rejection_reason: null
+  model_score_allowed: true
+  notes:
+  - SHARED_BATCH_CAPACITY_APPLIED_DURING_ALLOCATION
+  validation_status: PASSED
+  coverage_status: SUPPORTED
+  safety_status: ACCEPTABLE
+  verification_status: VERIFIED
+  feasibility_status: FEASIBLE
+  model_scoring_status: DEFERRED
+  rejection_reason_codes: []
+  fixture_scoring_status: APPLIED
+- candidate_id: CAND-006-DISCOUNT
+  gates:
+    validation_gate: PASS
+    coverage_gate: PASS
+    safety_gate: PASS
+    verification_gate: PASS
+    capability_gate: PASS
+    storage_compatibility_gate: PASS
+    timing_gate: PASS
+    demand_gate: PASS
+    capacity_gate: PASS
+    quantity_feasibility_gate: PASS
+  overall_gate_status: FEASIBLE
+  rejection_reason: null
+  model_score_allowed: true
+  notes: []
+  validation_status: PASSED
+  coverage_status: SUPPORTED
+  safety_status: ACCEPTABLE
+  verification_status: VERIFIED
+  feasibility_status: FEASIBLE
+  model_scoring_status: DEFERRED
+  rejection_reason_codes: []
+  fixture_scoring_status: APPLIED
+- candidate_id: CAND-006-BONUS
+  gates:
+    validation_gate: PASS
+    coverage_gate: PASS
+    safety_gate: PASS
+    verification_gate: PASS
+    capability_gate: PASS
+    storage_compatibility_gate: PASS
+    timing_gate: PASS
+    demand_gate: FAIL
+    capacity_gate: PASS
+    quantity_feasibility_gate: PASS
+  overall_gate_status: REJECTED
+  rejection_reason: NO_QUALIFYING_TRANSACTION
+  model_score_allowed: false
+  notes:
+  - QUALIFYING_TRANSACTIONS=0
+  - MAXIMUM_BONUS_QUANTITY=0
+  validation_status: PASSED
+  coverage_status: SUPPORTED
+  safety_status: ACCEPTABLE
+  verification_status: VERIFIED
+  feasibility_status: INFEASIBLE
+  model_scoring_status: BLOCKED
+  rejection_reason_codes:
+  - NO_QUALIFYING_TRANSACTION
+  fixture_scoring_status: BLOCKED
+invariants:
+  rejected_candidate_receives_score: false
+  score_can_override_hard_gate: false
+  external_partner_candidate_created_without_verified_demand: false

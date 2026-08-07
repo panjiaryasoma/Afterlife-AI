@@ -1,0 +1,131 @@
+contract_version: 1.0.0
+case_id: EVAL-020
+title: Donasi Sukses dengan Penerima dan Pickup Terverifikasi
+case_type: VERIFIED_DONATION_SUCCESS
+evaluation_layer: CORE_RESCUE_PLANNER
+input_entity: SURPLUS_PLANNING_LOT
+purpose: Menguji donation path ketika sale cutoff lewat tetapi kualitas, recipient, capacity, pickup,
+  dan same-day distribution terpenuhi.
+optimization_objective: BALANCED
+fixtures:
+  lots:
+  - lot_id: PL-BAKERY-020
+    source_lot_id: null
+    quantity: 30
+    unit: PACK
+    attributes:
+      product_name: Paket bakery siap makan
+      product_category: READY_TO_EAT_BAKERY
+      quality_inspection_status: PASSED
+      commercial_sale_cutoff_status: PASSED
+      remaining_safe_window_hours: 8
+      same_day_consumption_required: true
+  batch_context: {}
+  capability_facts:
+    can_donate: true
+    local_sales_channel_closed: true
+  capability_notes: []
+  partners:
+  - partner_id: PARTNER-01
+    attributes: {}
+    description: 'Verified foodbank: active need 40, capacity 40, pickup 2h, inspection/repackaging tersedia,
+      same-day distribution'
+  context_notes:
+  - Local discount completion 10h; reseller pickup unavailable/9h
+expected:
+  route:
+    statuses: {}
+    notes:
+    - Input lot sudah berada pada layer Core Rescue Planner.
+    - Jalankan validation, coverage, safety, verification, dan feasibility gate sebelum model scoring.
+  allocations:
+  - lot_id: PL-BAKERY-020
+    source_lot_ids: &id001 []
+    action: DONATION
+    quantity: 30
+    destination: VERIFIED_FOODBANK
+    attributes: {}
+  metrics:
+    cash_recovery: 0
+    physical_rescue_quantity: 30
+    human_review_required: true
+  objective_runs: {}
+  required_fields: []
+  rejected_alternative: null
+  rejected_partner: null
+  possible_outcomes: []
+  feasible_actions:
+  - DONATION 30
+  forbidden_actions:
+  - late local discount
+  - late reseller
+  - unverified recipient
+  acceptable_decision: Donasi seluruh 30 pack.
+  binding_constraints:
+  - Quality gate
+  - Verified partner
+  - Active need/capacity
+  - Pickup and distribution deadline
+  explanation: '> Donasi dipilih karena satu-satunya jalur yang menyelesaikan pickup dan distribusi sebelum
+    safe deadline.'
+  failure_conditions:
+  - mengklaim cash recovery
+  - donasi tanpa quality check
+  - menganggap sistem mensertifikasi keamanan fisik
+traceability:
+  rule_ids:
+  - DONATION-RULE-001
+  feature_terms:
+  - recipient_verification
+  - active_recipient_need
+  - pickup_completion
+  - same_day_distribution
+  - donation_cash_recovery
+  source_markdown: EVAL-020.md
+  source_references:
+  - External-Incident-003
+  - External-Incident-005
+  - External-Incident-007
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  uncertainty_and_source_boundary: 'Sistem merencanakan, bukan menyertifikasi keamanan atau mengeksekusi
+    pickup.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara
+    eksplisit berasal dari catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak
+    membuktikan probabilitas keberhasilan dunia nyata.'
+assertions:
+- type: CASE_ID_MATCHES_FILE
+  params:
+    expected_case_id: EVAL-020
+- type: HAS_RULE_TRACEABILITY
+  params:
+    minimum_rule_count: 1
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: PL-BAKERY-020
+    action: DONATION
+    quantity: 30
+    destination: VERIFIED_FOODBANK
+    source_lot_ids: *id001
+- type: HUMAN_REVIEW_REQUIRED
+  params: {}
+- type: EXPECTED_METRIC
+  params:
+    name: cash_recovery
+    value: 0
+- type: EXPECTED_METRIC
+  params:
+    name: physical_rescue_quantity
+    value: 30
+- type: EXPECTED_METRIC
+  params:
+    name: human_review_required
+    value: true
+- type: QUANTITY_CONSERVATION
+  params:
+    lot_id: PL-BAKERY-020
+    input_quantity: 30
+    expected_allocated_quantity: 30.0
+    expected_unallocated_quantity: 0

@@ -1,0 +1,131 @@
+contract_version: 1.0.0
+case_id: EVAL-027
+title: Kemasan Besar Cocok ke Mitra B2B
+case_type: PACKAGE_SIZE_DEMAND_MATCH
+evaluation_layer: CORE_RESCUE_PLANNER
+input_entity: SURPLUS_PLANNING_LOT
+purpose: Menguji partner matching berdasarkan kategori, ukuran, customer segment, dan use case.
+optimization_objective: BALANCED
+fixtures:
+  lots:
+  - lot_id: PL-SOY-027
+    source_lot_id: null
+    quantity: 24
+    unit: BOTTLE
+    attributes:
+      product_name: Kecap manis botol besar
+      product_category: LARGE_CONDIMENT
+      package_volume_ml: 1000
+      unit_cost: 12000
+      normal_selling_price: 22000
+      remaining_shelf_life_days: 210
+  batch_context: {}
+  capability_facts:
+    can_wholesale: true
+    can_discount: true
+  capability_notes: []
+  partners:
+  - partner_id: P-MINIMARKET
+    attributes: {}
+    description: 'P-MINIMARKET: accepts soy sauce, size 50-250ml, price 19500'
+  - partner_id: P-WARUNG
+    attributes: {}
+    description: 'P-WARUNG: size 500-2000ml, active demand/capacity 18, price 17500, score 0.94'
+  context_notes:
+  - Local discount fallback for 6
+expected:
+  route:
+    statuses: {}
+    notes:
+    - Input lot sudah berada pada layer Core Rescue Planner.
+    - Jalankan validation, coverage, safety, verification, dan feasibility gate sebelum model scoring.
+  allocations:
+  - lot_id: PL-SOY-027
+    source_lot_ids: &id001 []
+    action: EXTERNAL_PARTNER
+    quantity: 18
+    destination: P-WARUNG
+    attributes:
+      expected_net_recovery: 296100
+  - lot_id: PL-SOY-027
+    source_lot_ids: &id002 []
+    action: LOCAL_DISCOUNT
+    quantity: 6
+    destination: null
+    attributes:
+      expected_net_recovery: 68880
+  metrics:
+    total_expected_net_recovery: 364980
+  objective_runs: {}
+  required_fields: []
+  rejected_alternative: null
+  rejected_partner: null
+  possible_outcomes: []
+  feasible_actions:
+  - P-WARUNG 18
+  - LOCAL_DISCOUNT 6
+  forbidden_actions:
+  - P-MINIMARKET walau price lebih tinggi
+  - category-only matching
+  acceptable_decision: B2B food-service partner dan local fallback.
+  binding_constraints:
+  - Package size range
+  - Customer segment
+  - Usage context
+  - Demand/capacity
+  explanation: '> Minimarket ditolak karena household package range tidak cocok. Warung makan menerima
+    format 1L sesuai penggunaan rutin.'
+  failure_conditions:
+  - memilih price tertinggi
+  - mengabaikan package size
+  - selalu mengirim semua kecap ke B2B
+traceability:
+  rule_ids:
+  - PARTNER-RULE-004
+  feature_terms:
+  - package_volume
+  - partner_size_range
+  - customer_segment_match
+  - use_case_match
+  source_markdown: EVAL-027.md
+  source_references:
+  - Incident-009
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  uncertainty_and_source_boundary: 'Control package 135ml harus membuat minimarket feasible dan prioritas.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara
+    eksplisit berasal dari catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak
+    membuktikan probabilitas keberhasilan dunia nyata.'
+assertions:
+- type: CASE_ID_MATCHES_FILE
+  params:
+    expected_case_id: EVAL-027
+- type: HAS_RULE_TRACEABILITY
+  params:
+    minimum_rule_count: 1
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: PL-SOY-027
+    action: EXTERNAL_PARTNER
+    quantity: 18
+    destination: P-WARUNG
+    source_lot_ids: *id001
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: PL-SOY-027
+    action: LOCAL_DISCOUNT
+    quantity: 6
+    destination: null
+    source_lot_ids: *id002
+- type: EXPECTED_METRIC
+  params:
+    name: total_expected_net_recovery
+    value: 364980
+- type: QUANTITY_CONSERVATION
+  params:
+    lot_id: PL-SOY-027
+    input_quantity: 24
+    expected_allocated_quantity: 24.0
+    expected_unallocated_quantity: 0

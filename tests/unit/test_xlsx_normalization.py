@@ -1,4 +1,4 @@
-﻿from datetime import date, datetime
+from datetime import date, datetime
 from decimal import Decimal
 
 from afterlife_ai.intake.normalization import normalize_inventory_row
@@ -37,3 +37,33 @@ def test_inventory_row_values_are_normalized() -> None:
 
     assert normalized["purchase_date"] == date(2026, 8, 1)
     assert normalized["safe_use_by_at"] == datetime(2026, 8, 10, 14, 30)
+
+
+
+def test_blank_safety_stock_uses_contract_default() -> None:
+    from afterlife_ai.contracts.inventory import RawInventoryLot
+
+    raw_row: dict[str, object] = {
+        "lot_id": "LOT-BLANK-SAFETY",
+        "sku": "SKU-BLANK-SAFETY",
+        "product_name": "Blank Safety Stock Product",
+        "product_category": "PACKAGED_BEVERAGE",
+        "current_quantity": "20",
+        "unit": "SACHET",
+        "unit_cost": "1000",
+        "normal_selling_price": "2000",
+        "source_location": "STORE-01",
+        "safety_stock": None,
+        "storage_type": "DRY_AMBIENT",
+        "verification_status": "VERIFIED",
+    }
+
+    normalized = normalize_inventory_row(raw_row)
+
+    # Blank spreadsheet input must not override the
+    # RawInventoryLot contract default of Decimal("0").
+    assert "safety_stock" not in normalized
+
+    lot = RawInventoryLot.model_validate(normalized)
+
+    assert lot.safety_stock == Decimal("0")

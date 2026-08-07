@@ -1,0 +1,123 @@
+contract_version: 1.0.0
+case_id: EVAL-018
+title: Bundle Companion Stock Dibatasi
+case_type: LIMITED_BUNDLE_COMPANION
+evaluation_layer: CORE_RESCUE_PLANNER
+input_entity: SURPLUS_PLANNING_LOT
+purpose: Menguji bahwa bundling membutuhkan companion stock yang benar-benar allocatable setelah reservation.
+optimization_objective: BALANCED
+fixtures:
+  lots:
+  - lot_id: PL-CEREAL-018
+    source_lot_id: null
+    quantity: 30
+    unit: PACK
+    attributes:
+      product_name: Sereal sarapan
+      product_category: BREAKFAST_FOOD
+  batch_context: {}
+  capability_facts:
+    can_bundle: true
+    companion_product: MILK
+    companion_current_quantity: 12
+    companion_reserved_quantity: 4
+    bundle_ratio: '1:1'
+    can_discount: true
+  capability_notes: []
+  partners:
+  - partner_id: PARTNER-01
+    attributes: {}
+    description: Tidak ada partner eksternal lebih baik.
+  context_notes:
+  - allocatable companion=8
+  - bundle maximum=8
+expected:
+  route:
+    statuses: {}
+    notes:
+    - Input lot sudah berada pada layer Core Rescue Planner.
+    - Jalankan validation, coverage, safety, verification, dan feasibility gate sebelum model scoring.
+  allocations:
+  - lot_id: PL-CEREAL-018
+    source_lot_ids: &id001 []
+    action: BUNDLE
+    quantity: 8
+    destination: null
+    attributes:
+      companion_quantity_used: 8
+  - lot_id: PL-CEREAL-018
+    source_lot_ids: &id002 []
+    action: LOCAL_DISCOUNT
+    quantity: 22
+    destination: null
+    attributes: {}
+  metrics: {}
+  objective_runs: {}
+  required_fields: []
+  rejected_alternative: null
+  rejected_partner: null
+  possible_outcomes: []
+  feasible_actions:
+  - BUNDLE 8
+  - LOCAL_DISCOUNT 22
+  forbidden_actions:
+  - Bundle 12 atau 30
+  - menggunakan reserved stock
+  acceptable_decision: Bundle sesuai companion allocatable, lalu local markdown.
+  binding_constraints:
+  - Companion stock
+  - Reserved quantity
+  - Bundle ratio
+  - Demand
+  explanation: '> Hanya delapan bundle dibuat karena empat dari dua belas companion units dilindungi untuk
+    operasi normal.'
+  failure_conditions:
+  - reserved stock violation
+  - ratio violation
+  - menganggap companion tersedia tanpa SKU check
+traceability:
+  rule_ids:
+  - BUNDLE-RULE-001
+  feature_terms:
+  - companion_stock
+  - reserved_companion_stock
+  - bundle_ratio
+  - max_bundle_quantity
+  source_markdown: EVAL-018.md
+  source_references:
+  - Incident-007
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  uncertainty_and_source_boundary: 'Quantity sintetis; kompatibilitas sarapan berasal dari incident family.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara
+    eksplisit berasal dari catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak
+    membuktikan probabilitas keberhasilan dunia nyata.'
+assertions:
+- type: CASE_ID_MATCHES_FILE
+  params:
+    expected_case_id: EVAL-018
+- type: HAS_RULE_TRACEABILITY
+  params:
+    minimum_rule_count: 1
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: PL-CEREAL-018
+    action: BUNDLE
+    quantity: 8
+    destination: null
+    source_lot_ids: *id001
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: PL-CEREAL-018
+    action: LOCAL_DISCOUNT
+    quantity: 22
+    destination: null
+    source_lot_ids: *id002
+- type: QUANTITY_CONSERVATION
+  params:
+    lot_id: PL-CEREAL-018
+    input_quantity: 30
+    expected_allocated_quantity: 30.0
+    expected_unallocated_quantity: 0

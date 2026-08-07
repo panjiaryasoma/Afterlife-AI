@@ -1,0 +1,135 @@
+contract_version: 1.0.0
+case_id: EVAL-024
+title: Expired Tetap Hard Reject meskipun Nilainya Tinggi
+case_type: EXPIRED_HARD_REJECT
+evaluation_layer: CORE_RESCUE_PLANNER
+input_entity: SURPLUS_PLANNING_LOT
+purpose: Menguji bahwa expiry lewat menghapus seluruh human-consumption channel.
+optimization_objective: BALANCED
+fixtures:
+  lots:
+  - lot_id: PL-BISCUIT-024
+    source_lot_id: null
+    quantity: 30
+    unit: CAN
+    attributes:
+      product_name: Biskuit kaleng premium
+      product_category: PACKAGED_BISCUIT
+      unit_cost: 45000
+      normal_selling_price: 70000
+      expiry_date: 2026-08-01
+      analysis_date: 2026-08-03
+      remaining_shelf_life_days: -2
+      packaging_condition: INTACT
+      seal_integrity: INTACT
+      expiry_status: EXPIRED
+  batch_context: {}
+  capability_facts:
+    can_discount: true
+    can_wholesale: true
+    can_donate: true
+    can_return_supplier: false
+  capability_notes: []
+  partners:
+  - partner_id: PARTNER-01
+    attributes: {}
+    description: Demand komersial dan donation capacity tersedia tetapi tidak relevant setelah expiry
+      gate.
+  context_notes:
+  - estimated_inventory_cost=Rp1.350.000
+expected:
+  route:
+    statuses: {}
+    notes:
+    - Input lot sudah berada pada layer Core Rescue Planner.
+    - Jalankan validation, coverage, safety, verification, dan feasibility gate sebelum model scoring.
+  allocations:
+  - lot_id: PL-BISCUIT-024
+    source_lot_ids: &id001 []
+    action: SAFE_DISPOSAL
+    quantity: 30
+    destination: null
+    attributes: {}
+  metrics:
+    expected_cash_recovery: 0
+    expected_inventory_loss: 1350000
+    human_consumption_allocation: 0
+  objective_runs: {}
+  required_fields: []
+  rejected_alternative: null
+  rejected_partner: null
+  possible_outcomes: []
+  feasible_actions:
+  - SAFE_DISPOSAL
+  forbidden_actions:
+  - LOCAL_DISCOUNT
+  - BUNDLE
+  - BONUS
+  - WHOLESALE
+  - DONATION
+  - INTERNAL_USE
+  acceptable_decision: Safe disposal 30 unit.
+  binding_constraints:
+  - Expiry date
+  - Analysis date
+  - No value override
+  explanation: '> Kemasan utuh dan nilai modal tinggi tidak mengubah status expired. Supplier return hanya
+    boleh untuk recall/non-consumption flow yang terkonfirmasi.'
+  failure_conditions:
+  - memberi rescue score
+  - donasi expired
+  - menganggap expired sekadar near-expiry
+traceability:
+  rule_ids:
+  - EXPIRY-RULE-001
+  feature_terms:
+  - analysis_date
+  - expiry_status
+  - supplier_recall_policy_status
+  - inventory_loss
+  source_markdown: EVAL-024.md
+  source_references:
+  - Incident-003
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  uncertainty_and_source_boundary: 'Control case remaining shelf life 14 hari harus tetap dapat dinilai
+    sebagai near-expiry, bukan hard reject.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara
+    eksplisit berasal dari catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak
+    membuktikan probabilitas keberhasilan dunia nyata.'
+assertions:
+- type: CASE_ID_MATCHES_FILE
+  params:
+    expected_case_id: EVAL-024
+- type: HAS_RULE_TRACEABILITY
+  params:
+    minimum_rule_count: 1
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: PL-BISCUIT-024
+    action: SAFE_DISPOSAL
+    quantity: 30
+    destination: null
+    source_lot_ids: *id001
+- type: NO_HUMAN_CONSUMPTION_ALLOCATION
+  params: {}
+- type: EXPECTED_METRIC
+  params:
+    name: expected_cash_recovery
+    value: 0
+- type: EXPECTED_METRIC
+  params:
+    name: expected_inventory_loss
+    value: 1350000
+- type: EXPECTED_METRIC
+  params:
+    name: human_consumption_allocation
+    value: 0
+- type: QUANTITY_CONSERVATION
+  params:
+    lot_id: PL-BISCUIT-024
+    input_quantity: 30
+    expected_allocated_quantity: 30.0
+    expected_unallocated_quantity: 0

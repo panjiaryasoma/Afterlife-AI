@@ -1,0 +1,55 @@
+integration_id: INTEGRATION-001
+version: 1.0.0
+phase: PREPRODUCTION_ACCEPTANCE
+status: LOCKED_FOR_PREPRODUCTION
+source_document: INTEGRATION-001.md
+source_type: EVALUATION_FIXTURE
+production_default: false
+automatic_execution_allowed: false
+human_approval_required: true
+artifact: PLANNING_LOTS_FIXTURE
+source_triage_artifact: EXPECTED_TRIAGE_OUTPUT.yaml
+planning_lots:
+- planning_lot_id: PLAN-LOT-003
+  source_lot_id: LOT-003
+  sku: PBEV-003
+  product_name: Minuman Serbuk Rasa Mangga
+  product_category: PACKAGED_BEVERAGE
+  planning_quantity: 10
+  unit: SACHET
+  surplus_source: CALCULATED
+  remaining_shelf_life_days: 179
+  source_location: STORE-01
+  storage_type: ROOM_TEMPERATURE
+  unit_cost: 1250
+  normal_selling_price: 2000
+  minimum_recovery_price: 1000
+  verification_status: VERIFIED
+  urgency_level: LOW
+  excluded_source_quantity:
+    protected_normal_stock_quantity: 15
+    review_quantity: 0
+- planning_lot_id: PLAN-LOT-006
+  source_lot_id: LOT-006
+  sku: PBEV-006
+  product_name: Minuman Serbuk Rasa Melon
+  product_category: PACKAGED_BEVERAGE
+  planning_quantity: 8
+  unit: SACHET
+  surplus_source: USER_DECLARED
+  remaining_shelf_life_days: 148
+  source_location: STORE-01
+  storage_type: ROOM_TEMPERATURE
+  unit_cost: 1250
+  normal_selling_price: 2000
+  minimum_recovery_price: 1000
+  verification_status: VERIFIED
+  urgency_level: LOW
+  excluded_source_quantity:
+    protected_normal_stock_quantity: 0
+    review_quantity: 12
+reconciliation:
+  total_planning_quantity: 18
+  total_non_planning_quantity: 84
+  assertion: 10 + 8 == 18
+  expected_result: PASS

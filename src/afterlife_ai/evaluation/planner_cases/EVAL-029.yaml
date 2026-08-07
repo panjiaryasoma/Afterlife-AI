@@ -1,0 +1,167 @@
+contract_version: 1.0.0
+case_id: EVAL-029
+title: Objective Mengubah Keputusan
+case_type: OBJECTIVE_SENSITIVITY
+evaluation_layer: CORE_RESCUE_PLANNER
+input_entity: SURPLUS_PLANNING_LOT
+purpose: Menguji bahwa MAXIMIZE_RECOVERY_VALUE, MINIMIZE_WASTE, dan BALANCED menghasilkan allocation berbeda
+  tanpa mengubah hard constraints.
+optimization_objective: BALANCED
+fixtures:
+  lots:
+  - lot_id: PL-BAKERY-029
+    source_lot_id: null
+    quantity: 40
+    unit: PACK
+    attributes:
+      product_name: Roti manis layak konsumsi
+      product_category: READY_TO_EAT_BAKERY
+      quality_inspection_status: PASSED
+      remaining_safe_window_hours: 8
+  batch_context: {}
+  capability_facts:
+    can_discount: true
+    can_donate: true
+  capability_notes: []
+  partners:
+  - partner_id: PARTNER-01
+    attributes: {}
+    description: Commercial partner max 15
+  - partner_id: PARTNER-02
+    attributes: {}
+    description: Donation partner max 40
+  context_notes:
+  - Local discount max 25, recovery/unit 4800, rescue 0.80
+  - Partner recovery/unit 4000, rescue 0.90
+  - Donation recovery 0, rescue 0.98
+expected:
+  route:
+    statuses: {}
+    notes:
+    - Input lot sudah berada pada layer Core Rescue Planner.
+    - Jalankan validation, coverage, safety, verification, dan feasibility gate sebelum model scoring.
+  allocations: []
+  metrics: {}
+  objective_runs:
+    MAXIMIZE_RECOVERY_VALUE:
+      LOCAL_DISCOUNT: 25
+      EXTERNAL_PARTNER: 15
+      DONATION: 0
+      expected_net_recovery: 180000
+      expected_rescue: 33.5
+    MINIMIZE_WASTE:
+      LOCAL_DISCOUNT: 0
+      EXTERNAL_PARTNER: 0
+      DONATION: 40
+      expected_net_recovery: 0
+      expected_rescue: 39.2
+    BALANCED:
+      rescue_floor: 0.9
+      LOCAL_DISCOUNT: 11
+      EXTERNAL_PARTNER: 15
+      DONATION: 14
+      expected_net_recovery: 112800
+      expected_rescue: 36.02
+  required_fields: []
+  rejected_alternative: null
+  rejected_partner: null
+  possible_outcomes: []
+  feasible_actions:
+  - Semua tiga action feasible
+  forbidden_actions:
+  - Tidak ada hard-constraint action yang berubah antar-objective
+  acceptable_decision: Tiga run dengan allocation berbeda.
+  binding_constraints:
+  - Objective formula
+  - Partner/action capacities
+  - Hard constraints unchanged
+  - Explicit rescue floor
+  explanation: '> Balanced memaksimalkan recovery setelah mensyaratkan expected rescue minimal 90%, bukan
+    memakai weighted sum tanpa skala.'
+  failure_conditions:
+  - allocation sama untuk semua objective
+  - donation dihitung cash
+  - safety berubah karena objective
+  - balanced tanpa formula
+traceability:
+  rule_ids:
+  - OBJECTIVE-RULE-001
+  feature_terms:
+  - optimization_objective
+  - rescue_floor
+  - expected_net_recovery
+  - expected_physical_rescue
+  - tradeoff_amount
+  source_markdown: EVAL-029.md
+  source_references:
+  - AFTERLIFE_AI_MASTER_BLUEPRINT.md
+  - External_Incident_001-016_Indonesia(1).md
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  uncertainty_and_source_boundary: 'Score dan target 90% sintetis; bukan kebijakan universal.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara
+    eksplisit berasal dari catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak
+    membuktikan probabilitas keberhasilan dunia nyata.'
+assertions:
+- type: CASE_ID_MATCHES_FILE
+  params:
+    expected_case_id: EVAL-029
+- type: HAS_RULE_TRACEABILITY
+  params:
+    minimum_rule_count: 1
+- type: OBJECTIVE_RUN_PRESENT
+  params:
+    objective: MAXIMIZE_RECOVERY_VALUE
+- type: OBJECTIVE_ACTION_QUANTITY
+  params:
+    objective: MAXIMIZE_RECOVERY_VALUE
+    action: LOCAL_DISCOUNT
+    quantity: 25
+- type: OBJECTIVE_ACTION_QUANTITY
+  params:
+    objective: MAXIMIZE_RECOVERY_VALUE
+    action: EXTERNAL_PARTNER
+    quantity: 15
+- type: OBJECTIVE_ACTION_QUANTITY
+  params:
+    objective: MAXIMIZE_RECOVERY_VALUE
+    action: DONATION
+    quantity: 0
+- type: OBJECTIVE_RUN_PRESENT
+  params:
+    objective: MINIMIZE_WASTE
+- type: OBJECTIVE_ACTION_QUANTITY
+  params:
+    objective: MINIMIZE_WASTE
+    action: LOCAL_DISCOUNT
+    quantity: 0
+- type: OBJECTIVE_ACTION_QUANTITY
+  params:
+    objective: MINIMIZE_WASTE
+    action: EXTERNAL_PARTNER
+    quantity: 0
+- type: OBJECTIVE_ACTION_QUANTITY
+  params:
+    objective: MINIMIZE_WASTE
+    action: DONATION
+    quantity: 40
+- type: OBJECTIVE_RUN_PRESENT
+  params:
+    objective: BALANCED
+- type: OBJECTIVE_ACTION_QUANTITY
+  params:
+    objective: BALANCED
+    action: LOCAL_DISCOUNT
+    quantity: 11
+- type: OBJECTIVE_ACTION_QUANTITY
+  params:
+    objective: BALANCED
+    action: EXTERNAL_PARTNER
+    quantity: 15
+- type: OBJECTIVE_ACTION_QUANTITY
+  params:
+    objective: BALANCED
+    action: DONATION
+    quantity: 14

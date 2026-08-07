@@ -1,0 +1,128 @@
+contract_version: 1.0.0
+case_id: EVAL-028
+title: Out-of-Distribution Harus Abstain
+case_type: OUT_OF_SUPPORTED_DOMAIN
+evaluation_layer: CORE_RESCUE_PLANNER
+input_entity: SURPLUS_PLANNING_LOT
+purpose: Menguji domain coverage gate sebelum model confidence.
+optimization_objective: BALANCED
+fixtures:
+  lots:
+  - lot_id: PL-SHELLFISH-028
+    source_lot_id: null
+    quantity: 18
+    unit: KG
+    attributes:
+      product_name: Kerang hidup
+      product_category: LIVE_SHELLFISH
+      business_type: SEAFOOD_DISTRIBUTOR
+      required_storage_type: CONTROLLED_AQUATIC_STORAGE
+      current_storage_type: UNKNOWN
+      harvest_timestamp: UNKNOWN
+      water_quality_history: UNKNOWN
+      traceability_document_status: NOT_AVAILABLE
+      verification_status: LOW
+  batch_context: {}
+  capability_facts: {}
+  capability_notes:
+  - Business profile di luar target MVP.
+  partners:
+  - partner_id: PARTNER-01
+    attributes: {}
+    description: Seafood restaurant dan foodbank menunjukkan capacity, tetapi domain rules tidak tersedia.
+  context_notes:
+  - Category, business type, storage type, dan critical features unsupported
+expected:
+  route:
+    statuses: {}
+    notes:
+    - Input lot sudah berada pada layer Core Rescue Planner.
+    - Jalankan validation, coverage, safety, verification, dan feasibility gate sebelum model scoring.
+  allocations: []
+  metrics:
+    system_status: UNSUPPORTED_SCENARIO
+    automatic_allocated_quantity: 0
+    estimated_rescue_success_score: null
+    optimizer_execution: BLOCKED
+    human_review_required: true
+    review_type: DOMAIN_EXPERT_REVIEW
+  objective_runs: {}
+  required_fields: []
+  rejected_alternative: null
+  rejected_partner: null
+  possible_outcomes: []
+  feasible_actions:
+  - Tidak ada automatic feasible action
+  forbidden_actions:
+  - LOCAL_DISCOUNT
+  - EXTERNAL_PARTNER
+  - DONATION
+  - SAFE_DISPOSAL otomatis tanpa expert review
+  acceptable_decision: UNSUPPORTED_SCENARIO dan domain-expert review.
+  binding_constraints:
+  - Supported taxonomy
+  - Storage requirement support
+  - Critical feature coverage
+  - Applicable rule set
+  explanation: '> Confidence model tidak dapat membuat unsupported case menjadi valid. Coverage gate menghentikan
+    scoring.'
+  failure_conditions:
+  - menghasilkan score 0.91
+  - mengarang shellfish safety rule
+  - mengganti missing critical features dengan default optimistis
+traceability:
+  rule_ids:
+  - COVERAGE-RULE-001
+  feature_terms:
+  - supported_business_type
+  - supported_category
+  - supported_storage
+  - critical_feature_coverage
+  - abstention_reason
+  source_markdown: EVAL-028.md
+  source_references:
+  - AFTERLIFE_AI_MASTER_BLUEPRINT.md
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  uncertainty_and_source_boundary: 'Control frozen prepared dimsum dengan verified history harus lolos
+    coverage.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara
+    eksplisit berasal dari catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak
+    membuktikan probabilitas keberhasilan dunia nyata.'
+assertions:
+- type: CASE_ID_MATCHES_FILE
+  params:
+    expected_case_id: EVAL-028
+- type: HAS_RULE_TRACEABILITY
+  params:
+    minimum_rule_count: 1
+- type: NO_AUTOMATIC_ALLOCATION
+  params: {}
+- type: HUMAN_REVIEW_REQUIRED
+  params: {}
+- type: EXPECTED_METRIC
+  params:
+    name: system_status
+    value: UNSUPPORTED_SCENARIO
+- type: EXPECTED_METRIC
+  params:
+    name: automatic_allocated_quantity
+    value: 0
+- type: EXPECTED_METRIC
+  params:
+    name: estimated_rescue_success_score
+    value: null
+- type: EXPECTED_METRIC
+  params:
+    name: optimizer_execution
+    value: BLOCKED
+- type: EXPECTED_METRIC
+  params:
+    name: human_review_required
+    value: true
+- type: EXPECTED_METRIC
+  params:
+    name: review_type
+    value: DOMAIN_EXPERT_REVIEW

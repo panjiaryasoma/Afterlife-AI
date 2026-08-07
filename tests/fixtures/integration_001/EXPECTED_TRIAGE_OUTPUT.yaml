@@ -1,0 +1,744 @@
+artifact: EXPECTED_TRIAGE_OUTPUT
+version: '1.0'
+phase: PREPRODUCTION
+status: LOCKED_FIXTURE_EXPECTATION
+source_workbook: RAW_INVENTORY_FIXTURE.xlsx
+source_sheet: inventory_lots
+analysis_date: '2026-08-05'
+triage_policy_version: integration-triage-fixture-v1.0
+lot_results:
+- lot_id: LOT-001
+  validation:
+    schema_status: PASSED
+    required_fields_status: PASSED
+    conditional_fields_status: PASSED
+    enum_status: PASSED
+    quantity_status: PASSED
+    date_status: PASSED
+    lot_integrity_status: PASSED
+    errors: []
+    warnings: []
+  expected_triage:
+    source_lot_id: LOT-001
+    inventory_status: HEALTHY_STOCK
+    average_daily_sales: 1.0
+    remaining_shelf_life_days: 148
+    effective_sales_window_days: 10
+    expected_normal_sales: 10
+    protected_normal_stock_quantity: 15
+    monitor_quantity: 0
+    surplus_candidate_quantity: 0
+    planning_quantity: 0
+    expired_quantity: 0
+    review_quantity: 0
+    surplus_source: null
+    urgency_level: LOW
+    triage_reason_codes:
+    - WITHIN_PROTECTED_NORMAL_STOCK
+    estimated_current_value: 18750
+    triage_policy_version: integration-triage-fixture-v1.0
+  expected_routing:
+    planner_entry: false
+    surplus_planning_lot_emitted: false
+    candidate_generation: false
+    model_scoring: NOT_APPLICABLE
+    optimizer_entry: false
+    human_review_required: false
+  quantity_invariant:
+    assertion: 15 + 0 + 0 + 0 + 0 == 15
+    expected_result: PASS
+  failure_conditions:
+  - validation_status != PASSED
+  - inventory_status != HEALTHY_STOCK
+  - protected_normal_stock_quantity != 15
+  - planning_quantity != 0
+  - planner_entry == true
+  - candidate_generation == true
+  - model_scoring != NOT_APPLICABLE
+  - quantity_invariant_passed == false
+  calculations:
+    remaining_shelf_life_days:
+      expression: 2026-12-31 - 2026-08-05
+      result: 148
+    average_daily_sales:
+      expression: 30 / 30
+      result: 1.0
+    expected_normal_sales:
+      expression: 1.0 * 10
+      result: 10
+    normal_stock_requirement_quantity:
+      expression: 10 + 5
+      result: 15
+    protected_normal_stock_quantity:
+      expression: min(15, 15)
+      result: 15
+    surplus_candidate_quantity:
+      expression: max(0, 15 - 15)
+      result: 0
+    estimated_current_value:
+      expression: 15 * 1250
+      result: 18750
+- lot_id: LOT-002
+  validation:
+    schema_status: PASSED
+    required_fields_status: PASSED
+    conditional_fields_status: PASSED
+    enum_status: PASSED
+    quantity_status: PASSED
+    date_status: PASSED
+    lot_integrity_status: PASSED
+    errors: []
+    warnings: []
+  expected_triage:
+    source_lot_id: LOT-002
+    inventory_status: MONITOR
+    average_daily_sales: 1.0
+    remaining_shelf_life_days: 12
+    effective_sales_window_days: 10
+    expected_normal_sales: 10
+    normal_stock_requirement_quantity: 10
+    protected_normal_stock_quantity: 0
+    monitor_quantity: 10
+    surplus_candidate_quantity: 0
+    planning_quantity: 0
+    expired_quantity: 0
+    review_quantity: 0
+    surplus_source: null
+    urgency_level: MEDIUM
+    triage_reason_codes:
+    - WITHIN_EXPIRY_MONITOR_WINDOW
+    - ZERO_EXCESS_ABOVE_NORMAL_REQUIREMENT
+    estimated_current_value: 12500
+    triage_policy_version: integration-triage-fixture-v1.0
+  expected_routing:
+    planner_entry: false
+    surplus_planning_lot_emitted: false
+    candidate_generation: false
+    model_scoring: NOT_APPLICABLE
+    optimizer_entry: false
+    human_review_required: false
+    monitoring_required: true
+  quantity_invariant:
+    assertion: 0 + 10 + 0 + 0 + 0 == 10
+    expected_result: PASS
+  failure_conditions:
+  - inventory_status != MONITOR
+  - monitor_quantity != 10
+  - protected_normal_stock_quantity != 0
+  - planning_quantity != 0
+  - planner_entry == true
+  - candidate_generation == true
+  - model_scoring != NOT_APPLICABLE
+  - normal_sales_allowed != true
+  - quantity_invariant_passed == false
+  calculations:
+    remaining_shelf_life_days:
+      expression: 2026-08-17 - 2026-08-05
+      result: 12
+    average_daily_sales:
+      expression: 30 / 30
+      result: 1.0
+    expected_normal_sales:
+      expression: 1.0 * 10
+      result: 10
+    normal_stock_requirement_quantity:
+      expression: 10 + 0
+      result: 10
+    surplus_candidate_quantity:
+      expression: max(0, 10 - 10)
+      result: 0
+    monitoring_reclassification_quantity: 10
+    estimated_current_value:
+      expression: 10 * 1250
+      result: 12500
+  monitor_semantics:
+    classification: PROTECTED_STOCK_WITH_EARLY_WARNING
+    normal_sales_allowed: true
+    rescue_intervention_allowed: false
+    planner_eligible: false
+    candidate_generation_allowed: false
+    model_scoring_allowed: false
+    optimizer_allocation_allowed: false
+    operational_action: OBSERVE_AND_REASSESS
+    reassessment_interval: PENDING_POLICY_CONFIGURATION
+- lot_id: LOT-003
+  validation:
+    schema_status: PASSED
+    required_fields_status: PASSED
+    conditional_fields_status: PASSED
+    enum_status: PASSED
+    quantity_status: PASSED
+    date_status: PASSED
+    lot_integrity_status: PASSED
+    errors: []
+    warnings: []
+  expected_triage:
+    source_lot_id: LOT-003
+    inventory_status: SURPLUS_CANDIDATE
+    average_daily_sales: 1.0
+    remaining_shelf_life_days: 179
+    effective_sales_window_days: 10
+    expected_normal_sales: 10
+    protected_normal_stock_quantity: 15
+    monitor_quantity: 0
+    surplus_candidate_quantity: 10
+    planning_quantity: 10
+    expired_quantity: 0
+    review_quantity: 0
+    surplus_source: CALCULATED
+    triage_confidence_status: HIGH
+    urgency_level: LOW
+    triage_reason_codes:
+    - PARTIAL_EXCESS_ABOVE_PROTECTED_STOCK
+    - RECENT_RECEIPT_DOES_NOT_OVERRIDE_SURPLUS_CALCULATION
+    estimated_current_value: 31250
+    triage_policy_version: integration-triage-fixture-v1.0
+  expected_routing:
+    planner_entry: true
+    planner_eligible_quantity: 10
+    surplus_planning_lot_emitted: true
+    planning_lot_id: PLAN-LOT-003
+    candidate_generation: ALLOWED_DOWNSTREAM
+    model_scoring: PENDING_DOWNSTREAM_GATES
+    optimizer_entry: NOT_YET_APPLICABLE
+    human_review_required: false
+  quantity_invariant:
+    assertion: 15 + 0 + 10 + 0 + 0 == 25
+    expected_result: PASS
+  failure_conditions:
+  - inventory_status != SURPLUS_CANDIDATE
+  - protected_normal_stock_quantity != 15
+  - planning_quantity != 10
+  - surplus_source != CALCULATED
+  - planner_eligible_quantity != 10
+  - planner menerima seluruh 25 sachet
+  - protected stock ikut planning lot
+  - model langsung memberi score sebelum hard gates
+  - status menjadi HEALTHY_STOCK hanya karena recent receipt
+  - quantity_invariant_passed == false
+  calculations:
+    remaining_shelf_life_days:
+      expression: 2027-01-31 - 2026-08-05
+      result: 179
+    average_daily_sales:
+      expression: 30 / 30
+      result: 1.0
+    expected_normal_sales:
+      expression: 1.0 * 10
+      result: 10
+    normal_stock_requirement_quantity:
+      expression: 10 + 5
+      result: 15
+    protected_normal_stock_quantity:
+      expression: min(25, 15)
+      result: 15
+    surplus_candidate_quantity:
+      expression: max(0, 25 - 15)
+      result: 10
+    planning_quantity:
+      source: CALCULATED_SURPLUS
+      result: 10
+    estimated_current_value:
+      expression: 25 * 1250
+      result: 31250
+  expected_planning_lot:
+    planning_lot_id: PLAN-LOT-003
+    source_lot_id: LOT-003
+    planning_quantity: 10
+    unit: SACHET
+    surplus_source: CALCULATED
+    candidate_generation_status: PENDING
+  planner_partition_invariant:
+    current_quantity: 25
+    planner_eligible_quantity: 10
+    planner_excluded_quantity: 15
+    assertion: 10 + 15 == 25
+    expected_result: PASS
+- lot_id: LOT-004
+  validation:
+    schema_status: PASSED
+    required_fields_status: PASSED
+    conditional_fields_status: PASSED
+    enum_status: PASSED
+    quantity_status: PASSED
+    date_status: PASSED
+    lot_integrity_status: PASSED
+    errors: []
+    warnings:
+    - EXPIRED_LOT_REQUIRES_NON_CONSUMPTION_ROUTING
+  expected_triage:
+    source_lot_id: LOT-004
+    inventory_status: EXPIRED
+    remaining_shelf_life_days: -1
+    protected_normal_stock_quantity: 0
+    monitor_quantity: 0
+    surplus_candidate_quantity: 0
+    planning_quantity: 0
+    expired_quantity: 12
+    review_quantity: 0
+    surplus_source: null
+    urgency_level: CRITICAL
+    triage_reason_codes:
+    - EXPIRED_HARD_REJECT
+    - SAFETY_COMPLIANCE_PRECEDENCE
+    - SALES_CALCULATION_SKIPPED
+    estimated_current_value: 24000
+    estimated_inventory_loss: 24000
+    triage_policy_version: integration-triage-fixture-v1.0
+  expected_routing:
+    planner_entry: false
+    surplus_planning_lot_emitted: false
+    candidate_generation: false
+    model_scoring: NOT_APPLICABLE
+    optimizer_entry: false
+    consumption_channels_allowed: false
+    terminal_route:
+      route_class: NON_CONSUMPTION_PATH
+      final_action: PENDING_DETERMINISTIC_POLICY
+      allowed_resolution_types:
+      - VERIFIED_SUPPLIER_RECALL
+      - VERIFIED_NON_CONSUMPTION_RETURN
+      - SAFE_DISPOSAL
+    evidence_review_required: false
+    final_human_approval_required: true
+  quantity_invariant:
+    assertion: 0 + 0 + 0 + 12 + 0 == 12
+    expected_result: PASS
+  failure_conditions:
+  - inventory_status != EXPIRED
+  - expired_quantity != 12
+  - planning_quantity != 0
+  - planner_entry == true
+  - candidate_generation == true
+  - model_scoring != NOT_APPLICABLE
+  - optimizer_entry == true
+  - consumption_channels_allowed == true
+  - sales velocity mengubah routing
+  - harga atau margin mengubah routing
+  - sistem langsung memilih disposal tanpa policy
+  - estimated inventory loss dilaporkan sebagai cash recovery
+  - quantity_invariant_passed == false
+  calculations:
+    remaining_shelf_life_days:
+      expression: 2026-08-04 - 2026-08-05
+      result: -1
+    expiry_status:
+      rule: remaining_shelf_life_days < 0
+      result: EXPIRED
+    sales_based_surplus_calculation:
+      execution_status: SKIPPED
+      reason: EXPIRED_PRECEDENCE
+    protected_normal_stock_quantity: 0
+    surplus_candidate_quantity: 0
+    planning_quantity: 0
+    estimated_current_value:
+      expression: 12 * 2000
+      result: 24000
+- lot_id: LOT-005
+  validation:
+    schema_status: PASSED
+    required_fields_status: PASSED
+    enum_status: PASSED
+    quantity_status: PASSED
+    date_status: PASSED
+    lot_integrity_status: PASSED
+    errors: []
+    warnings:
+    - CRITICAL_STORAGE_EVIDENCE_INSUFFICIENT
+  expected_triage:
+    source_lot_id: LOT-005
+    inventory_status: NEEDS_REVIEW
+    protected_normal_stock_quantity: 0
+    monitor_quantity: 0
+    surplus_candidate_quantity: 0
+    planning_quantity: 0
+    expired_quantity: 0
+    review_quantity: 20
+    surplus_source: null
+    urgency_level: HIGH
+    triage_reason_codes:
+    - CRITICAL_STORAGE_EVIDENCE_MISSING
+    - UNKNOWN_STORAGE_HISTORY
+    - REQUIRED_TEMPERATURE_LOG_UNAVAILABLE
+    - AUTOMATIC_DECISION_ABSTAINED
+    estimated_current_value: 160000
+    triage_policy_version: integration-triage-fixture-v1.0
+  expected_routing:
+    planner_entry: false
+    surplus_planning_lot_emitted: false
+    candidate_generation: false
+    model_scoring: NOT_APPLICABLE
+    optimizer_entry: false
+    consumption_channels_allowed: false
+    non_consumption_terminal_route_selected: false
+    human_review_required: true
+  quantity_invariant:
+    assertion: 0 + 0 + 0 + 0 + 20 == 20
+    expected_result: PASS
+  failure_conditions:
+  - inventory_status != NEEDS_REVIEW
+  - review_quantity != 20
+  - planning_quantity != 0
+  - planner_entry == true
+  - candidate_generation == true
+  - model_scoring != NOT_APPLICABLE
+  - optimizer_entry == true
+  - storage history diasumsikan aman
+  - temperature evidence diimputasi otomatis
+  - sales evidence melewati safety uncertainty
+  - nilai komersial mengubah routing
+  - lot otomatis diarahkan ke SAFE_DISPOSAL
+  - quantity_invariant_passed == false
+  safety_evidence_evaluation:
+    expiry_check:
+      result: VALID
+    packaging_check:
+      result: PASSED
+    seal_integrity_check:
+      result: PASSED
+    primary_container_check:
+      result: PASSED
+    storage_history_check:
+      required: true
+      observed_value: UNKNOWN
+      result: INSUFFICIENT_EVIDENCE
+    temperature_log_check:
+      required: true
+      observed_value: false
+      result: MISSING_REQUIRED_EVIDENCE
+    overall_safety_evidence_status: INSUFFICIENT
+  sales_based_surplus_calculation:
+    execution_status: SKIPPED
+    reason: CRITICAL_STORAGE_EVIDENCE_MISSING
+  expected_review:
+    human_review_required: true
+    review_scope:
+      applies_to_quantity: 20
+      applies_to_entire_lot: true
+    required_evidence:
+    - verified storage history
+    - acceptable temperature record
+    - category-appropriate cold-chain confirmation
+    automatic_resolution_allowed: false
+    optimistic_imputation_allowed: false
+- lot_id: LOT-006
+  validation:
+    schema_status: PASSED
+    required_fields_status: PASSED
+    conditional_fields_status: PASSED
+    enum_status: PASSED
+    quantity_status: PASSED
+    date_status: PASSED
+    lot_integrity_status: PASSED
+    declared_surplus_validation:
+      declared_surplus: true
+      declared_surplus_quantity: 8
+      quantity_is_positive: true
+      quantity_within_current_stock: true
+      result: PASSED
+    errors: []
+    warnings:
+    - SALES_HISTORY_NOT_AVAILABLE
+    - UNDECLARED_REMAINDER_REQUIRES_REVIEW
+    - DECLARATION_AUTHORITY_POLICY_NOT_YET_CONFIGURED
+  expected_triage:
+    source_lot_id: LOT-006
+    inventory_status: SURPLUS_CANDIDATE
+    remaining_shelf_life_days: 148
+    effective_sales_window_days: 10
+    average_daily_sales: null
+    expected_normal_sales: null
+    surplus_candidate_quantity: null
+    protected_normal_stock_quantity: 0
+    monitor_quantity: 0
+    planning_quantity: 8
+    expired_quantity: 0
+    review_quantity: 12
+    surplus_source: USER_DECLARED
+    urgency_level: LOW
+    triage_reason_codes:
+    - VALID_USER_DECLARED_SURPLUS
+    - SALES_EVIDENCE_MISSING
+    - UNDECLARED_REMAINDER_REQUIRES_REVIEW
+    - DECLARATION_SCOPE_LIMITED_TO_DECLARED_QUANTITY
+    estimated_current_value: 25000
+    triage_policy_version: integration-triage-fixture-v1.0
+  expected_routing:
+    planner_entry: true
+    planner_eligible_quantity: 8
+    surplus_planning_lot_emitted: true
+    planning_lot_id: PLAN-LOT-006
+    candidate_generation: ALLOWED_DOWNSTREAM
+    model_scoring: PENDING_DOWNSTREAM_GATES
+    optimizer_entry: NOT_YET_APPLICABLE
+    review_quantity_excluded_from_planner: 12
+    human_review_required: true
+  quantity_invariant:
+    assertion: 0 + 0 + 8 + 0 + 12 == 20
+    expected_result: PASS
+  failure_conditions:
+  - inventory_status != SURPLUS_CANDIDATE
+  - planning_quantity != 8
+  - review_quantity != 12
+  - surplus_source != USER_DECLARED
+  - planner menerima seluruh 20 sachet
+  - review quantity ikut planning lot
+  - review quantity menerima model score
+  - review quantity masuk allocation
+  - sisa 12 sachet otomatis dianggap HEALTHY_STOCK
+  - sales history diimputasi optimistis
+  - declaration mengalahkan expiry atau safety gate
+  - quantity_invariant_passed == false
+  demand_evidence_evaluation:
+    units_sold_observation_window: null
+    observation_days: null
+    safety_stock: null
+    calculated_surplus_available: false
+    calculated_surplus_status: NOT_COMPUTED
+    reason: SALES_EVIDENCE_MISSING
+  declared_surplus_evaluation:
+    declared_surplus: true
+    declared_surplus_quantity: 8
+    quantity_is_positive: true
+    quantity_within_current_stock: true
+    safety_gate_passed: true
+    expiry_check_passed: true
+    result: VALID_FOR_FIXTURE
+  declaration_authority_boundary:
+    may_define_planning_quantity_for_declared_units: true
+    may_replace_missing_sales_evidence_for_declared_units: true
+    may_prove_remainder_is_healthy: false
+    may_override_expiry: false
+    may_override_safety_reject: false
+    may_override_missing_critical_safety_evidence: false
+    may_select_final_rescue_action: false
+  quantity_calculation:
+    planning_quantity:
+      expression: declared_surplus_quantity
+      result: 8
+    undeclared_remainder_quantity:
+      expression: 20 - 8
+      result: 12
+    review_quantity: 12
+    estimated_current_value:
+      expression: 20 * 1250
+      result: 25000
+  expected_review:
+    review_reason: UNDECLARED_REMAINDER_WITHOUT_SALES_EVIDENCE
+    review_quantity: 12
+    automatic_healthy_classification_allowed: false
+    automatic_surplus_classification_allowed: false
+    optimistic_imputation_allowed: false
+  planner_partition_invariant:
+    current_quantity: 20
+    planner_eligible_quantity: 8
+    planner_excluded_quantity: 12
+    assertion: 8 + 12 == 20
+    expected_result: PASS
+  schema_change_dependency:
+    change_request: SCHEMA-CR-001
+    required: true
+    logical_contract_status: APPROVED
+    schema_file_update_status: DEFERRED_UNTIL_FINAL_PACKAGING
+workbook_reconciliation:
+  integration_fixture:
+    workbook: RAW_INVENTORY_FIXTURE.xlsx
+    sheet: inventory_lots
+    row_count: 6
+    column_count: 33
+    source_type: SYNTHETIC_INTEGRATION_FIXTURE
+  lot_summary:
+  - lot_id: LOT-001
+    current: 15
+    protected: 15
+    monitor: 0
+    planning: 0
+    expired: 0
+    review: 0
+    status: HEALTHY_STOCK
+  - lot_id: LOT-002
+    current: 10
+    protected: 0
+    monitor: 10
+    planning: 0
+    expired: 0
+    review: 0
+    status: MONITOR
+  - lot_id: LOT-003
+    current: 25
+    protected: 15
+    monitor: 0
+    planning: 10
+    expired: 0
+    review: 0
+    status: SURPLUS_CANDIDATE
+  - lot_id: LOT-004
+    current: 12
+    protected: 0
+    monitor: 0
+    planning: 0
+    expired: 12
+    review: 0
+    status: EXPIRED
+  - lot_id: LOT-005
+    current: 20
+    protected: 0
+    monitor: 0
+    planning: 0
+    expired: 0
+    review: 20
+    status: NEEDS_REVIEW
+  - lot_id: LOT-006
+    current: 20
+    protected: 0
+    monitor: 0
+    planning: 8
+    expired: 0
+    review: 12
+    status: SURPLUS_CANDIDATE
+  workbook_quantity_invariant:
+    total_current_quantity: 102
+    quantity_buckets:
+      protected_normal_stock_quantity: 30
+      monitor_quantity: 10
+      planning_quantity: 18
+      expired_quantity: 12
+      review_quantity: 32
+    assertion: 30 + 10 + 18 + 12 + 32 == 102
+    expected_result: PASS
+  planner_reconciliation:
+    eligible_lots:
+    - lot_id: LOT-003
+      planning_lot_id: PLAN-LOT-003
+      planning_quantity: 10
+      surplus_source: CALCULATED
+    - lot_id: LOT-006
+      planning_lot_id: PLAN-LOT-006
+      planning_quantity: 8
+      surplus_source: USER_DECLARED
+    total_planner_eligible_quantity: 18
+    total_planner_excluded_quantity: 84
+    assertion: 18 + 84 == 102
+    expected_result: PASS
+  planner_excluded:
+    protected_normal_stock_quantity: 30
+    monitor_quantity: 10
+    expired_quantity: 12
+    review_quantity: 32
+    total: 84
+  planning_source_summary:
+    CALCULATED:
+      lots:
+      - LOT-003
+      quantity: 10
+    USER_DECLARED:
+      lots:
+      - LOT-006
+      quantity: 8
+    total_planning_quantity: 18
+  review_summary:
+    total_review_quantity: 32
+    by_reason:
+      CRITICAL_STORAGE_EVIDENCE_MISSING:
+        lots:
+        - LOT-005
+        quantity: 20
+      UNDECLARED_REMAINDER_WITHOUT_SALES_EVIDENCE:
+        lots:
+        - LOT-006
+        quantity: 12
+  workbook_validation:
+    file_status: PASSED_WITH_WARNINGS
+    row_count: 6
+    unique_lot_count: 6
+    duplicate_lot_ids: []
+    structurally_valid_rows:
+    - LOT-001
+    - LOT-002
+    - LOT-003
+    - LOT-004
+    - LOT-005
+    - LOT-006
+    rows_with_warnings:
+      LOT-004:
+      - EXPIRED_LOT_REQUIRES_NON_CONSUMPTION_ROUTING
+      LOT-005:
+      - CRITICAL_STORAGE_EVIDENCE_INSUFFICIENT
+      LOT-006:
+      - SALES_HISTORY_NOT_AVAILABLE
+      - UNDECLARED_REMAINDER_REQUIRES_REVIEW
+      - DECLARATION_AUTHORITY_POLICY_NOT_CONFIGURED
+    blocking_validation_errors: []
+  estimated_value_partition:
+    protected_normal_stock_value: 37500
+    monitor_value: 12500
+    planning_quantity_value: 22500
+    expired_inventory_loss: 24000
+    review_quantity_value: 175000
+    total_estimated_current_value: 271500
+    assertion: 37500 + 12500 + 22500 + 24000 + 175000 == 271500
+    expected_result: PASS
+  candidate_generation_boundary:
+    allowed_sources:
+    - PLAN-LOT-003
+    - PLAN-LOT-006
+    forbidden_sources:
+    - LOT-001
+    - LOT-002
+    - LOT-004
+    - LOT-005
+    - LOT-006.review_quantity
+    total_candidate_source_quantity: 18
+  human_review_summary:
+    review_required_lots:
+    - LOT-005
+    - LOT-006
+    review_required_quantity: 32
+    final_decision_approval_required_for_all_recommendations: true
+  schema_change_dependency:
+    change_request: SCHEMA-CR-001
+    logical_contract_status: APPROVED
+    schema_file_update_status: DEFERRED_UNTIL_FINAL_PACKAGING
+  failure_conditions:
+  - total_current_quantity != 102
+  - total_protected_quantity != 30
+  - total_monitor_quantity != 10
+  - total_planning_quantity != 18
+  - total_expired_quantity != 12
+  - total_review_quantity != 32
+  - quantity_bucket_sum != total_current_quantity
+  - planner_eligible_quantity != 18
+  - planner menerima lebih dari 18 unit
+  - planner menerima protected quantity
+  - planner menerima monitor quantity
+  - planner menerima expired quantity
+  - planner menerima review quantity
+  - duplicate lot_id ditemukan
+  - row structurally invalid tetap diproses
+  - warning diperlakukan sebagai silent success
+  - estimated inventory value diperlakukan sebagai recovery value
+  - workbook reconciliation kehilangan quantity
+global_invariants:
+  quantity_conservation:
+    assertion: 30 + 10 + 18 + 12 + 32 == 102
+    expected_result: PASS
+  planner_boundary:
+    total_planning_quantity: 18
+    total_planner_excluded_quantity: 84
+    allowed_planning_lots:
+    - PLAN-LOT-003
+    - PLAN-LOT-006
+    expected_result: PASS
+  review_boundary:
+    total_review_quantity: 32
+    review_quantities_are_not_planner_eligible: true
+    expected_result: PASS
+schema_change_dependency:
+  change_request: SCHEMA-CR-001
+  logical_status: APPROVED
+  schema_file_update_status: DEFERRED_UNTIL_FINAL_PACKAGING
+production_claims:
+  test_execution_completed: false
+  production_system_implemented: false
+  model_scoring_performed: false
+  optimizer_run_performed: false

@@ -1,0 +1,124 @@
+contract_version: 1.0.0
+case_id: EVAL-001
+title: Incomplete Surplus Data Harus Abstain
+case_type: AMBIGUOUS_INCOMPLETE_INPUT
+evaluation_layer: CORE_RESCUE_PLANNER
+input_entity: SURPLUS_PLANNING_LOT
+purpose: Menguji apakah sistem menolak mengarang keputusan ketika jumlah, expiry, kondisi, atau data demand
+  tidak cukup untuk membandingkan tindakan.
+optimization_objective: BALANCED
+fixtures:
+  lots:
+  - lot_id: PL-NUTRISARI-001
+    source_lot_id: LOT-NUTRISARI-001
+    quantity: UNKNOWN
+    unit: SACHET
+    attributes:
+      product_name: Nutrisari Es Rujak
+      product_category: POWDERED_BEVERAGE_SACHET
+      expiry_date: UNKNOWN
+      remaining_shelf_life_days: UNKNOWN
+      product_condition: UNKNOWN
+      packaging_condition: UNKNOWN
+      verification_status: LOW
+  batch_context: {}
+  capability_facts:
+    can_discount: true
+    can_bundle: true
+    can_internal_repurpose: true
+    can_offer_bonus: true
+  capability_notes: []
+  partners:
+  - partner_id: PARTNER-01
+    attributes: {}
+    description: Tidak ada partner snapshot yang cukup untuk alokasi eksternal.
+  context_notes:
+  - Harga historis keluarga tersedia sebagai konteks, tetapi jumlah stok dan outcome tidak tercatat.
+  - objective tidak boleh digunakan sebelum validation selesai.
+expected:
+  route:
+    statuses:
+      validation_status: FAILED
+      decision_status: NEEDS_REVIEW
+      model_scoring_status: BLOCKED
+      optimizer_status: BLOCKED
+    notes: []
+  allocations: []
+  metrics:
+    automatic_allocated_quantity: 0
+    human_review_required: true
+  objective_runs: {}
+  required_fields:
+  - planning_quantity
+  - expiry_date_or_safe_window
+  - product_condition
+  - packaging_condition
+  - available_repurpose_capacity
+  - campaign_or_sales_context
+  rejected_alternative: null
+  rejected_partner: null
+  possible_outcomes: []
+  feasible_actions:
+  - Tidak ada tindakan otomatis yang dinyatakan feasible karena data kritis belum lengkap.
+  forbidden_actions:
+  - Semua alokasi otomatis; klaim bahwa bonus, repurpose, atau diskon pasti terbaik.
+  acceptable_decision: Tidak ada single best action. Sistem mengembalikan daftar field yang harus diverifikasi.
+  binding_constraints:
+  - Required field completeness
+  - No unsupported assumption
+  - No scoring before validation
+  explanation: '> Data belum cukup untuk memilih tindakan. Verifikasi jumlah, masa aman, kondisi, dan
+    kapasitas eksekusi sebelum planner dijalankan.'
+  failure_conditions:
+  - mengarang jumlah stok
+  - menggunakan harga historis sebagai outcome
+  - menghasilkan rescue-success score
+  - memilih bonus tanpa syarat transaksi
+traceability:
+  rule_ids:
+  - VALIDATION-RULE-000
+  feature_terms:
+  - critical_field_completeness
+  - validation_status
+  - missing_field_list
+  - human_review_required
+  source_markdown: EVAL-001.md
+  source_references:
+  - Incident-001
+  - Incident_001-016_Family_Corroborated(1).txt
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  uncertainty_and_source_boundary: 'Incident keluarga mengonfirmasi pola tindakan, bukan jumlah atau hasil.
+    Kasus ini sengaja mempertahankan unknowns.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara
+    eksplisit berasal dari catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak
+    membuktikan probabilitas keberhasilan dunia nyata.'
+assertions:
+- type: CASE_ID_MATCHES_FILE
+  params:
+    expected_case_id: EVAL-001
+- type: HAS_RULE_TRACEABILITY
+  params:
+    minimum_rule_count: 1
+- type: NO_AUTOMATIC_ALLOCATION
+  params: {}
+- type: STATUS_EQUALS
+  params:
+    field: model_scoring_status
+    value: BLOCKED
+- type: STATUS_EQUALS
+  params:
+    field: optimizer_status
+    value: BLOCKED
+- type: HUMAN_REVIEW_REQUIRED
+  params: {}
+- type: EXPECTED_METRIC
+  params:
+    name: automatic_allocated_quantity
+    value: 0
+- type: EXPECTED_METRIC
+  params:
+    name: human_review_required
+    value: true

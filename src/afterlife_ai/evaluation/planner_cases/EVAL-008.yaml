@@ -1,0 +1,105 @@
+contract_version: 1.0.0
+case_id: EVAL-008
+title: Markdown Mengalahkan Retur Parsial yang Mahal
+case_type: LOCAL_DISCOUNT_BEATS_RETURN
+evaluation_layer: CORE_RESCUE_PLANNER
+input_entity: SURPLUS_PLANNING_LOT
+purpose: Menguji bahwa keberadaan opsi retur tidak otomatis membuat retur menjadi keputusan terbaik.
+optimization_objective: BALANCED
+fixtures:
+  lots:
+  - lot_id: PL-PACKAGED-008
+    source_lot_id: null
+    quantity: 24
+    unit: UNIT
+    attributes:
+      product_name: Produk kemasan lama
+      product_category: PACKAGED_GOODS
+      remaining_shelf_life_days: 120
+      packaging_condition: INTACT
+  batch_context: {}
+  capability_facts:
+    can_return_supplier: true
+    can_discount: true
+  capability_notes: []
+  partners:
+  - partner_id: PARTNER-01
+    attributes: {}
+    description: Supplier hanya menerima 8 unit; biaya transport dan handling tinggi.
+  context_notes:
+  - Local demand masih tersedia untuk 24 unit.
+expected:
+  route:
+    statuses: {}
+    notes:
+    - RETURN_TO_SUPPLIER maksimal 8
+    - LOCAL_DISCOUNT maksimal 24
+  allocations:
+  - lot_id: PL-PACKAGED-008
+    source_lot_ids: &id001 []
+    action: LOCAL_DISCOUNT
+    quantity: 24
+    destination: null
+    attributes: {}
+  metrics: {}
+  objective_runs: {}
+  required_fields: []
+  rejected_alternative:
+    action: RETURN_TO_SUPPLIER
+    reason: net_recovery_below_local_fallback
+  rejected_partner: null
+  possible_outcomes: []
+  feasible_actions:
+  - Return dipilih hanya karena ada policy
+  forbidden_actions:
+  - Retur parsial jika net gain positif tetapi lebih rendah daripada local fallback
+  acceptable_decision: Local discount untuk 24 unit.
+  binding_constraints:
+  - Net recovery comparison
+  - Partial eligibility
+  - Transport cost
+  explanation: '> Retur ditolak karena kuantitas terbatas dan biaya menghapus keunggulannya dibanding
+    markdown lokal.'
+  failure_conditions:
+  - mengabaikan fallback
+  - mengirim 24 ketika eligible 8
+  - membandingkan gross credit dengan net local recovery
+traceability:
+  rule_ids:
+  - VALUE-RULE-001
+  feature_terms:
+  - return_eligible_quantity
+  - return_net_recovery
+  - fallback_net_recovery
+  - marginal_gain
+  source_markdown: EVAL-008.md
+  source_references:
+  - Incident-016
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  uncertainty_and_source_boundary: 'Case ini adalah pasangan kontrol EVAL-007.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara
+    eksplisit berasal dari catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak
+    membuktikan probabilitas keberhasilan dunia nyata.'
+assertions:
+- type: CASE_ID_MATCHES_FILE
+  params:
+    expected_case_id: EVAL-008
+- type: HAS_RULE_TRACEABILITY
+  params:
+    minimum_rule_count: 1
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: PL-PACKAGED-008
+    action: LOCAL_DISCOUNT
+    quantity: 24
+    destination: null
+    source_lot_ids: *id001
+- type: QUANTITY_CONSERVATION
+  params:
+    lot_id: PL-PACKAGED-008
+    input_quantity: 24
+    expected_allocated_quantity: 24.0
+    expected_unallocated_quantity: 0

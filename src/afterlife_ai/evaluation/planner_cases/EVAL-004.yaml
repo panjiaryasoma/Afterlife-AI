@@ -1,0 +1,138 @@
+contract_version: 1.0.0
+case_id: EVAL-004
+title: Kapasitas Partner Dibagi Secara Global
+case_type: SHARED_PARTNER_CAPACITY
+evaluation_layer: CORE_RESCUE_PLANNER
+input_entity: SURPLUS_PLANNING_LOT
+purpose: Menguji optimizer global ketika dua lot bersaing untuk kapasitas partner yang sama.
+optimization_objective: BALANCED
+fixtures:
+  lots:
+  - lot_id: PL-BREAD-004
+    source_lot_id: null
+    quantity: 20
+    unit: null
+    attributes:
+      product_category: BAKERY
+  - lot_id: PL-PASTRY-004
+    source_lot_id: null
+    quantity: 25
+    unit: null
+    attributes:
+      product_category: BAKERY
+  batch_context:
+    quality_status: PASSED
+  capability_facts:
+    can_discount: true
+    can_donate: true
+  capability_notes: []
+  partners:
+  - partner_id: PARTNER-01
+    attributes: {}
+    description: P-CAFE-004 menerima kedua kategori; active demand dan capacity total=30
+  context_notes:
+  - Marginal gain bread > pastry
+  - fallback pastry=LOCAL_DISCOUNT
+expected:
+  route:
+    statuses:
+      kedua lot feasible ke partner, tetapi capacity shared: 30
+    notes: []
+  allocations:
+  - lot_id: PL-BREAD-004
+    source_lot_ids: &id001 []
+    action: EXTERNAL_PARTNER
+    quantity: 20
+    destination: null
+    attributes: {}
+  - lot_id: PL-PASTRY-004
+    source_lot_ids: &id002 []
+    action: EXTERNAL_PARTNER
+    quantity: 10
+    destination: null
+    attributes: {}
+  - lot_id: PL-PASTRY-004
+    source_lot_ids: &id003 []
+    action: LOCAL_DISCOUNT
+    quantity: 15
+    destination: null
+    attributes: {}
+  metrics:
+    partner_capacity_used: 30
+  objective_runs: {}
+  required_fields: []
+  rejected_alternative: null
+  rejected_partner: null
+  possible_outcomes: []
+  feasible_actions:
+  - 'P-CAFE: bread 20 + pastry 10'
+  - Pastry remainder 15 ke local discount
+  forbidden_actions:
+  - alokasi 30 untuk setiap lot
+  - total partner allocation >30
+  acceptable_decision: Prioritaskan unit dengan marginal gain tertinggi, lalu fallback untuk remainder.
+  binding_constraints:
+  - Shared capacity
+  - Marginal value
+  - Quantity conservation
+  explanation: '> Kapasitas 30 tidak diperbanyak per lot. Dua puluh unit bread dan sepuluh pastry memakai
+    partner; sisanya memakai fallback.'
+  failure_conditions:
+  - capacity reset per row
+  - first-come-first-served tanpa nilai marginal
+  - remainder hilang
+traceability:
+  rule_ids:
+  - CAPACITY-RULE-001
+  feature_terms:
+  - partner_shared_capacity
+  - marginal_gain_vs_fallback
+  - global_allocation_quantity
+  source_markdown: EVAL-004.md
+  source_references:
+  - External-Incident-005
+  - External-Incident-006
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  uncertainty_and_source_boundary: 'Prioritas marginal adalah parameter skenario sintetis.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara
+    eksplisit berasal dari catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak
+    membuktikan probabilitas keberhasilan dunia nyata.'
+assertions:
+- type: CASE_ID_MATCHES_FILE
+  params:
+    expected_case_id: EVAL-004
+- type: HAS_RULE_TRACEABILITY
+  params:
+    minimum_rule_count: 1
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: PL-BREAD-004
+    action: EXTERNAL_PARTNER
+    quantity: 20
+    destination: null
+    source_lot_ids: *id001
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: PL-PASTRY-004
+    action: EXTERNAL_PARTNER
+    quantity: 10
+    destination: null
+    source_lot_ids: *id002
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: PL-PASTRY-004
+    action: LOCAL_DISCOUNT
+    quantity: 15
+    destination: null
+    source_lot_ids: *id003
+- type: EXPECTED_METRIC
+  params:
+    name: partner_capacity_used
+    value: 30
+- type: BATCH_QUANTITY_CONSERVATION
+  params:
+    input_quantity: 45
+    expected_allocated_quantity: 45.0

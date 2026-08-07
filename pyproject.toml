@@ -47,6 +47,10 @@ where = ["src"]
 include = ["afterlife_ai*"]
 
 
+[tool.setuptools.package-data]
+afterlife_ai = ["evaluation/planner_cases/*.yaml"]
+
+
 [tool.pytest.ini_options]
 minversion = "8.0"
 addopts = "-ra --strict-markers --strict-config"

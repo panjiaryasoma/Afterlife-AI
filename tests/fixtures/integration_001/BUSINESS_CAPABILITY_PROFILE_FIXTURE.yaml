@@ -1,0 +1,44 @@
+integration_id: INTEGRATION-001
+version: 1.0.0
+phase: PREPRODUCTION_ACCEPTANCE
+status: LOCKED_FOR_PREPRODUCTION
+source_document: INTEGRATION-001.md
+source_type: EVALUATION_FIXTURE
+production_default: false
+automatic_execution_allowed: false
+human_approval_required: true
+artifact: BUSINESS_CAPABILITY_PROFILE_FIXTURE
+business_profile_id: BCP-STORE-01-INTEGRATION-001
+business_type: SMALL_RETAIL
+source_location: STORE-01
+supported_actions:
+  INTERNAL_REPURPOSE: true
+  BUNDLE: true
+  LOCAL_DISCOUNT: true
+  PROMOTIONAL_BONUS: true
+internal_repurpose_capacity:
+  equipment_capacity: 8
+  labor_capacity: 6
+  ingredient_and_cup_capacity: 8
+  verified_repurpose_demand: 8
+  maximum_batch_repurpose_quantity: 6
+  binding_resource: LABOR_CAPACITY
+  capacity_scope: SHARED_ACROSS_ALL_PLANNING_LOTS
+bundle_capacity:
+  companion_product_id: SNACK-FIXTURE-01
+  companion_current_quantity: 6
+  companion_reserved_quantity: 2
+  allocatable_companion_quantity: 4
+  bundle_ratio: '1:1'
+  maximum_bundle_quantity: 4
+  supported_source_skus:
+  - PBEV-003
+promotional_bonus_context:
+  qualifying_transactions: 0
+  max_bonus_per_transaction: 1
+  maximum_bonus_quantity: 0
+  campaign_margin_status: NOT_EVALUABLE_WITHOUT_TRANSACTION
+claim_boundary:
+  real_capacity_claim: false
+  real_demand_claim: false
+  fixture_parameters_require_field_validation: true

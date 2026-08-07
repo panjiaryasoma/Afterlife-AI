@@ -1,0 +1,114 @@
+contract_version: 1.0.0
+case_id: EVAL-014
+title: Logistics Budget Bersifat Global
+case_type: GLOBAL_LOGISTICS_BUDGET
+evaluation_layer: CORE_RESCUE_PLANNER
+input_entity: SURPLUS_PLANNING_LOT
+purpose: Menguji bahwa biaya partner dipilih lintas lot berdasarkan marginal gain, bukan budget terpisah
+  per kandidat.
+optimization_objective: BALANCED
+fixtures:
+  lots:
+  - lot_id: PL-A-014
+    source_lot_id: null
+    quantity: 20
+    unit: null
+    attributes:
+      category: BAKERY
+  - lot_id: PL-B-014
+    source_lot_id: null
+    quantity: 15
+    unit: null
+    attributes:
+      category: FROZEN_FOOD
+  - lot_id: PL-C-014
+    source_lot_id: null
+    quantity: 25
+    unit: null
+    attributes:
+      category: HOUSEHOLD_CLEANING
+  batch_context: {}
+  capability_facts: {}
+  capability_notes:
+  - local fallback tersedia untuk seluruh lot
+  partners:
+  - partner_id: PARTNER-01
+    attributes: {}
+    description: Partner A cost 10000, marginal gain 50000
+  - partner_id: PARTNER-02
+    attributes: {}
+    description: Partner B cost 20000, marginal gain 70000
+  - partner_id: PARTNER-03
+    attributes: {}
+    description: Partner C cost 15000, marginal gain 5000
+  context_notes:
+  - max_logistics_budget=30000
+expected:
+  route:
+    statuses: {}
+    notes:
+    - Input lot sudah berada pada layer Core Rescue Planner.
+    - Jalankan validation, coverage, safety, verification, dan feasibility gate sebelum model scoring.
+  allocations: []
+  metrics:
+    selected_partner_costs:
+      Partner-A: 10000
+      Partner-B: 20000
+      Partner-C: 0
+    total_logistics_cost: 30000
+    budget_violation: 0
+  objective_runs: {}
+  required_fields: []
+  rejected_alternative: null
+  rejected_partner: null
+  possible_outcomes: []
+  feasible_actions:
+  - Partner A dan B
+  - Local fallback untuk C
+  forbidden_actions:
+  - Memilih ketiga partner; total cost 45000
+  - first-row budget allocation tanpa gain
+  acceptable_decision: Gunakan budget 30.000 pada kombinasi A+B.
+  binding_constraints:
+  - Global budget
+  - Marginal gain vs fallback
+  - Feasibility
+  explanation: '> Partner C feasible tetapi tidak dipilih karena marginal gain kecil dan budget habis
+    pada pilihan yang lebih bernilai.'
+  failure_conditions:
+  - budget reset per lot
+  - cost >30000
+  - menganggap feasible sama dengan selected
+traceability:
+  rule_ids:
+  - BUDGET-RULE-001
+  feature_terms:
+  - global_logistics_budget
+  - candidate_logistics_cost
+  - marginal_gain_per_budget_unit
+  source_markdown: EVAL-014.md
+  source_references:
+  - AFTERLIFE_AI_MASTER_BLUEPRINT.md
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  uncertainty_and_source_boundary: 'Nilai marginal sintetis untuk menguji optimizer.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara
+    eksplisit berasal dari catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak
+    membuktikan probabilitas keberhasilan dunia nyata.'
+assertions:
+- type: CASE_ID_MATCHES_FILE
+  params:
+    expected_case_id: EVAL-014
+- type: HAS_RULE_TRACEABILITY
+  params:
+    minimum_rule_count: 1
+- type: EXPECTED_METRIC
+  params:
+    name: total_logistics_cost
+    value: 30000
+- type: EXPECTED_METRIC
+  params:
+    name: budget_violation
+    value: 0

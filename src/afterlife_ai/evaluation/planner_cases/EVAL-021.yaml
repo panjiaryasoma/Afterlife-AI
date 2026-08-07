@@ -1,0 +1,120 @@
+contract_version: 1.0.0
+case_id: EVAL-021
+title: Donasi Diblokir karena Tidak Ada Jalur Feasible
+case_type: NO_FEASIBLE_DONATION_PARTNER
+evaluation_layer: CORE_RESCUE_PLANNER
+input_entity: SURPLUS_PLANNING_LOT
+purpose: Menguji donation abstention ketika capacity ada tanpa recipient need, atau recipient ada tetapi
+  pickup terlambat.
+optimization_objective: BALANCED
+fixtures:
+  lots:
+  - lot_id: PL-MEAL-021
+    source_lot_id: null
+    quantity: 20
+    unit: PACK
+    attributes:
+      product_name: Paket makanan matang hari ini
+      product_category: READY_TO_EAT_MEAL
+      quality_inspection_status: PASSED
+      remaining_safe_window_hours: 3
+      same_day_consumption_required: true
+  batch_context: {}
+  capability_facts:
+    can_donate: true
+    commercial_channel_closed: true
+    no_verified_internal_need: true
+  capability_notes: []
+  partners:
+  - partner_id: P-FOODBANK
+    attributes: {}
+    description: 'P-FOODBANK: capacity 30, active recipient need 0, pickup 1h'
+  - partner_id: P-SHELTER
+    attributes: {}
+    description: 'P-SHELTER: active need 25, capacity 25, pickup 5h + distribution 1h'
+  context_notes:
+  - manual reverification window=1h
+expected:
+  route:
+    statuses: {}
+    notes:
+    - Input lot sudah berada pada layer Core Rescue Planner.
+    - Jalankan validation, coverage, safety, verification, dan feasibility gate sebelum model scoring.
+  allocations: []
+  metrics:
+    automatic_allocated_quantity: 0
+    human_review_required: true
+    manual_reverification_window_hours: 1
+    fallback_if_unresolved: SAFE_DISPOSAL
+  objective_runs: {}
+  required_fields: []
+  rejected_alternative: null
+  rejected_partner: null
+  possible_outcomes: []
+  feasible_actions:
+  - Tidak ada automatic donation candidate
+  forbidden_actions:
+  - donasi ke capacity-only partner
+  - donasi completion 6h pada safe window 3h
+  acceptable_decision: NO_FEASIBLE_DONATION_PARTNER; bounded manual verification; time-triggered safe
+    disposal.
+  binding_constraints:
+  - Active need
+  - Pickup completion
+  - Distribution completion
+  - Bounded review
+  explanation: '> Capacity kosong bukan active demand. Partner dengan recipient aktif juga ditolak karena
+    distribusi selesai setelah safe deadline.'
+  failure_conditions:
+  - mengarang recipient
+  - menunggu melewati safe window
+  - langsung membuang tanpa review window
+traceability:
+  rule_ids:
+  - DONATION-RULE-002
+  feature_terms:
+  - active_recipient_need_quantity
+  - available_capacity
+  - total_donation_completion_time
+  - reverification_cutoff
+  source_markdown: EVAL-021.md
+  source_references:
+  - External-Incident-003
+  - External-Incident-004
+  - External-Incident-005
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  uncertainty_and_source_boundary: 'Safe disposal adalah fallback time-triggered, bukan rekomendasi otomatis
+    pertama.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara
+    eksplisit berasal dari catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak
+    membuktikan probabilitas keberhasilan dunia nyata.'
+assertions:
+- type: CASE_ID_MATCHES_FILE
+  params:
+    expected_case_id: EVAL-021
+- type: HAS_RULE_TRACEABILITY
+  params:
+    minimum_rule_count: 1
+- type: NO_AUTOMATIC_ALLOCATION
+  params: {}
+- type: HUMAN_REVIEW_REQUIRED
+  params: {}
+- type: EXPECTED_METRIC
+  params:
+    name: automatic_allocated_quantity
+    value: 0
+- type: EXPECTED_METRIC
+  params:
+    name: human_review_required
+    value: true
+- type: EXPECTED_METRIC
+  params:
+    name: manual_reverification_window_hours
+    value: 1
+- type: EXPECTED_METRIC
+  params:
+    name: fallback_if_unresolved
+    value: SAFE_DISPOSAL

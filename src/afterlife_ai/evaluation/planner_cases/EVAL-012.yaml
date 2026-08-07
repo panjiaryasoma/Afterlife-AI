@@ -1,0 +1,118 @@
+contract_version: 1.0.0
+case_id: EVAL-012
+title: Category Mismatch Ditolak Sebelum Scoring
+case_type: PARTNER_CATEGORY_MISMATCH
+evaluation_layer: CORE_RESCUE_PLANNER
+input_entity: SURPLUS_PLANNING_LOT
+purpose: Menguji pemisahan category compatibility dari harga dan capacity.
+optimization_objective: BALANCED
+fixtures:
+  lots:
+  - lot_id: PL-CLEANING-012
+    source_lot_id: null
+    quantity: 24
+    unit: BOTTLE
+    attributes:
+      product_name: Pembersih lantai
+      product_category: HOUSEHOLD_CLEANING
+  batch_context: {}
+  capability_facts:
+    can_wholesale: true
+    can_discount: true
+  capability_notes: []
+  partners:
+  - partner_id: PARTNER-01
+    attributes: {}
+    description: P-BAKERY memberi harga tinggi tetapi accepted_categories hanya BAKERY
+  - partner_id: PARTNER-02
+    attributes: {}
+    description: P-LAUNDRY menerima HOUSEHOLD_CLEANING capacity 18
+  context_notes:
+  - Local fallback tersedia untuk 6 unit.
+expected:
+  route:
+    statuses: {}
+    notes:
+    - Input lot sudah berada pada layer Core Rescue Planner.
+    - Jalankan validation, coverage, safety, verification, dan feasibility gate sebelum model scoring.
+  allocations:
+  - lot_id: PL-CLEANING-012
+    source_lot_ids: &id001 []
+    action: EXTERNAL_PARTNER
+    quantity: 18
+    destination: P-LAUNDRY
+    attributes: {}
+  - lot_id: PL-CLEANING-012
+    source_lot_ids: &id002 []
+    action: LOCAL_DISCOUNT
+    quantity: 6
+    destination: null
+    attributes: {}
+  metrics: {}
+  objective_runs: {}
+  required_fields: []
+  rejected_alternative: null
+  rejected_partner: null
+  possible_outcomes: []
+  feasible_actions:
+  - P-LAUNDRY 18
+  - LOCAL_DISCOUNT 6
+  forbidden_actions:
+  - P-BAKERY allocation
+  - model scoring untuk category mismatch
+  acceptable_decision: Compatible partner dan local remainder.
+  binding_constraints:
+  - Accepted category
+  - Partner capacity
+  - No price override
+  explanation: '> P-BAKERY dikeluarkan sebelum model karena category mismatch; harga tidak mengubah compatibility.'
+  failure_conditions:
+  - memilih harga tertinggi
+  - category encoding dianggap similarity cukup
+  - scoring infeasible candidate
+traceability:
+  rule_ids:
+  - PARTNER-RULE-001
+  feature_terms:
+  - category_match_status
+  - accepted_categories
+  - compatibility_rejection_reason
+  source_markdown: EVAL-012.md
+  source_references:
+  - AFTERLIFE_AI_MASTER_BLUEPRINT.md
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  uncertainty_and_source_boundary: 'Kategori harus berasal dari taxonomy yang terkontrol, bukan string
+    similarity bebas.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara
+    eksplisit berasal dari catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak
+    membuktikan probabilitas keberhasilan dunia nyata.'
+assertions:
+- type: CASE_ID_MATCHES_FILE
+  params:
+    expected_case_id: EVAL-012
+- type: HAS_RULE_TRACEABILITY
+  params:
+    minimum_rule_count: 1
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: PL-CLEANING-012
+    action: EXTERNAL_PARTNER
+    quantity: 18
+    destination: P-LAUNDRY
+    source_lot_ids: *id001
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: PL-CLEANING-012
+    action: LOCAL_DISCOUNT
+    quantity: 6
+    destination: null
+    source_lot_ids: *id002
+- type: QUANTITY_CONSERVATION
+  params:
+    lot_id: PL-CLEANING-012
+    input_quantity: 24
+    expected_allocated_quantity: 24.0
+    expected_unallocated_quantity: 0

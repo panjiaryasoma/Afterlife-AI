@@ -1,0 +1,2419 @@
+spec_name: Afterlife AI Core Rescue Planner Evaluation Specification
+version: 1.0.0
+status: FINAL_DRAFT
+generated_from:
+  evaluation_suite: afterlife_ai_evaluation_suite_v0.3
+  case_count: 30
+  case_range: EVAL-001..EVAL-030
+  schema_source: SCHEMA_EVALUATION_DAN_DATA_v0.3.md
+scope:
+  evaluation_layer: CORE_RESCUE_PLANNER
+  input_entity: SURPLUS_PLANNING_LOT
+  triage_suite_included: false
+  note: Inventory Triage Gate berada sebelum suite ini dan memerlukan acceptance suite terpisah.
+system_contract:
+  pipeline:
+  - validation
+  - coverage_gate
+  - safety_and_verification_gate
+  - candidate_generation
+  - feasibility_gate
+  - rescue_success_scoring_for_feasible_candidates_only
+  - expected_value_calculation
+  - global_optimization
+  - fallback_comparison
+  - structured_explanation
+  - human_review_or_approval
+  ai_model_count: 1
+  model_target: simulated_rescue_success
+  user_facing_model_output: estimated_rescue_success_score
+  model_output_claim_boundary: Calibrated against synthetic/evaluation data; not a real-world success probability.
+  hard_rules_override_model: true
+shared_enums:
+  optimization_objective:
+  - MAXIMIZE_RECOVERY_VALUE
+  - MINIMIZE_WASTE
+  - BALANCED
+  model_scoring_status:
+  - ALLOWED
+  - SKIPPED
+  - DEFERRED
+  - BLOCKED
+  feasibility_status:
+  - FEASIBLE
+  - INFEASIBLE
+  - NEEDS_REVIEW
+  - UNSUPPORTED
+  action_type:
+  - LOCAL_DISCOUNT
+  - BUNDLE
+  - PROMOTIONAL_BONUS
+  - INTERNAL_REPURPOSE
+  - INTERNAL_USE
+  - RETURN_TO_SUPPLIER
+  - BRANCH_TRANSFER
+  - WHOLESALE
+  - EXTERNAL_PARTNER
+  - DONATION
+  - SAFE_DISPOSAL
+cases:
+- case_id: EVAL-001
+  title: Incomplete Surplus Data Harus Abstain
+  case_type: AMBIGUOUS_INCOMPLETE_INPUT
+  evaluation_layer: CORE_RESCUE_PLANNER
+  input_entity: SURPLUS_PLANNING_LOT
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  source_references:
+  - Incident-001
+  - Incident_001-016_Family_Corroborated(1).txt
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  optimization_objective: BALANCED
+  purpose: Menguji apakah sistem menolak mengarang keputusan ketika jumlah, expiry, kondisi, atau data demand tidak cukup
+    untuk membandingkan tindakan.
+  fixtures:
+    input_lot:
+      planning_lot_id: PL-NUTRISARI-001
+      source_lot_id: LOT-NUTRISARI-001
+      product_name: Nutrisari Es Rujak
+      product_category: POWDERED_BEVERAGE_SACHET
+      planning_quantity: UNKNOWN
+      unit: SACHET
+      expiry_date: UNKNOWN
+      remaining_shelf_life_days: UNKNOWN
+      product_condition: UNKNOWN
+      packaging_condition: UNKNOWN
+      verification_status: LOW
+    business_capabilities:
+    - can_discount=true
+    - can_bundle=true
+    - can_internal_repurpose=true
+    - can_offer_bonus=true
+    partner_snapshot:
+    - Tidak ada partner snapshot yang cukup untuk alokasi eksternal.
+    global_context:
+    - Harga historis keluarga tersedia sebagai konteks, tetapi jumlah stok dan outcome tidak tercatat.
+    - objective tidak boleh digunakan sebelum validation selesai.
+  expectations:
+    routing:
+    - VALIDATION_FAILED
+    - NEEDS_REVIEW
+    - model_scoring=BLOCKED
+    - optimizer_execution=BLOCKED
+    feasible_actions:
+    - Tidak ada tindakan otomatis yang dinyatakan feasible karena data kritis belum lengkap.
+    forbidden_or_unsafe_actions:
+    - Semua alokasi otomatis; klaim bahwa bonus, repurpose, atau diskon pasti terbaik.
+    best_action_or_acceptable_set: Tidak ada single best action. Sistem mengembalikan daftar field yang harus diverifikasi.
+    allocation:
+      automatic_allocated_quantity: 0
+      human_review_required: true
+      required_fields:
+      - planning_quantity
+      - expiry_date_or_safe_window
+      - product_condition
+      - packaging_condition
+      - available_repurpose_capacity
+      - campaign_or_sales_context
+    binding_constraints:
+    - Required field completeness
+    - No unsupported assumption
+    - No scoring before validation
+    explanation: '> Data belum cukup untuk memilih tindakan. Verifikasi jumlah, masa aman, kondisi, dan kapasitas eksekusi
+      sebelum planner dijalankan.'
+    failure_conditions:
+    - mengarang jumlah stok
+    - menggunakan harga historis sebagai outcome
+    - menghasilkan rescue-success score
+    - memilih bonus tanpa syarat transaksi
+  traceability:
+    rule_ids:
+    - VALIDATION-RULE-000
+    justified_feature_terms:
+    - critical_field_completeness
+    - validation_status
+    - missing_field_list
+    - human_review_required
+    source_markdown: EVAL-001.md
+  uncertainty_and_source_boundary: 'Incident keluarga mengonfirmasi pola tindakan, bukan jumlah atau hasil. Kasus ini sengaja
+    mempertahankan unknowns.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara eksplisit berasal dari
+    catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak membuktikan probabilitas keberhasilan dunia
+    nyata.'
+- case_id: EVAL-002
+  title: Internal Repurpose Menang pada Bisnis yang Mampu Memproses
+  case_type: INTERNAL_REPURPOSE_WINS
+  evaluation_layer: CORE_RESCUE_PLANNER
+  input_entity: SURPLUS_PLANNING_LOT
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  source_references:
+  - Incident-001
+  - Incident-004
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  optimization_objective: BALANCED
+  purpose: Menguji apakah capability-aware planner memilih transformasi internal ketika toko memiliki alat, bahan, waktu,
+    dan demand yang cukup.
+  fixtures:
+    input_lot:
+      planning_lot_id: PL-NUTRISARI-002
+      product_name: Nutrisari Es Rujak
+      product_category: POWDERED_BEVERAGE_SACHET
+      planning_quantity: 40
+      unit: SACHET
+      remaining_shelf_life_days: 45
+      product_condition: GOOD
+      packaging_condition: INTACT
+      verification_status: VERIFIED
+    business_capabilities:
+    - can_internal_repurpose=true
+    - ice_available=true
+    - cup_capacity=20
+    - labor_capacity=20
+    - can_bundle=true
+    - can_discount=true
+    partner_snapshot:
+    - Tidak ada partner eksternal yang memberi nilai lebih baik setelah biaya.
+    global_context:
+    - Repurpose hanya boleh memakai kapasitas minimum dari alat, tenaga, bahan, dan demand.
+  expectations:
+    routing:
+    - SURPLUS_CANDIDATE
+    - safety=PASS
+    - coverage=PASS
+    - model_scoring=ALLOWED
+    feasible_actions:
+    - INTERNAL_REPURPOSE maksimal 20
+    - BUNDLE maksimal 10
+    - LOCAL_DISCOUNT untuk remainder
+    forbidden_or_unsafe_actions:
+    - Repurpose di atas kapasitas 20
+    - Bonus tanpa qualifying transaction
+    - Disposal saat opsi komersial feasible
+    best_action_or_acceptable_set: Mixed allocation dengan internal repurpose sebagai tindakan utama.
+    allocation:
+      allocations:
+      - action: INTERNAL_REPURPOSE
+        quantity: 20
+      - action: BUNDLE
+        quantity: 10
+      - action: LOCAL_DISCOUNT
+        quantity: 10
+      unallocated_quantity: 0
+    binding_constraints:
+    - Repurpose capacity=20
+    - Quantity conservation
+    - Action capability
+    - Remaining shelf life
+    explanation: '> Dua puluh sachet ditransformasi karena kapasitas operasional dan demand tersedia. Sisa lot dibagi ke bundle
+      dan markdown.'
+    failure_conditions:
+    - mengalokasikan >20 ke repurpose
+    - memilih repurpose ketika capability false
+    - menghitung seluruh revenue repurpose tanpa biaya bahan/gelas
+  traceability:
+    rule_ids:
+    - CAPABILITY-RULE-001
+    justified_feature_terms:
+    - repurpose_equipment_capacity
+    - labor_capacity
+    - ingredient_capacity
+    - repurpose_demand
+    - expected_yield
+    source_markdown: EVAL-002.md
+  uncertainty_and_source_boundary: 'Nilai dan kapasitas adalah sintetis; pola tindakan bersumber dari incident keluarga.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara eksplisit berasal dari
+    catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak membuktikan probabilitas keberhasilan dunia
+    nyata.'
+- case_id: EVAL-003
+  title: Harga Partner Tinggi Ditolak karena Pickup Terlambat
+  case_type: TIMING_OVERRIDE_HIGH_PRICE
+  evaluation_layer: CORE_RESCUE_PLANNER
+  input_entity: SURPLUS_PLANNING_LOT
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  source_references:
+  - External-Incident-003
+  - External-Incident-005
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  optimization_objective: BALANCED
+  purpose: Menguji bahwa harga tinggi tidak mengalahkan safe window dan rescue deadline.
+  fixtures:
+    input_lot:
+      planning_lot_id: PL-BAKERY-003
+      product_name: Roti produksi hari ini
+      product_category: READY_TO_EAT_BAKERY
+      planning_quantity: 50
+      unit: PACK
+      remaining_safe_window_hours: 8
+      quality_inspection_status: PASSED
+      verification_status: VERIFIED
+    business_capabilities:
+    - can_discount=true
+    - can_donate=true
+    - commercial_channel_open=true
+    partner_snapshot:
+    - 'PARTNER-A: price tertinggi, capacity 50, completion 12h'
+    - 'PARTNER-B: capacity 30, completion 3h'
+    - 'FOODBANK: capacity 5, completion 4h'
+    global_context:
+    - rescue_deadline_hours=8
+    - same-day handling required
+  expectations:
+    routing:
+    - PARTNER-A rejected before scoring
+    - PARTNER-B feasible
+    - LOCAL_DISCOUNT feasible
+    - DONATION feasible
+    feasible_actions:
+    - PARTNER-B 30
+    - LOCAL_DISCOUNT 15
+    - DONATION 5
+    forbidden_or_unsafe_actions:
+    - PARTNER-A allocation
+    - completion setelah 8h
+    - model score untuk PARTNER-A
+    best_action_or_acceptable_set: Mixed allocation kepada partner aktif, kanal lokal, dan donation fallback.
+    allocation:
+      allocations:
+      - action: EXTERNAL_PARTNER
+        destination: PARTNER-B
+        quantity: 30
+      - action: LOCAL_DISCOUNT
+        quantity: 15
+      - action: DONATION
+        quantity: 5
+      logistics_deadline_violation: 0
+    binding_constraints:
+    - Safe window
+    - Pickup completion
+    - Partner capacity
+    - Lot quantity
+    explanation: '> Partner A ditolak walaupun menawarkan harga tertinggi karena completion 12 jam melewati jendela aman 8
+      jam.'
+    failure_conditions:
+    - memilih PARTNER-A
+    - mengabaikan distribusi lanjutan
+    - mengubah safe window karena harga
+  traceability:
+    rule_ids:
+    - TIMING-RULE-001
+    justified_feature_terms:
+    - estimated_completion_hours
+    - safe_window_hours
+    - pickup_window
+    - distribution_time
+    - timing_feasibility
+    source_markdown: EVAL-003.md
+  uncertainty_and_source_boundary: 'Quantity dan timing sintetis; mekanisme pickup cepat dan same-day distribution didukung
+    kasus eksternal.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara eksplisit berasal dari
+    catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak membuktikan probabilitas keberhasilan dunia
+    nyata.'
+- case_id: EVAL-004
+  title: Kapasitas Partner Dibagi Secara Global
+  case_type: SHARED_PARTNER_CAPACITY
+  evaluation_layer: CORE_RESCUE_PLANNER
+  input_entity: SURPLUS_PLANNING_LOT
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  source_references:
+  - External-Incident-005
+  - External-Incident-006
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  optimization_objective: BALANCED
+  purpose: Menguji optimizer global ketika dua lot bersaing untuk kapasitas partner yang sama.
+  fixtures:
+    input_lot:
+      planning_lots:
+      - planning_lot_id: PL-BREAD-004
+        product_category: BAKERY
+        planning_quantity: 20
+      - planning_lot_id: PL-PASTRY-004
+        product_category: BAKERY
+        planning_quantity: 25
+      quality_status: PASSED
+    business_capabilities:
+    - can_discount=true
+    - can_donate=true
+    partner_snapshot:
+    - P-CAFE-004 menerima kedua kategori; active demand dan capacity total=30
+    global_context:
+    - Marginal gain bread > pastry
+    - fallback pastry=LOCAL_DISCOUNT
+  expectations:
+    routing:
+    - Kedua lot feasible ke partner, tetapi capacity shared=30
+    feasible_actions:
+    - 'P-CAFE: bread 20 + pastry 10'
+    - Pastry remainder 15 ke local discount
+    forbidden_or_unsafe_actions:
+    - alokasi 30 untuk setiap lot
+    - total partner allocation >30
+    best_action_or_acceptable_set: Prioritaskan unit dengan marginal gain tertinggi, lalu fallback untuk remainder.
+    allocation:
+      allocations:
+      - lot: PL-BREAD-004
+        action: EXTERNAL_PARTNER
+        quantity: 20
+      - lot: PL-PASTRY-004
+        action: EXTERNAL_PARTNER
+        quantity: 10
+      - lot: PL-PASTRY-004
+        action: LOCAL_DISCOUNT
+        quantity: 15
+      partner_capacity_used: 30
+    binding_constraints:
+    - Shared capacity
+    - Marginal value
+    - Quantity conservation
+    explanation: '> Kapasitas 30 tidak diperbanyak per lot. Dua puluh unit bread dan sepuluh pastry memakai partner; sisanya
+      memakai fallback.'
+    failure_conditions:
+    - capacity reset per row
+    - first-come-first-served tanpa nilai marginal
+    - remainder hilang
+  traceability:
+    rule_ids:
+    - CAPACITY-RULE-001
+    justified_feature_terms:
+    - partner_shared_capacity
+    - marginal_gain_vs_fallback
+    - global_allocation_quantity
+    source_markdown: EVAL-004.md
+  uncertainty_and_source_boundary: 'Prioritas marginal adalah parameter skenario sintetis.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara eksplisit berasal dari
+    catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak membuktikan probabilitas keberhasilan dunia
+    nyata.'
+- case_id: EVAL-005
+  title: Safety Override untuk Kaleng Rusak
+  case_type: HARD_SAFETY_REJECT
+  evaluation_layer: CORE_RESCUE_PLANNER
+  input_entity: SURPLUS_PLANNING_LOT
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  source_references:
+  - Incident-010
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  optimization_objective: BALANCED
+  purpose: Menguji bahwa kerusakan kemasan primer mengalahkan harga, demand, dan objective.
+  fixtures:
+    input_lot:
+      planning_lot_id: PL-CANNED-005
+      product_name: Sarden kaleng
+      product_category: CANNED_FOOD
+      planning_quantity: 18
+      unit: CAN
+      packaging_condition: LEAKING_AND_SEVERE_RUST
+      seal_integrity: COMPROMISED
+      expiry_status: NOT_EXPIRED
+      verification_status: PHYSICALLY_INSPECTED
+    business_capabilities:
+    - can_discount=true
+    - can_donate=true
+    - can_return_supplier=false
+    partner_snapshot:
+    - Retail reseller menawarkan harga tinggi dan capacity 18.
+    global_context:
+    - Objective MAXIMIZE_NET_RECOVERY tidak mengubah safety gate.
+  expectations:
+    routing:
+    - safety=HARD_REJECT
+    - model_scoring=SKIPPED
+    feasible_actions:
+    - SAFE_DISPOSAL melalui approved route
+    forbidden_or_unsafe_actions:
+    - LOCAL_DISCOUNT
+    - BUNDLE
+    - BONUS
+    - INTERNAL_USE
+    - DONATION
+    - WHOLESALE
+    - EXTERNAL_PARTNER
+    best_action_or_acceptable_set: Safe disposal.
+    allocation:
+      allocations:
+      - action: SAFE_DISPOSAL
+        quantity: 18
+      human_consumption_allocation: 0
+    binding_constraints:
+    - Primary barrier failure
+    - Seal integrity
+    - No safety override
+    explanation: '> Kaleng bocor dan berkarat berat diblokir dari seluruh jalur konsumsi walaupun belum kedaluwarsa.'
+    failure_conditions:
+    - memberi score komersial
+    - mengizinkan donation
+    - menyamakan cosmetic dent dengan leak
+  traceability:
+    rule_ids:
+    - SAFETY-RULE-001
+    justified_feature_terms:
+    - defect_severity
+    - primary_barrier_integrity
+    - seal_integrity
+    - hard_reject_reason
+    source_markdown: EVAL-005.md
+  uncertainty_and_source_boundary: 'Klasifikasi kerusakan harus membedakan HARD_REJECT, MANUAL_REVIEW, dan COSMETIC_SELLABLE.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara eksplisit berasal dari
+    catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak membuktikan probabilitas keberhasilan dunia
+    nyata.'
+- case_id: EVAL-006
+  title: Seasonality Window Berakhir Sebelum Expiry
+  case_type: SEASONAL_VALUE_WINDOW
+  evaluation_layer: CORE_RESCUE_PLANNER
+  input_entity: SURPLUS_PLANNING_LOT
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  source_references:
+  - Incident-015
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  optimization_objective: BALANCED
+  purpose: Menguji pemisahan antara safety expiry dan commercial value window.
+  fixtures:
+    input_lot:
+      planning_lot_id: PL-SYRUP-006
+      product_name: Sirup botol pasca-Lebaran
+      product_category: SEASONAL_BEVERAGE
+      planning_quantity: 24
+      unit: BOTTLE
+      remaining_shelf_life_days: 270
+      remaining_commercial_window_days: 7
+      product_condition: GOOD
+    business_capabilities:
+    - can_bundle=true
+    - bundle_capacity=8
+    - can_discount=true
+    partner_snapshot:
+    - Tidak ada partner dengan nilai lebih baik.
+    global_context:
+    - post_season=true
+    - commercial urgency tinggi walaupun safety urgency rendah
+  expectations:
+    routing:
+    - Input lot sudah berada pada layer Core Rescue Planner.
+    - Jalankan validation, coverage, safety, verification, dan feasibility gate sebelum model scoring.
+    feasible_actions:
+    - BUNDLE maksimal 8
+    - LOCAL_DISCOUNT maksimal 24
+    forbidden_or_unsafe_actions:
+    - Hold seluruh lot sampai bulan depan
+    - SAFE_DISPOSAL
+    best_action_or_acceptable_set: Bundle 8 dan markdown 16.
+    allocation:
+      allocations:
+      - action: BUNDLE
+        quantity: 8
+      - action: LOCAL_DISCOUNT
+        quantity: 16
+      unallocated_quantity: 0
+    binding_constraints:
+    - Bundle capacity
+    - Commercial window
+    - Shelf-life safety remains valid
+    explanation: '> Sirup aman untuk waktu lama, tetapi nilai musiman turun cepat. Sistem bertindak berdasarkan commercial
+      window tanpa menyebut produk unsafe.'
+    failure_conditions:
+    - menyamakan commercial cutoff dengan expiry
+    - menahan semua barang karena expiry panjang
+    - membuang barang aman
+  traceability:
+    rule_ids:
+    - TIMING-RULE-002
+    justified_feature_terms:
+    - seasonality_status
+    - remaining_commercial_window_days
+    - remaining_shelf_life_days
+    - post_season_discount
+    source_markdown: EVAL-006.md
+  uncertainty_and_source_boundary: 'Control: biskuit nonmusiman dengan shelf life panjang boleh tetap MONITOR/HOLD.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara eksplisit berasal dari
+    catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak membuktikan probabilitas keberhasilan dunia
+    nyata.'
+- case_id: EVAL-007
+  title: Supplier Return Menang
+  case_type: SUPPLIER_RETURN_WINS
+  evaluation_layer: CORE_RESCUE_PLANNER
+  input_entity: SURPLUS_PLANNING_LOT
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  source_references:
+  - Incident-016
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  optimization_objective: BALANCED
+  purpose: Menguji return-to-supplier ketika kebijakan retur terkonfirmasi, jumlah penuh diterima, dan nilai bersih mengalahkan
+    fallback.
+  fixtures:
+    input_lot:
+      planning_lot_id: PL-PACKAGED-007
+      product_name: Produk kemasan desain lama
+      product_category: PACKAGED_GOODS
+      planning_quantity: 30
+      unit: UNIT
+      remaining_shelf_life_days: 180
+      packaging_condition: INTACT
+      verification_status: VERIFIED
+    business_capabilities:
+    - can_return_supplier=true
+    - can_discount=true
+    partner_snapshot:
+    - Supplier menerima retur 30 unit dengan credit terkonfirmasi.
+    global_context:
+    - return deadline masih aktif
+    - transport cost rendah
+  expectations:
+    routing:
+    - RETURN_TO_SUPPLIER feasible
+    - LOCAL_DISCOUNT feasible
+    feasible_actions:
+    - Retur 30 unit
+    forbidden_or_unsafe_actions:
+    - retur tanpa supplier confirmation
+    - mencatat refund kotor tanpa cost
+    best_action_or_acceptable_set: Return to supplier untuk seluruh lot.
+    allocation:
+      allocations:
+      - action: RETURN_TO_SUPPLIER
+        quantity: 30
+      expected_unallocated_quantity: 0
+    binding_constraints:
+    - Return eligibility
+    - Confirmed credit
+    - Return deadline
+    - Net recovery after cost
+    explanation: '> Retur dipilih karena seluruh lot eligible dan net supplier credit lebih tinggi daripada markdown.'
+    failure_conditions:
+    - memilih retur berdasarkan asumsi kebijakan
+    - melebihi eligible quantity
+    - mengabaikan biaya
+  traceability:
+    rule_ids:
+    - RETURN-RULE-001
+    justified_feature_terms:
+    - supplier_return_status
+    - return_eligible_quantity
+    - supplier_credit
+    - return_deadline
+    - return_cost
+    source_markdown: EVAL-007.md
+  uncertainty_and_source_boundary: 'Nilai finansial sintetis; pola retur bersyarat berasal dari incident keluarga.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara eksplisit berasal dari
+    catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak membuktikan probabilitas keberhasilan dunia
+    nyata.'
+- case_id: EVAL-008
+  title: Markdown Mengalahkan Retur Parsial yang Mahal
+  case_type: LOCAL_DISCOUNT_BEATS_RETURN
+  evaluation_layer: CORE_RESCUE_PLANNER
+  input_entity: SURPLUS_PLANNING_LOT
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  source_references:
+  - Incident-016
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  optimization_objective: BALANCED
+  purpose: Menguji bahwa keberadaan opsi retur tidak otomatis membuat retur menjadi keputusan terbaik.
+  fixtures:
+    input_lot:
+      planning_lot_id: PL-PACKAGED-008
+      product_name: Produk kemasan lama
+      product_category: PACKAGED_GOODS
+      planning_quantity: 24
+      unit: UNIT
+      remaining_shelf_life_days: 120
+      packaging_condition: INTACT
+    business_capabilities:
+    - can_return_supplier=true
+    - can_discount=true
+    partner_snapshot:
+    - Supplier hanya menerima 8 unit; biaya transport dan handling tinggi.
+    global_context:
+    - Local demand masih tersedia untuk 24 unit.
+  expectations:
+    routing:
+    - RETURN_TO_SUPPLIER maksimal 8
+    - LOCAL_DISCOUNT maksimal 24
+    feasible_actions:
+    - Return dipilih hanya karena ada policy
+    forbidden_or_unsafe_actions:
+    - Retur parsial jika net gain positif tetapi lebih rendah daripada local fallback
+    best_action_or_acceptable_set: Local discount untuk 24 unit.
+    allocation:
+      allocations:
+      - action: LOCAL_DISCOUNT
+        quantity: 24
+      rejected_alternative:
+        action: RETURN_TO_SUPPLIER
+        reason: net_recovery_below_local_fallback
+    binding_constraints:
+    - Net recovery comparison
+    - Partial eligibility
+    - Transport cost
+    explanation: '> Retur ditolak karena kuantitas terbatas dan biaya menghapus keunggulannya dibanding markdown lokal.'
+    failure_conditions:
+    - mengabaikan fallback
+    - mengirim 24 ketika eligible 8
+    - membandingkan gross credit dengan net local recovery
+  traceability:
+    rule_ids:
+    - VALUE-RULE-001
+    justified_feature_terms:
+    - return_eligible_quantity
+    - return_net_recovery
+    - fallback_net_recovery
+    - marginal_gain
+    source_markdown: EVAL-008.md
+  uncertainty_and_source_boundary: 'Case ini adalah pasangan kontrol EVAL-007.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara eksplisit berasal dari
+    catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak membuktikan probabilitas keberhasilan dunia
+    nyata.'
+- case_id: EVAL-009
+  title: Internal Use Mengalahkan Retur dalam Batas Kebutuhan
+  case_type: INTERNAL_USE_WITH_VERIFIED_NEED
+  evaluation_layer: CORE_RESCUE_PLANNER
+  input_entity: SURPLUS_PLANNING_LOT
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  source_references:
+  - Incident-011
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  optimization_objective: BALANCED
+  purpose: Menguji internal use sebagai avoided purchase cost, bukan revenue, dan dibatasi kebutuhan operasional nyata.
+  fixtures:
+    input_lot:
+      planning_lot_id: PL-DETERGENT-009
+      product_name: Detergen sachet
+      product_category: HOUSEHOLD_CLEANING
+      planning_quantity: 30
+      unit: SACHET
+      remaining_shelf_life_days: 300
+      packaging_condition: INTACT
+    business_capabilities:
+    - can_internal_use=true
+    - verified_internal_need_quantity=10
+    - can_discount=true
+    - can_return_supplier=true
+    partner_snapshot:
+    - Supplier return tersedia tetapi net value per unit lebih rendah daripada avoided purchase cost untuk 10 unit.
+    global_context:
+    - Internal need tidak boleh dilebihkan untuk mempercantik recovery.
+  expectations:
+    routing:
+    - Input lot sudah berada pada layer Core Rescue Planner.
+    - Jalankan validation, coverage, safety, verification, dan feasibility gate sebelum model scoring.
+    feasible_actions:
+    - INTERNAL_USE maksimal 10
+    - LOCAL_DISCOUNT untuk remainder
+    - RETURN_TO_SUPPLIER feasible tetapi inferior
+    forbidden_or_unsafe_actions:
+    - Internal use >10
+    - mencatat internal use sebagai cash revenue
+    best_action_or_acceptable_set: Internal use 10; local discount 20.
+    allocation:
+      allocations:
+      - action: INTERNAL_USE
+        quantity: 10
+        value_type: AVOIDED_PURCHASE_COST
+      - action: LOCAL_DISCOUNT
+        quantity: 20
+      cash_recovery_and_avoided_cost_reported_separately: true
+    binding_constraints:
+    - Verified need
+    - Avoided cost
+    - Quantity conservation
+    explanation: '> Sepuluh unit menggantikan pembelian operasional yang memang dibutuhkan. Sisa lot tetap masuk kanal penjualan.'
+    failure_conditions:
+    - mengarang internal need
+    - menggabungkan avoided cost dengan cash
+    - menggunakan seluruh lot internal
+  traceability:
+    rule_ids:
+    - VALUE-RULE-002
+    justified_feature_terms:
+    - verified_internal_need
+    - replacement_cost
+    - avoided_purchase_cost
+    - cash_recovery_type
+    source_markdown: EVAL-009.md
+  uncertainty_and_source_boundary: 'Kuantitas sintetis; pola penggunaan non-food internal adalah rule candidate.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara eksplisit berasal dari
+    catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak membuktikan probabilitas keberhasilan dunia
+    nyata.'
+- case_id: EVAL-010
+  title: Mixed Allocation untuk Medium Wholesaler
+  case_type: MULTI_CHANNEL_WHOLESALE_SPLIT
+  evaluation_layer: CORE_RESCUE_PLANNER
+  input_entity: SURPLUS_PLANNING_LOT
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  source_references:
+  - Incident-011
+  - Incident-013
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  optimization_objective: BALANCED
+  purpose: Menguji pembagian lot besar ke wholesale, branch, internal use, dan local discount berdasarkan demand serta kapasitas.
+  fixtures:
+    input_lot:
+      planning_lot_id: PL-DETERGENT-010
+      product_name: Detergen sachet
+      product_category: HOUSEHOLD_CLEANING
+      planning_quantity: 120
+      unit: SACHET
+      packaging_condition: INTACT
+      verification_status: VERIFIED
+    business_capabilities:
+    - can_wholesale=true
+    - can_transfer_branch=true
+    - can_internal_use=true
+    - can_discount=true
+    partner_snapshot:
+    - Laundry wholesaler capacity=50
+    - Branch demand/capacity=30
+    global_context:
+    - Verified internal need=10
+    - Local demand supports remainder=30
+  expectations:
+    routing:
+    - Input lot sudah berada pada layer Core Rescue Planner.
+    - Jalankan validation, coverage, safety, verification, dan feasibility gate sebelum model scoring.
+    feasible_actions:
+    - WHOLESALE 50
+    - BRANCH_TRANSFER 30
+    - INTERNAL_USE 10
+    - LOCAL_DISCOUNT 30
+    forbidden_or_unsafe_actions:
+    - alokasi melebihi channel capacity
+    - seluruh 120 ke satu channel
+    best_action_or_acceptable_set: Mixed allocation penuh tanpa remainder.
+    allocation:
+      allocations:
+      - action: WHOLESALE
+        quantity: 50
+      - action: BRANCH_TRANSFER
+        quantity: 30
+      - action: INTERNAL_USE
+        quantity: 10
+      - action: LOCAL_DISCOUNT
+        quantity: 30
+      total_allocated_quantity: 120
+    binding_constraints:
+    - Channel capacity
+    - Partner demand
+    - Internal need
+    - Quantity conservation
+    explanation: '> Lot besar dibagi ke empat jalur karena tidak ada satu channel yang mampu atau optimal menyerap seluruh
+      unit.'
+    failure_conditions:
+    - menyamakan transfer dengan cash revenue
+    - mengabaikan capacity
+    - remainder tidak dijelaskan
+  traceability:
+    rule_ids:
+    - ALLOCATION-RULE-001
+    justified_feature_terms:
+    - channel_capacity
+    - allocation_mix
+    - cash_recovery
+    - future_branch_recovery
+    - avoided_purchase_cost
+    source_markdown: EVAL-010.md
+  uncertainty_and_source_boundary: 'Value types harus dilaporkan terpisah.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara eksplisit berasal dari
+    catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak membuktikan probabilitas keberhasilan dunia
+    nyata.'
+- case_id: EVAL-011
+  title: Stale Partner Demand Harus Dikeluarkan
+  case_type: STALE_DEMAND
+  evaluation_layer: CORE_RESCUE_PLANNER
+  input_entity: SURPLUS_PLANNING_LOT
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  source_references:
+  - AFTERLIFE_AI_MASTER_BLUEPRINT.md
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  optimization_objective: BALANCED
+  purpose: Menguji registry freshness sebagai hard feasibility condition.
+  fixtures:
+    input_lot:
+      planning_lot_id: PL-SNACK-011
+      product_name: Snack kemasan
+      product_category: PACKAGED_SNACK
+      planning_quantity: 30
+      unit: PACK
+      remaining_shelf_life_days: 40
+    business_capabilities:
+    - can_discount=true
+    - can_wholesale=true
+    partner_snapshot:
+    - 'P-HIGH: price tinggi, capacity 30, demand_valid_until sudah lewat'
+    - 'P-ACTIVE: price lebih rendah, capacity 20, registry aktif'
+    global_context:
+    - analysis_timestamp setelah expiry demand P-HIGH
+  expectations:
+    routing:
+    - Input lot sudah berada pada layer Core Rescue Planner.
+    - Jalankan validation, coverage, safety, verification, dan feasibility gate sebelum model scoring.
+    feasible_actions:
+    - P-ACTIVE maksimal 20
+    - LOCAL_DISCOUNT remainder 10
+    forbidden_or_unsafe_actions:
+    - P-HIGH allocation
+    - rescoring stale partner tanpa confirmation
+    best_action_or_acceptable_set: Partner aktif 20 dan local discount 10.
+    allocation:
+      allocations:
+      - action: EXTERNAL_PARTNER
+        destination: P-ACTIVE
+        quantity: 20
+      - action: LOCAL_DISCOUNT
+        quantity: 10
+      rejected_partner: P-HIGH
+    binding_constraints:
+    - Demand freshness
+    - Capacity
+    - Quantity
+    explanation: '> Partner dengan harga tertinggi dikeluarkan karena snapshot demand sudah kedaluwarsa.'
+    failure_conditions:
+    - menganggap last_updated hanya metadata
+    - memilih stale price
+    - mengarang demand reconfirmation
+  traceability:
+    rule_ids:
+    - DEMAND-RULE-001
+    justified_feature_terms:
+    - demand_valid_until
+    - registry_freshness_status
+    - reconfirmation_required
+    source_markdown: EVAL-011.md
+  uncertainty_and_source_boundary: 'Tidak ada klaim bahwa stale demand pasti nol; sistem hanya tidak boleh mengandalkannya
+    otomatis.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara eksplisit berasal dari
+    catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak membuktikan probabilitas keberhasilan dunia
+    nyata.'
+- case_id: EVAL-012
+  title: Category Mismatch Ditolak Sebelum Scoring
+  case_type: PARTNER_CATEGORY_MISMATCH
+  evaluation_layer: CORE_RESCUE_PLANNER
+  input_entity: SURPLUS_PLANNING_LOT
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  source_references:
+  - AFTERLIFE_AI_MASTER_BLUEPRINT.md
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  optimization_objective: BALANCED
+  purpose: Menguji pemisahan category compatibility dari harga dan capacity.
+  fixtures:
+    input_lot:
+      planning_lot_id: PL-CLEANING-012
+      product_name: Pembersih lantai
+      product_category: HOUSEHOLD_CLEANING
+      planning_quantity: 24
+      unit: BOTTLE
+    business_capabilities:
+    - can_wholesale=true
+    - can_discount=true
+    partner_snapshot:
+    - P-BAKERY memberi harga tinggi tetapi accepted_categories hanya BAKERY
+    - P-LAUNDRY menerima HOUSEHOLD_CLEANING capacity 18
+    global_context:
+    - Local fallback tersedia untuk 6 unit.
+  expectations:
+    routing:
+    - Input lot sudah berada pada layer Core Rescue Planner.
+    - Jalankan validation, coverage, safety, verification, dan feasibility gate sebelum model scoring.
+    feasible_actions:
+    - P-LAUNDRY 18
+    - LOCAL_DISCOUNT 6
+    forbidden_or_unsafe_actions:
+    - P-BAKERY allocation
+    - model scoring untuk category mismatch
+    best_action_or_acceptable_set: Compatible partner dan local remainder.
+    allocation:
+      allocations:
+      - action: EXTERNAL_PARTNER
+        destination: P-LAUNDRY
+        quantity: 18
+      - action: LOCAL_DISCOUNT
+        quantity: 6
+    binding_constraints:
+    - Accepted category
+    - Partner capacity
+    - No price override
+    explanation: '> P-BAKERY dikeluarkan sebelum model karena category mismatch; harga tidak mengubah compatibility.'
+    failure_conditions:
+    - memilih harga tertinggi
+    - category encoding dianggap similarity cukup
+    - scoring infeasible candidate
+  traceability:
+    rule_ids:
+    - PARTNER-RULE-001
+    justified_feature_terms:
+    - category_match_status
+    - accepted_categories
+    - compatibility_rejection_reason
+    source_markdown: EVAL-012.md
+  uncertainty_and_source_boundary: 'Kategori harus berasal dari taxonomy yang terkontrol, bukan string similarity bebas.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara eksplisit berasal dari
+    catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak membuktikan probabilitas keberhasilan dunia
+    nyata.'
+- case_id: EVAL-013
+  title: Cold Chain Harus Valid End-to-End
+  case_type: COLD_CHAIN_COMPATIBILITY
+  evaluation_layer: CORE_RESCUE_PLANNER
+  input_entity: SURPLUS_PLANNING_LOT
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  source_references:
+  - Incident-008
+  - External-Incident-003
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  optimization_objective: BALANCED
+  purpose: Menguji source storage, transport, destination storage, dan handling history sebagai satu rangkaian.
+  fixtures:
+    input_lot:
+      planning_lot_id: PL-DIMSUM-013
+      product_name: Dimsum ayam beku
+      product_category: FROZEN_PREPARED_FOOD
+      planning_quantity: 20
+      unit: PACK
+      required_storage_type: FROZEN
+      storage_history_status: VERIFIED
+      remaining_shelf_life_days: 45
+    business_capabilities:
+    - has_cold_storage=true
+    - can_discount=true
+    partner_snapshot:
+    - P-AMBIENT harga tinggi, transport AMBIENT
+    - P-FROZEN capacity=12, frozen transport dan storage tersedia
+    global_context:
+    - Local frozen clearance capacity=8
+  expectations:
+    routing:
+    - Input lot sudah berada pada layer Core Rescue Planner.
+    - Jalankan validation, coverage, safety, verification, dan feasibility gate sebelum model scoring.
+    feasible_actions:
+    - P-FROZEN 12
+    - LOCAL_DISCOUNT 8
+    forbidden_or_unsafe_actions:
+    - P-AMBIENT
+    - transport duration melebihi allowed out-of-storage time
+    best_action_or_acceptable_set: Frozen-compatible partner dan local frozen clearance.
+    allocation:
+      allocations:
+      - action: EXTERNAL_PARTNER
+        destination: P-FROZEN
+        quantity: 12
+      - action: LOCAL_DISCOUNT
+        quantity: 8
+      cold_chain_violations: 0
+    binding_constraints:
+    - Source storage
+    - Transport storage
+    - Destination storage
+    - Handling continuity
+    explanation: '> Partner ambient ditolak walaupun harga tinggi karena rantai dingin gagal pada transportasi.'
+    failure_conditions:
+    - memeriksa storage tujuan saja
+    - mengabaikan transport
+    - menganggap produk frozen aman karena saat ini beku
+  traceability:
+    rule_ids:
+    - STORAGE-RULE-001
+    justified_feature_terms:
+    - source_storage
+    - transport_storage
+    - destination_storage
+    - cold_chain_status
+    - maximum_out_of_storage_hours
+    source_markdown: EVAL-013.md
+  uncertainty_and_source_boundary: 'Batas temperatur spesifik tidak diklaim tanpa domain source; evaluasi memakai status kompatibilitas
+    sintetis.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara eksplisit berasal dari
+    catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak membuktikan probabilitas keberhasilan dunia
+    nyata.'
+- case_id: EVAL-014
+  title: Logistics Budget Bersifat Global
+  case_type: GLOBAL_LOGISTICS_BUDGET
+  evaluation_layer: CORE_RESCUE_PLANNER
+  input_entity: SURPLUS_PLANNING_LOT
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  source_references:
+  - AFTERLIFE_AI_MASTER_BLUEPRINT.md
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  optimization_objective: BALANCED
+  purpose: Menguji bahwa biaya partner dipilih lintas lot berdasarkan marginal gain, bukan budget terpisah per kandidat.
+  fixtures:
+    input_lot:
+      planning_lots:
+      - id: PL-A-014
+        category: BAKERY
+        quantity: 20
+      - id: PL-B-014
+        category: FROZEN_FOOD
+        quantity: 15
+      - id: PL-C-014
+        category: HOUSEHOLD_CLEANING
+        quantity: 25
+    business_capabilities:
+    - local fallback tersedia untuk seluruh lot
+    partner_snapshot:
+    - Partner A cost 10000, marginal gain 50000
+    - Partner B cost 20000, marginal gain 70000
+    - Partner C cost 15000, marginal gain 5000
+    global_context:
+    - max_logistics_budget=30000
+  expectations:
+    routing:
+    - Input lot sudah berada pada layer Core Rescue Planner.
+    - Jalankan validation, coverage, safety, verification, dan feasibility gate sebelum model scoring.
+    feasible_actions:
+    - Partner A dan B
+    - Local fallback untuk C
+    forbidden_or_unsafe_actions:
+    - Memilih ketiga partner; total cost 45000
+    - first-row budget allocation tanpa gain
+    best_action_or_acceptable_set: Gunakan budget 30.000 pada kombinasi A+B.
+    allocation:
+      selected_partner_costs:
+        Partner-A: 10000
+        Partner-B: 20000
+        Partner-C: 0
+      total_logistics_cost: 30000
+      budget_violation: 0
+    binding_constraints:
+    - Global budget
+    - Marginal gain vs fallback
+    - Feasibility
+    explanation: '> Partner C feasible tetapi tidak dipilih karena marginal gain kecil dan budget habis pada pilihan yang
+      lebih bernilai.'
+    failure_conditions:
+    - budget reset per lot
+    - cost >30000
+    - menganggap feasible sama dengan selected
+  traceability:
+    rule_ids:
+    - BUDGET-RULE-001
+    justified_feature_terms:
+    - global_logistics_budget
+    - candidate_logistics_cost
+    - marginal_gain_per_budget_unit
+    source_markdown: EVAL-014.md
+  uncertainty_and_source_boundary: 'Nilai marginal sintetis untuk menguji optimizer.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara eksplisit berasal dari
+    catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak membuktikan probabilitas keberhasilan dunia
+    nyata.'
+- case_id: EVAL-015
+  title: Tindakan Bernilai Tinggi Ditolak karena Terlalu Lambat
+  case_type: HIGH_VALUE_TOO_SLOW
+  evaluation_layer: CORE_RESCUE_PLANNER
+  input_entity: SURPLUS_PLANNING_LOT
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  source_references:
+  - External-Incident-003
+  - External-Incident-009
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  optimization_objective: BALANCED
+  purpose: Menguji hard deadline sebelum expected value ranking.
+  fixtures:
+    input_lot:
+      planning_lot_id: PL-BAKERY-015
+      product_name: Pastry produksi hari ini
+      product_category: READY_TO_EAT_BAKERY
+      planning_quantity: 30
+      unit: PACK
+      remaining_safe_window_hours: 6
+    business_capabilities:
+    - can_discount=true
+    - can_donate=true
+    partner_snapshot:
+    - P-PREMIUM completion 10h, price tinggi
+    - P-LOCAL capacity 20 completion 2h
+    - Donation capacity 10 completion 4h
+    global_context:
+    - safe deadline=6h
+  expectations:
+    routing:
+    - Input lot sudah berada pada layer Core Rescue Planner.
+    - Jalankan validation, coverage, safety, verification, dan feasibility gate sebelum model scoring.
+    feasible_actions:
+    - P-LOCAL 20
+    - DONATION 10
+    forbidden_or_unsafe_actions:
+    - P-PREMIUM
+    - extension of safe window
+    best_action_or_acceptable_set: Partner cepat dan donation fallback.
+    allocation:
+      allocations:
+      - action: EXTERNAL_PARTNER
+        destination: P-LOCAL
+        quantity: 20
+      - action: DONATION
+        quantity: 10
+    binding_constraints:
+    - Completion time
+    - Safe window
+    - Capacity
+    explanation: '> Tindakan premium ditolak karena selesai setelah safe deadline; nilai potensialnya tidak dihitung sebagai
+      feasible recovery.'
+    failure_conditions:
+    - memilih action berdasarkan gross price
+    - menghasilkan score untuk late action
+    - menganggap pickup start sama dengan completion
+  traceability:
+    rule_ids:
+    - TIMING-RULE-003
+    justified_feature_terms:
+    - action_completion_time
+    - deadline_slack
+    - timing_rejection_reason
+    source_markdown: EVAL-015.md
+  uncertainty_and_source_boundary: 'Durasi sintetis.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara eksplisit berasal dari
+    catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak membuktikan probabilitas keberhasilan dunia
+    nyata.'
+- case_id: EVAL-016
+  title: Wholesale Minimum Order dan Aggregation
+  case_type: WHOLESALE_MOQ
+  evaluation_layer: CORE_RESCUE_PLANNER
+  input_entity: SURPLUS_PLANNING_LOT
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  source_references:
+  - Incident-009
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  optimization_objective: BALANCED
+  purpose: Menguji minimum order quantity dan aggregation lintas lot yang kompatibel.
+  fixtures:
+    input_lot:
+      planning_lots:
+      - id: PL-SAUCE-A-016
+        sku: SAUCE-1L-A
+        quantity: 30
+        unit: BOTTLE
+      - id: PL-SAUCE-B-016
+        sku: SAUCE-1L-B
+        quantity: 25
+        unit: BOTTLE
+      compatibility_group: LARGE_CONDIMENT
+    business_capabilities:
+    - can_wholesale=true
+    - aggregation_allowed=true
+    - can_discount=true
+    partner_snapshot:
+    - Wholesaler MOQ=50, capacity=50, menerima kedua SKU dalam satu compatible shipment
+    global_context:
+    - Total compatible quantity=55
+  expectations:
+    routing:
+    - Input lot sudah berada pada layer Core Rescue Planner.
+    - Jalankan validation, coverage, safety, verification, dan feasibility gate sebelum model scoring.
+    feasible_actions:
+    - WHOLESALE 50
+    - LOCAL_DISCOUNT 5
+    forbidden_or_unsafe_actions:
+    - Wholesale per lot secara terpisah karena 30<50 dan 25<50
+    - allocation > capacity 50
+    best_action_or_acceptable_set: Aggregate 50 unit dan fallback 5.
+    allocation:
+      allocations:
+      - action: WHOLESALE
+        quantity: 50
+        source_lots:
+        - PL-SAUCE-A-016
+        - PL-SAUCE-B-016
+      - action: LOCAL_DISCOUNT
+        quantity: 5
+    binding_constraints:
+    - MOQ
+    - Compatibility group
+    - Partner capacity
+    - Aggregation policy
+    explanation: '> Dua lot dapat dikonsolidasikan karena format dan handling kompatibel. Control case aggregation_allowed=false
+      harus menolak wholesale.'
+    failure_conditions:
+    - mengabaikan MOQ
+    - menggabungkan kategori/storage tak kompatibel
+    - melebihi capacity
+  traceability:
+    rule_ids:
+    - WHOLESALE-RULE-001
+    justified_feature_terms:
+    - wholesale_moq
+    - aggregation_allowed
+    - compatibility_group
+    - aggregated_quantity
+    source_markdown: EVAL-016.md
+  uncertainty_and_source_boundary: 'Aggregation policy harus eksplisit, bukan asumsi optimizer.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara eksplisit berasal dari
+    catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak membuktikan probabilitas keberhasilan dunia
+    nyata.'
+- case_id: EVAL-017
+  title: Internal Repurpose Dibatasi Resource Minimum
+  case_type: LIMITED_REPURPOSE_CAPACITY
+  evaluation_layer: CORE_RESCUE_PLANNER
+  input_entity: SURPLUS_PLANNING_LOT
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  source_references:
+  - Incident-004
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  optimization_objective: BALANCED
+  purpose: Menguji kapasitas repurpose sebagai minimum dari equipment, labor, ingredient, dan demand.
+  fixtures:
+    input_lot:
+      planning_lot_id: PL-SACHET-017
+      product_name: Minuman sachet slow-moving
+      product_category: POWDERED_BEVERAGE_SACHET
+      planning_quantity: 50
+      unit: SACHET
+    business_capabilities:
+    - equipment_capacity=30
+    - labor_capacity=25
+    - ingredient_capacity=20
+    - repurpose_demand=35
+    - can_bundle=true
+    - can_discount=true
+    partner_snapshot:
+    - Tidak ada partner eksternal dominan.
+    global_context:
+    - max repurpose=min(30,25,20,35)=20
+  expectations:
+    routing:
+    - Input lot sudah berada pada layer Core Rescue Planner.
+    - Jalankan validation, coverage, safety, verification, dan feasibility gate sebelum model scoring.
+    feasible_actions:
+    - INTERNAL_REPURPOSE 20
+    - BUNDLE 15
+    - LOCAL_DISCOUNT 15
+    forbidden_or_unsafe_actions:
+    - Repurpose 50
+    - mengabaikan bahan atau labor
+    best_action_or_acceptable_set: Mixed allocation dengan repurpose 20.
+    allocation:
+      allocations:
+      - action: INTERNAL_REPURPOSE
+        quantity: 20
+      - action: BUNDLE
+        quantity: 15
+      - action: LOCAL_DISCOUNT
+        quantity: 15
+    binding_constraints:
+    - Resource minimum
+    - Demand capacity
+    - Quantity conservation
+    explanation: '> Bahan menjadi binding constraint, sehingga hanya 20 sachet dapat ditransformasi.'
+    failure_conditions:
+    - mengambil max resource
+    - menggunakan capacity boolean
+    - remainder tidak dialokasikan
+  traceability:
+    rule_ids:
+    - CAPABILITY-RULE-002
+    justified_feature_terms:
+    - equipment_capacity
+    - labor_capacity
+    - ingredient_capacity
+    - repurpose_demand
+    - binding_resource
+    source_markdown: EVAL-017.md
+  uncertainty_and_source_boundary: 'Capacity sintetis.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara eksplisit berasal dari
+    catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak membuktikan probabilitas keberhasilan dunia
+    nyata.'
+- case_id: EVAL-018
+  title: Bundle Companion Stock Dibatasi
+  case_type: LIMITED_BUNDLE_COMPANION
+  evaluation_layer: CORE_RESCUE_PLANNER
+  input_entity: SURPLUS_PLANNING_LOT
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  source_references:
+  - Incident-007
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  optimization_objective: BALANCED
+  purpose: Menguji bahwa bundling membutuhkan companion stock yang benar-benar allocatable setelah reservation.
+  fixtures:
+    input_lot:
+      planning_lot_id: PL-CEREAL-018
+      product_name: Sereal sarapan
+      product_category: BREAKFAST_FOOD
+      planning_quantity: 30
+      unit: PACK
+    business_capabilities:
+    - can_bundle=true
+    - companion_product=MILK
+    - companion_current_quantity=12
+    - companion_reserved_quantity=4
+    - bundle_ratio=1:1
+    - can_discount=true
+    partner_snapshot:
+    - Tidak ada partner eksternal lebih baik.
+    global_context:
+    - allocatable companion=8
+    - bundle maximum=8
+  expectations:
+    routing:
+    - Input lot sudah berada pada layer Core Rescue Planner.
+    - Jalankan validation, coverage, safety, verification, dan feasibility gate sebelum model scoring.
+    feasible_actions:
+    - BUNDLE 8
+    - LOCAL_DISCOUNT 22
+    forbidden_or_unsafe_actions:
+    - Bundle 12 atau 30
+    - menggunakan reserved stock
+    best_action_or_acceptable_set: Bundle sesuai companion allocatable, lalu local markdown.
+    allocation:
+      allocations:
+      - action: BUNDLE
+        quantity: 8
+        companion_quantity_used: 8
+      - action: LOCAL_DISCOUNT
+        quantity: 22
+    binding_constraints:
+    - Companion stock
+    - Reserved quantity
+    - Bundle ratio
+    - Demand
+    explanation: '> Hanya delapan bundle dibuat karena empat dari dua belas companion units dilindungi untuk operasi normal.'
+    failure_conditions:
+    - reserved stock violation
+    - ratio violation
+    - menganggap companion tersedia tanpa SKU check
+  traceability:
+    rule_ids:
+    - BUNDLE-RULE-001
+    justified_feature_terms:
+    - companion_stock
+    - reserved_companion_stock
+    - bundle_ratio
+    - max_bundle_quantity
+    source_markdown: EVAL-018.md
+  uncertainty_and_source_boundary: 'Quantity sintetis; kompatibilitas sarapan berasal dari incident family.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara eksplisit berasal dari
+    catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak membuktikan probabilitas keberhasilan dunia
+    nyata.'
+- case_id: EVAL-019
+  title: Bonus Promosi Tidak Boleh Mengarang Sales Uplift
+  case_type: PROMOTIONAL_BONUS_WITHOUT_FAKE_UPLIFT
+  evaluation_layer: CORE_RESCUE_PLANNER
+  input_entity: SURPLUS_PLANNING_LOT
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  source_references:
+  - Incident-001
+  - Incident-012
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  optimization_objective: BALANCED
+  purpose: Menguji bonus pada item unit kecil dengan constraint transaksi dan pelaporan nilai yang jujur.
+  fixtures:
+    input_lot:
+      planning_lot_id: PL-SACHET-019
+      product_name: Sampo sachet slow-moving
+      product_category: PERSONAL_CARE_SACHET
+      planning_quantity: 40
+      unit: SACHET
+      unit_cost: 1200
+    business_capabilities:
+    - can_offer_bonus=true
+    - qualifying_transactions=20
+    - max_bonus_per_transaction=1
+    - primary_margin_floor=5000
+    - can_discount=true
+    partner_snapshot:
+    - Tidak membutuhkan partner.
+    global_context:
+    - Bonus capacity=20
+    - campaign main margin harus tetap memenuhi floor
+  expectations:
+    routing:
+    - Input lot sudah berada pada layer Core Rescue Planner.
+    - Jalankan validation, coverage, safety, verification, dan feasibility gate sebelum model scoring.
+    feasible_actions:
+    - PROMOTIONAL_BONUS 20
+    - LOCAL_DISCOUNT 20
+    forbidden_or_unsafe_actions:
+    - Bonus 40
+    - klaim bonus meningkatkan penjualan sekian persen
+    - cash recovery dari bonus
+    best_action_or_acceptable_set: Bonus terbatas dan fallback lokal.
+    allocation:
+      allocations:
+      - action: PROMOTIONAL_BONUS
+        quantity: 20
+        direct_cash_recovery: 0
+      - action: LOCAL_DISCOUNT
+        quantity: 20
+      claimed_sales_uplift: null
+    binding_constraints:
+    - Qualifying transaction
+    - Bonus per transaction
+    - Campaign margin
+    - No invented causal effect
+    explanation: '> Bonus digunakan hanya pada dua puluh transaksi yang memenuhi syarat. Sistem tidak mengatribusi uplift
+      tanpa observasi.'
+    failure_conditions:
+    - menghitung bonus sebagai penjualan
+    - membuat causal uplift sintetis sebagai fakta
+    - melanggar margin floor
+  traceability:
+    rule_ids:
+    - BONUS-RULE-001
+    justified_feature_terms:
+    - qualifying_transactions
+    - max_bonus_per_transaction
+    - campaign_margin
+    - direct_cash_recovery
+    - uplift_evidence_status
+    source_markdown: EVAL-019.md
+  uncertainty_and_source_boundary: 'Pola bonus didukung incident; outcome penjualan tidak diketahui.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara eksplisit berasal dari
+    catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak membuktikan probabilitas keberhasilan dunia
+    nyata.'
+- case_id: EVAL-020
+  title: Donasi Sukses dengan Penerima dan Pickup Terverifikasi
+  case_type: VERIFIED_DONATION_SUCCESS
+  evaluation_layer: CORE_RESCUE_PLANNER
+  input_entity: SURPLUS_PLANNING_LOT
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  source_references:
+  - External-Incident-003
+  - External-Incident-005
+  - External-Incident-007
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  optimization_objective: BALANCED
+  purpose: Menguji donation path ketika sale cutoff lewat tetapi kualitas, recipient, capacity, pickup, dan same-day distribution
+    terpenuhi.
+  fixtures:
+    input_lot:
+      planning_lot_id: PL-BAKERY-020
+      product_name: Paket bakery siap makan
+      product_category: READY_TO_EAT_BAKERY
+      planning_quantity: 30
+      unit: PACK
+      quality_inspection_status: PASSED
+      commercial_sale_cutoff_status: PASSED
+      remaining_safe_window_hours: 8
+      same_day_consumption_required: true
+    business_capabilities:
+    - can_donate=true
+    - local_sales_channel_closed=true
+    partner_snapshot:
+    - 'Verified foodbank: active need 40, capacity 40, pickup 2h, inspection/repackaging tersedia, same-day distribution'
+    global_context:
+    - Local discount completion 10h; reseller pickup unavailable/9h
+  expectations:
+    routing:
+    - Input lot sudah berada pada layer Core Rescue Planner.
+    - Jalankan validation, coverage, safety, verification, dan feasibility gate sebelum model scoring.
+    feasible_actions:
+    - DONATION 30
+    forbidden_or_unsafe_actions:
+    - late local discount
+    - late reseller
+    - unverified recipient
+    best_action_or_acceptable_set: Donasi seluruh 30 pack.
+    allocation:
+      allocations:
+      - action: DONATION
+        destination: VERIFIED_FOODBANK
+        quantity: 30
+      cash_recovery: 0
+      physical_rescue_quantity: 30
+      human_review_required: true
+    binding_constraints:
+    - Quality gate
+    - Verified partner
+    - Active need/capacity
+    - Pickup and distribution deadline
+    explanation: '> Donasi dipilih karena satu-satunya jalur yang menyelesaikan pickup dan distribusi sebelum safe deadline.'
+    failure_conditions:
+    - mengklaim cash recovery
+    - donasi tanpa quality check
+    - menganggap sistem mensertifikasi keamanan fisik
+  traceability:
+    rule_ids:
+    - DONATION-RULE-001
+    justified_feature_terms:
+    - recipient_verification
+    - active_recipient_need
+    - pickup_completion
+    - same_day_distribution
+    - donation_cash_recovery
+    source_markdown: EVAL-020.md
+  uncertainty_and_source_boundary: 'Sistem merencanakan, bukan menyertifikasi keamanan atau mengeksekusi pickup.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara eksplisit berasal dari
+    catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak membuktikan probabilitas keberhasilan dunia
+    nyata.'
+- case_id: EVAL-021
+  title: Donasi Diblokir karena Tidak Ada Jalur Feasible
+  case_type: NO_FEASIBLE_DONATION_PARTNER
+  evaluation_layer: CORE_RESCUE_PLANNER
+  input_entity: SURPLUS_PLANNING_LOT
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  source_references:
+  - External-Incident-003
+  - External-Incident-004
+  - External-Incident-005
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  optimization_objective: BALANCED
+  purpose: Menguji donation abstention ketika capacity ada tanpa recipient need, atau recipient ada tetapi pickup terlambat.
+  fixtures:
+    input_lot:
+      planning_lot_id: PL-MEAL-021
+      product_name: Paket makanan matang hari ini
+      product_category: READY_TO_EAT_MEAL
+      planning_quantity: 20
+      unit: PACK
+      quality_inspection_status: PASSED
+      remaining_safe_window_hours: 3
+      same_day_consumption_required: true
+    business_capabilities:
+    - can_donate=true
+    - commercial_channel_closed=true
+    - no_verified_internal_need=true
+    partner_snapshot:
+    - 'P-FOODBANK: capacity 30, active recipient need 0, pickup 1h'
+    - 'P-SHELTER: active need 25, capacity 25, pickup 5h + distribution 1h'
+    global_context:
+    - manual reverification window=1h
+  expectations:
+    routing:
+    - Input lot sudah berada pada layer Core Rescue Planner.
+    - Jalankan validation, coverage, safety, verification, dan feasibility gate sebelum model scoring.
+    feasible_actions:
+    - Tidak ada automatic donation candidate
+    forbidden_or_unsafe_actions:
+    - donasi ke capacity-only partner
+    - donasi completion 6h pada safe window 3h
+    best_action_or_acceptable_set: NO_FEASIBLE_DONATION_PARTNER; bounded manual verification; time-triggered safe disposal.
+    allocation:
+      automatic_allocated_quantity: 0
+      human_review_required: true
+      manual_reverification_window_hours: 1
+      fallback_if_unresolved: SAFE_DISPOSAL
+    binding_constraints:
+    - Active need
+    - Pickup completion
+    - Distribution completion
+    - Bounded review
+    explanation: '> Capacity kosong bukan active demand. Partner dengan recipient aktif juga ditolak karena distribusi selesai
+      setelah safe deadline.'
+    failure_conditions:
+    - mengarang recipient
+    - menunggu melewati safe window
+    - langsung membuang tanpa review window
+  traceability:
+    rule_ids:
+    - DONATION-RULE-002
+    justified_feature_terms:
+    - active_recipient_need_quantity
+    - available_capacity
+    - total_donation_completion_time
+    - reverification_cutoff
+    source_markdown: EVAL-021.md
+  uncertainty_and_source_boundary: 'Safe disposal adalah fallback time-triggered, bukan rekomendasi otomatis pertama.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara eksplisit berasal dari
+    catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak membuktikan probabilitas keberhasilan dunia
+    nyata.'
+- case_id: EVAL-022
+  title: Cacat Kosmetik Tetap Sellable
+  case_type: COSMETIC_DEFECT_SELLABLE
+  evaluation_layer: CORE_RESCUE_PLANNER
+  input_entity: SURPLUS_PLANNING_LOT
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  source_references:
+  - Incident-016
+  - External-Incident-016
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  optimization_objective: BALANCED
+  purpose: Menguji pemisahan cosmetic defect dari primary-barrier damage.
+  fixtures:
+    input_lot:
+      planning_lot_id: PL-SYRUP-022
+      product_name: Sirup botol dengan desain label lama
+      product_category: PACKAGED_BEVERAGE
+      planning_quantity: 24
+      unit: BOTTLE
+      unit_cost: 12000
+      normal_selling_price: 24000
+      remaining_shelf_life_days: 210
+      product_condition: GOOD
+      packaging_condition: COSMETIC_LABEL_DAMAGE
+      primary_container_integrity: INTACT
+      seal_integrity: INTACT
+      leakage_status: NONE
+      expiry_label_readable: true
+      lot_code_readable: true
+      quality_inspection_status: PASSED
+    business_capabilities:
+    - can_discount=true
+    - can_return_supplier=true
+    partner_snapshot:
+    - Supplier return feasible dengan net recovery Rp243.000.
+    global_context:
+    - Local markdown 10%; disclosure required; expected net recovery Rp470.928
+  expectations:
+    routing:
+    - Input lot sudah berada pada layer Core Rescue Planner.
+    - Jalankan validation, coverage, safety, verification, dan feasibility gate sebelum model scoring.
+    feasible_actions:
+    - LOCAL_DISCOUNT 24
+    forbidden_or_unsafe_actions:
+    - SAFE_DISPOSAL sebagai best action
+    - sale tanpa quality inspection/disclosure
+    best_action_or_acceptable_set: Local discount untuk seluruh lot.
+    allocation:
+      allocations:
+      - action: LOCAL_DISCOUNT
+        quantity: 24
+        discount_percent: 10
+        expected_net_recovery: 470928
+      rejected_return_expected_net_recovery: 243000
+      unnecessary_disposal_quantity: 0
+    binding_constraints:
+    - Cosmetic-only defect
+    - Primary barrier intact
+    - Readable traceability
+    - Disclosure
+    explanation: '> Label lama atau tergores menurunkan nilai komersial tetapi tidak otomatis menghapus sellability setelah
+      quality gate.'
+    failure_conditions:
+    - menyamakan cosmetic dengan leak
+    - menjual control case dengan seal rusak
+    - membuang produk aman
+  traceability:
+    rule_ids:
+    - QUALITY-RULE-002
+    justified_feature_terms:
+    - defect_type
+    - defect_affects_primary_barrier
+    - traceability_readable
+    - condition_disclosure_required
+    source_markdown: EVAL-022.md
+  uncertainty_and_source_boundary: 'Control case seal compromised harus berubah menjadi hard reject.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara eksplisit berasal dari
+    catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak membuktikan probabilitas keberhasilan dunia
+    nyata.'
+- case_id: EVAL-023
+  title: Riwayat Suhu atau Penyimpanan Tidak Diketahui
+  case_type: UNKNOWN_STORAGE_HISTORY
+  evaluation_layer: CORE_RESCUE_PLANNER
+  input_entity: SURPLUS_PLANNING_LOT
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  source_references:
+  - External_Incident_001-016_Indonesia(1).md
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  optimization_objective: BALANCED
+  purpose: Menguji verification hold untuk produk storage-sensitive meskipun kondisi saat ini tampak normal.
+  fixtures:
+    input_lot:
+      planning_lot_id: PL-DIMSUM-023
+      product_name: Dimsum ayam beku
+      product_category: FROZEN_PREPARED_FOOD
+      planning_quantity: 24
+      unit: PACK
+      required_storage_type: FROZEN
+      current_storage_type: FROZEN
+      product_condition: VISUALLY_NORMAL
+      packaging_condition: INTACT
+      storage_history_status: UNKNOWN
+      temperature_log_available: false
+      receipt_timestamp_verified: false
+      remaining_shelf_life_days: 60
+      verification_status: PARTIALLY_VERIFIED
+    business_capabilities:
+    - has_cold_storage=true
+    - can_discount=true
+    partner_snapshot:
+    - Frozen reseller dan local frozen discount tampak ekonomis tetapi belum eligible.
+    global_context:
+    - manual review window=2h
+  expectations:
+    routing:
+    - Input lot sudah berada pada layer Core Rescue Planner.
+    - Jalankan validation, coverage, safety, verification, dan feasibility gate sebelum model scoring.
+    feasible_actions:
+    - Tidak ada action konsumsi sebelum clearance
+    forbidden_or_unsafe_actions:
+    - LOCAL_DISCOUNT
+    - EXTERNAL_PARTNER
+    - DONATION
+    - INTERNAL_USE sebelum review
+    best_action_or_acceptable_set: PENDING_VERIFICATION; outcome review menentukan release atau hard reject.
+    allocation:
+      automatic_allocated_quantity: 0
+      model_scoring: DEFERRED
+      human_review_required: true
+      review_deadline_hours: 2
+      possible_outcomes:
+      - VERIFIED_ACCEPTABLE
+      - VERIFIED_FAILURE
+      - UNRESOLVED
+    binding_constraints:
+    - Storage sensitivity
+    - Evidence continuity
+    - No current-state inference
+    explanation: '> Penyimpanan saat ini sesuai tidak membuktikan seluruh riwayat. Sistem meminta log, receipt record, pemeriksaan,
+      dan konfirmasi petugas.'
+    failure_conditions:
+    - menganggap expiry membuktikan cold chain
+    - langsung membuang tanpa review
+    - menganggap unknown aman
+  traceability:
+    rule_ids:
+    - VERIFICATION-RULE-001
+    justified_feature_terms:
+    - storage_history_status
+    - temperature_log_available
+    - possible_excursion
+    - safety_clearance_status
+    source_markdown: EVAL-023.md
+  uncertainty_and_source_boundary: 'Control nonperishable dengan kemasan utuh tidak boleh otomatis mengikuti aturan frozen.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara eksplisit berasal dari
+    catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak membuktikan probabilitas keberhasilan dunia
+    nyata.'
+- case_id: EVAL-024
+  title: Expired Tetap Hard Reject meskipun Nilainya Tinggi
+  case_type: EXPIRED_HARD_REJECT
+  evaluation_layer: CORE_RESCUE_PLANNER
+  input_entity: SURPLUS_PLANNING_LOT
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  source_references:
+  - Incident-003
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  optimization_objective: BALANCED
+  purpose: Menguji bahwa expiry lewat menghapus seluruh human-consumption channel.
+  fixtures:
+    input_lot:
+      planning_lot_id: PL-BISCUIT-024
+      product_name: Biskuit kaleng premium
+      product_category: PACKAGED_BISCUIT
+      planning_quantity: 30
+      unit: CAN
+      unit_cost: 45000
+      normal_selling_price: 70000
+      expiry_date: 2026-08-01
+      analysis_date: 2026-08-03
+      remaining_shelf_life_days: -2
+      packaging_condition: INTACT
+      seal_integrity: INTACT
+      expiry_status: EXPIRED
+    business_capabilities:
+    - can_discount=true
+    - can_wholesale=true
+    - can_donate=true
+    - can_return_supplier=false
+    partner_snapshot:
+    - Demand komersial dan donation capacity tersedia tetapi tidak relevant setelah expiry gate.
+    global_context:
+    - estimated_inventory_cost=Rp1.350.000
+  expectations:
+    routing:
+    - Input lot sudah berada pada layer Core Rescue Planner.
+    - Jalankan validation, coverage, safety, verification, dan feasibility gate sebelum model scoring.
+    feasible_actions:
+    - SAFE_DISPOSAL
+    forbidden_or_unsafe_actions:
+    - LOCAL_DISCOUNT
+    - BUNDLE
+    - BONUS
+    - WHOLESALE
+    - DONATION
+    - INTERNAL_USE
+    best_action_or_acceptable_set: Safe disposal 30 unit.
+    allocation:
+      allocations:
+      - action: SAFE_DISPOSAL
+        quantity: 30
+      expected_cash_recovery: 0
+      expected_inventory_loss: 1350000
+      human_consumption_allocation: 0
+    binding_constraints:
+    - Expiry date
+    - Analysis date
+    - No value override
+    explanation: '> Kemasan utuh dan nilai modal tinggi tidak mengubah status expired. Supplier return hanya boleh untuk recall/non-consumption
+      flow yang terkonfirmasi.'
+    failure_conditions:
+    - memberi rescue score
+    - donasi expired
+    - menganggap expired sekadar near-expiry
+  traceability:
+    rule_ids:
+    - EXPIRY-RULE-001
+    justified_feature_terms:
+    - analysis_date
+    - expiry_status
+    - supplier_recall_policy_status
+    - inventory_loss
+    source_markdown: EVAL-024.md
+  uncertainty_and_source_boundary: 'Control case remaining shelf life 14 hari harus tetap dapat dinilai sebagai near-expiry,
+    bukan hard reject.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara eksplisit berasal dari
+    catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak membuktikan probabilitas keberhasilan dunia
+    nyata.'
+- case_id: EVAL-025
+  title: Kapasitas Cold Storage Dibagi Global
+  case_type: SHARED_COLD_STORAGE_CAPACITY
+  evaluation_layer: CORE_RESCUE_PLANNER
+  input_entity: SURPLUS_PLANNING_LOT
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  source_references:
+  - Incident-006
+  - Incident-008
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  optimization_objective: BALANCED
+  purpose: Menguji prioritas binding storage requirement sebelum optional chilled display.
+  fixtures:
+    input_lot:
+      planning_lots:
+      - id: PL-CHOCOLATE-025
+        product_category: CHOCOLATE
+        quantity: 20
+        storage_requirement_mode: COLD_REQUIRED_FOR_QUALITY_WINDOW
+      - id: PL-DRINK-025
+        product_category: PACKAGED_BEVERAGE
+        quantity: 24
+        storage_requirement_mode: CHILLED_PREFERRED
+      cold_storage:
+        total_capacity_units: 40
+        reserved_capacity_units: 8
+        available_capacity_units: 32
+    business_capabilities:
+    - has_cold_storage=true
+    - ambient sale allowed for beverage
+    partner_snapshot:
+    - Tidak membutuhkan partner.
+    global_context:
+    - Chocolate required 20 capacity units
+    - Drink chilled marginal gain Rp2.650/unit
+  expectations:
+    routing:
+    - Input lot sudah berada pada layer Core Rescue Planner.
+    - Jalankan validation, coverage, safety, verification, dan feasibility gate sebelum model scoring.
+    feasible_actions:
+    - Chocolate cold 20
+    - Drink chilled 12
+    - Drink ambient 12
+    forbidden_or_unsafe_actions:
+    - Drink chilled 24 + chocolate cold 8
+    - use reserved 8
+    best_action_or_acceptable_set: Binding cold requirement lebih dulu, optional gain memakai remainder.
+    allocation:
+      allocations:
+      - lot: PL-CHOCOLATE-025
+        action: INTERNAL_COLD_STORAGE
+        quantity: 20
+      - lot: PL-DRINK-025
+        action: CHILLED_LOCAL_SALE
+        quantity: 12
+      - lot: PL-DRINK-025
+        action: AMBIENT_LOCAL_DISCOUNT
+        quantity: 12
+      cold_capacity_used: 32
+      expected_total_net_recovery: 426200
+    binding_constraints:
+    - Shared cold capacity
+    - Reserved capacity
+    - Storage priority
+    - Marginal value
+    explanation: '> Kebutuhan kualitas yang mengikat dipenuhi sebelum kapasitas tersisa digunakan untuk menaikkan demand minuman.'
+    failure_conditions:
+    - capacity per lot
+    - optional chilled mendahului required
+    - reserved capacity violation
+  traceability:
+    rule_ids:
+    - STORAGE-RULE-002
+    justified_feature_terms:
+    - available_cold_capacity
+    - storage_requirement_mode
+    - marginal_value_per_capacity_unit
+    - capacity_shortfall
+    source_markdown: EVAL-025.md
+  uncertainty_and_source_boundary: 'Control capacity 12 harus menghasilkan shortfall 8 untuk cokelat dan tidak memberi slot
+    pada minuman.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara eksplisit berasal dari
+    catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak membuktikan probabilitas keberhasilan dunia
+    nyata.'
+- case_id: EVAL-026
+  title: Branch Transfer vs Local Markdown
+  case_type: BRANCH_TRANSFER_VS_MARKDOWN
+  evaluation_layer: CORE_RESCUE_PLANNER
+  input_entity: SURPLUS_PLANNING_LOT
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  source_references:
+  - Incident-013
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  optimization_objective: BALANCED
+  purpose: Menguji transfer hanya sampai demand/capacity tujuan dan hanya bila net future recovery mengalahkan local fallback.
+  fixtures:
+    input_lot:
+      planning_lot_id: PL-DIAPER-026
+      product_name: Popok bayi ukuran S
+      product_category: BABY_DIAPER
+      planning_quantity: 24
+      unit: PACK
+      unit_cost: 37000
+      normal_selling_price: 50000
+      remaining_shelf_life_days: 360
+      source_branch_id: BRANCH-01
+    business_capabilities:
+    - can_transfer_branch=true
+    - has_delivery_access=true
+    - can_discount=true
+    partner_snapshot:
+    - BRANCH-02 demand=18, capacity=18, expected price 48000, score 0.92, transport+handling=72000
+    global_context:
+    - Local discount price 41000, score 0.78
+  expectations:
+    routing:
+    - Input lot sudah berada pada layer Core Rescue Planner.
+    - Jalankan validation, coverage, safety, verification, dan feasibility gate sebelum model scoring.
+    feasible_actions:
+    - BRANCH_TRANSFER 18
+    - LOCAL_DISCOUNT 6
+    forbidden_or_unsafe_actions:
+    - Transfer 24
+    - transfer dicatat sebagai immediate cash
+    best_action_or_acceptable_set: Transfer 18 dan markdown 6.
+    allocation:
+      allocations:
+      - action: BRANCH_TRANSFER
+        destination: BRANCH-02
+        quantity: 18
+        expected_future_branch_recovery: 722880
+      - action: LOCAL_DISCOUNT
+        quantity: 6
+        expected_cash_recovery: 191880
+      total_expected_economic_recovery: 914760
+    binding_constraints:
+    - Destination demand/capacity
+    - Transfer cost
+    - Future vs immediate value
+    explanation: '> Transfer memberikan marginal gain Rp147.240 dibanding all-local, tetapi hanya untuk 18 pack yang dapat
+      diserap cabang.'
+    failure_conditions:
+    - transfer melebihi 18
+    - cash revenue saat transfer
+    - tetap memilih transfer pada high-cost control
+  traceability:
+    rule_ids:
+    - TRANSFER-RULE-001
+    justified_feature_terms:
+    - destination_branch_demand
+    - transfer_cost
+    - future_branch_recovery
+    - marginal_gain_vs_local
+    source_markdown: EVAL-026.md
+  uncertainty_and_source_boundary: 'Control transport+handling Rp240.000 harus mengubah hasil menjadi all local discount.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara eksplisit berasal dari
+    catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak membuktikan probabilitas keberhasilan dunia
+    nyata.'
+- case_id: EVAL-027
+  title: Kemasan Besar Cocok ke Mitra B2B
+  case_type: PACKAGE_SIZE_DEMAND_MATCH
+  evaluation_layer: CORE_RESCUE_PLANNER
+  input_entity: SURPLUS_PLANNING_LOT
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  source_references:
+  - Incident-009
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  optimization_objective: BALANCED
+  purpose: Menguji partner matching berdasarkan kategori, ukuran, customer segment, dan use case.
+  fixtures:
+    input_lot:
+      planning_lot_id: PL-SOY-027
+      product_name: Kecap manis botol besar
+      product_category: LARGE_CONDIMENT
+      planning_quantity: 24
+      unit: BOTTLE
+      package_volume_ml: 1000
+      unit_cost: 12000
+      normal_selling_price: 22000
+      remaining_shelf_life_days: 210
+    business_capabilities:
+    - can_wholesale=true
+    - can_discount=true
+    partner_snapshot:
+    - 'P-MINIMARKET: accepts soy sauce, size 50-250ml, price 19500'
+    - 'P-WARUNG: size 500-2000ml, active demand/capacity 18, price 17500, score 0.94'
+    global_context:
+    - Local discount fallback for 6
+  expectations:
+    routing:
+    - Input lot sudah berada pada layer Core Rescue Planner.
+    - Jalankan validation, coverage, safety, verification, dan feasibility gate sebelum model scoring.
+    feasible_actions:
+    - P-WARUNG 18
+    - LOCAL_DISCOUNT 6
+    forbidden_or_unsafe_actions:
+    - P-MINIMARKET walau price lebih tinggi
+    - category-only matching
+    best_action_or_acceptable_set: B2B food-service partner dan local fallback.
+    allocation:
+      allocations:
+      - action: EXTERNAL_PARTNER
+        destination: P-WARUNG
+        quantity: 18
+        expected_net_recovery: 296100
+      - action: LOCAL_DISCOUNT
+        quantity: 6
+        expected_net_recovery: 68880
+      total_expected_net_recovery: 364980
+    binding_constraints:
+    - Package size range
+    - Customer segment
+    - Usage context
+    - Demand/capacity
+    explanation: '> Minimarket ditolak karena household package range tidak cocok. Warung makan menerima format 1L sesuai
+      penggunaan rutin.'
+    failure_conditions:
+    - memilih price tertinggi
+    - mengabaikan package size
+    - selalu mengirim semua kecap ke B2B
+  traceability:
+    rule_ids:
+    - PARTNER-RULE-004
+    justified_feature_terms:
+    - package_volume
+    - partner_size_range
+    - customer_segment_match
+    - use_case_match
+    source_markdown: EVAL-027.md
+  uncertainty_and_source_boundary: 'Control package 135ml harus membuat minimarket feasible dan prioritas.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara eksplisit berasal dari
+    catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak membuktikan probabilitas keberhasilan dunia
+    nyata.'
+- case_id: EVAL-028
+  title: Out-of-Distribution Harus Abstain
+  case_type: OUT_OF_SUPPORTED_DOMAIN
+  evaluation_layer: CORE_RESCUE_PLANNER
+  input_entity: SURPLUS_PLANNING_LOT
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  source_references:
+  - AFTERLIFE_AI_MASTER_BLUEPRINT.md
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  optimization_objective: BALANCED
+  purpose: Menguji domain coverage gate sebelum model confidence.
+  fixtures:
+    input_lot:
+      planning_lot_id: PL-SHELLFISH-028
+      product_name: Kerang hidup
+      product_category: LIVE_SHELLFISH
+      planning_quantity: 18
+      unit: KG
+      business_type: SEAFOOD_DISTRIBUTOR
+      required_storage_type: CONTROLLED_AQUATIC_STORAGE
+      current_storage_type: UNKNOWN
+      harvest_timestamp: UNKNOWN
+      water_quality_history: UNKNOWN
+      traceability_document_status: NOT_AVAILABLE
+      verification_status: LOW
+    business_capabilities:
+    - Business profile di luar target MVP.
+    partner_snapshot:
+    - Seafood restaurant dan foodbank menunjukkan capacity, tetapi domain rules tidak tersedia.
+    global_context:
+    - Category, business type, storage type, dan critical features unsupported
+  expectations:
+    routing:
+    - Input lot sudah berada pada layer Core Rescue Planner.
+    - Jalankan validation, coverage, safety, verification, dan feasibility gate sebelum model scoring.
+    feasible_actions:
+    - Tidak ada automatic feasible action
+    forbidden_or_unsafe_actions:
+    - LOCAL_DISCOUNT
+    - EXTERNAL_PARTNER
+    - DONATION
+    - SAFE_DISPOSAL otomatis tanpa expert review
+    best_action_or_acceptable_set: UNSUPPORTED_SCENARIO dan domain-expert review.
+    allocation:
+      system_status: UNSUPPORTED_SCENARIO
+      automatic_allocated_quantity: 0
+      estimated_rescue_success_score: null
+      optimizer_execution: BLOCKED
+      human_review_required: true
+      review_type: DOMAIN_EXPERT_REVIEW
+    binding_constraints:
+    - Supported taxonomy
+    - Storage requirement support
+    - Critical feature coverage
+    - Applicable rule set
+    explanation: '> Confidence model tidak dapat membuat unsupported case menjadi valid. Coverage gate menghentikan scoring.'
+    failure_conditions:
+    - menghasilkan score 0.91
+    - mengarang shellfish safety rule
+    - mengganti missing critical features dengan default optimistis
+  traceability:
+    rule_ids:
+    - COVERAGE-RULE-001
+    justified_feature_terms:
+    - supported_business_type
+    - supported_category
+    - supported_storage
+    - critical_feature_coverage
+    - abstention_reason
+    source_markdown: EVAL-028.md
+  uncertainty_and_source_boundary: 'Control frozen prepared dimsum dengan verified history harus lolos coverage.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara eksplisit berasal dari
+    catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak membuktikan probabilitas keberhasilan dunia
+    nyata.'
+- case_id: EVAL-029
+  title: Objective Mengubah Keputusan
+  case_type: OBJECTIVE_SENSITIVITY
+  evaluation_layer: CORE_RESCUE_PLANNER
+  input_entity: SURPLUS_PLANNING_LOT
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  source_references:
+  - AFTERLIFE_AI_MASTER_BLUEPRINT.md
+  - External_Incident_001-016_Indonesia(1).md
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  optimization_objective: BALANCED
+  purpose: Menguji bahwa MAXIMIZE_RECOVERY_VALUE, MINIMIZE_WASTE, dan BALANCED menghasilkan allocation berbeda tanpa mengubah
+    hard constraints.
+  fixtures:
+    input_lot:
+      planning_lot_id: PL-BAKERY-029
+      product_name: Roti manis layak konsumsi
+      product_category: READY_TO_EAT_BAKERY
+      planning_quantity: 40
+      unit: PACK
+      quality_inspection_status: PASSED
+      remaining_safe_window_hours: 8
+    business_capabilities:
+    - can_discount=true
+    - can_donate=true
+    partner_snapshot:
+    - Commercial partner max 15
+    - Donation partner max 40
+    global_context:
+    - Local discount max 25, recovery/unit 4800, rescue 0.80
+    - Partner recovery/unit 4000, rescue 0.90
+    - Donation recovery 0, rescue 0.98
+  expectations:
+    routing:
+    - Input lot sudah berada pada layer Core Rescue Planner.
+    - Jalankan validation, coverage, safety, verification, dan feasibility gate sebelum model scoring.
+    feasible_actions:
+    - Semua tiga action feasible
+    forbidden_or_unsafe_actions:
+    - Tidak ada hard-constraint action yang berubah antar-objective
+    best_action_or_acceptable_set: Tiga run dengan allocation berbeda.
+    allocation:
+      runs:
+        MAXIMIZE_RECOVERY_VALUE:
+          LOCAL_DISCOUNT: 25
+          EXTERNAL_PARTNER: 15
+          DONATION: 0
+          expected_net_recovery: 180000
+          expected_rescue: 33.5
+        MINIMIZE_WASTE:
+          LOCAL_DISCOUNT: 0
+          EXTERNAL_PARTNER: 0
+          DONATION: 40
+          expected_net_recovery: 0
+          expected_rescue: 39.2
+        BALANCED:
+          rescue_floor: 0.9
+          LOCAL_DISCOUNT: 11
+          EXTERNAL_PARTNER: 15
+          DONATION: 14
+          expected_net_recovery: 112800
+          expected_rescue: 36.02
+    binding_constraints:
+    - Objective formula
+    - Partner/action capacities
+    - Hard constraints unchanged
+    - Explicit rescue floor
+    explanation: '> Balanced memaksimalkan recovery setelah mensyaratkan expected rescue minimal 90%, bukan memakai weighted
+      sum tanpa skala.'
+    failure_conditions:
+    - allocation sama untuk semua objective
+    - donation dihitung cash
+    - safety berubah karena objective
+    - balanced tanpa formula
+  traceability:
+    rule_ids:
+    - OBJECTIVE-RULE-001
+    justified_feature_terms:
+    - optimization_objective
+    - rescue_floor
+    - expected_net_recovery
+    - expected_physical_rescue
+    - tradeoff_amount
+    source_markdown: EVAL-029.md
+  uncertainty_and_source_boundary: 'Score dan target 90% sintetis; bukan kebijakan universal.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara eksplisit berasal dari
+    catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak membuktikan probabilitas keberhasilan dunia
+    nyata.'
+- case_id: EVAL-030
+  title: End-to-End Multi-Lot Stress Test
+  case_type: END_TO_END_STRESS_TEST
+  evaluation_layer: CORE_RESCUE_PLANNER
+  input_entity: SURPLUS_PLANNING_LOT
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  source_references:
+  - Incident_001-016_Family_Corroborated(1).txt
+  - External_Incident_001-016_Indonesia(1).md
+  - AFTERLIFE_AI_MASTER_BLUEPRINT.md
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  optimization_objective: BALANCED
+  purpose: Menguji validation, safety, verification, registry freshness, compatibility, scoring, global budget, objective,
+    optimization, fallback, dan explanation dalam satu request.
+  fixtures:
+    input_lot:
+      planning_lots:
+      - id: LOT-A
+        product: Roti hari ini
+        quantity: 30
+        status: SAFE_URGENT
+      - id: LOT-B
+        product: Dimsum beku
+        quantity: 20
+        status: SAFE_FROZEN_VERIFIED
+      - id: LOT-C
+        product: Sirup pascamusim
+        quantity: 16
+        status: SAFE_COMMERCIAL_URGENT
+      - id: LOT-D
+        product: Detergen sachet
+        quantity: 40
+        status: SAFE_NONPERISHABLE
+      - id: LOT-E
+        product: Biskuit expired
+        quantity: 10
+        status: HARD_REJECT
+      - id: LOT-F
+        product: Yogurt chilled
+        quantity: 8
+        status: PENDING_VERIFICATION
+      eligible_quantity: 106
+      hard_reject_quantity: 10
+      pending_review_quantity: 8
+    business_capabilities:
+    - discount, donation, internal use, bundle, frozen handling tersedia sesuai lot
+    partner_snapshot:
+    - Stale canteen rejected
+    - P-CAFE active
+    - P-FOODBANK active
+    - Ambient frozen partner rejected
+    - P-FROZEN active
+    - Laundry partner feasible but inferior
+    global_context:
+    - objective=BALANCED
+    - minimum_expected_rescue_ratio=0.90
+    - max_logistics_budget=30000
+  expectations:
+    routing:
+    - Input lot sudah berada pada layer Core Rescue Planner.
+    - Jalankan validation, coverage, safety, verification, dan feasibility gate sebelum model scoring.
+    feasible_actions:
+    - Eligible lots scored/optimized
+    - expired hard reject
+    - yogurt deferred
+    forbidden_or_unsafe_actions:
+    - stale partner
+    - ambient frozen transport
+    - expired consumption
+    - unknown-history yogurt automatic allocation
+    best_action_or_acceptable_set: Mixed end-to-end plan dengan rescue floor terpenuhi.
+    allocation:
+      allocations:
+        LOT-A:
+          EXTERNAL_PARTNER: 20
+          DONATION: 10
+        LOT-B:
+          EXTERNAL_PARTNER: 12
+          LOCAL_DISCOUNT: 8
+        LOT-C:
+          BUNDLE: 4
+          LOCAL_DISCOUNT: 12
+        LOT-D:
+          INTERNAL_USE: 5
+          LOCAL_DISCOUNT: 35
+        LOT-E:
+          SAFE_DISPOSAL: 10
+        LOT-F:
+          PENDING_HUMAN_REVIEW: 8
+      metrics:
+        expected_physical_rescue: 95.95
+        eligible_quantity: 106
+        expected_rescue_ratio: 0.9052
+        expected_cash_and_future_recovery: 568395
+        avoided_purchase_cost: 8500
+        total_economic_value: 576895
+        logistics_cost: 30000
+    binding_constraints:
+    - Denominator excludes hard reject and pending review
+    - Global budget
+    - Safety
+    - Demand freshness
+    - Cold chain
+    - Value type separation
+    explanation: '> Empat lot dialokasikan otomatis, expired dibuang aman, dan yogurt ditahan untuk review. Budget 30.000
+      habis tepat dan rescue floor 90% terlampaui.'
+    failure_conditions:
+    - memasukkan expired/pending ke rescue denominator
+    - budget >30000
+    - donation sebagai cash
+    - internal use sebagai revenue
+    - model score pada LOT-E/F
+  traceability:
+    rule_ids:
+    - PIPELINE-RULE-001
+    justified_feature_terms:
+    - eligible_rescue_denominator
+    - status_routing
+    - global_budget
+    - value_type
+    - rejection_explanation
+    - rescue_floor_status
+    source_markdown: EVAL-030.md
+  uncertainty_and_source_boundary: 'Semua angka dan scores sintetis; stress test memvalidasi konsistensi pipeline, bukan outcome
+    lapangan.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara eksplisit berasal dari
+    catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak membuktikan probabilitas keberhasilan dunia
+    nyata.'

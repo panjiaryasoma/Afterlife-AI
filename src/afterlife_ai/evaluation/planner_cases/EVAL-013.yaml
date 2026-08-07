@@ -1,0 +1,130 @@
+contract_version: 1.0.0
+case_id: EVAL-013
+title: Cold Chain Harus Valid End-to-End
+case_type: COLD_CHAIN_COMPATIBILITY
+evaluation_layer: CORE_RESCUE_PLANNER
+input_entity: SURPLUS_PLANNING_LOT
+purpose: Menguji source storage, transport, destination storage, dan handling history sebagai satu rangkaian.
+optimization_objective: BALANCED
+fixtures:
+  lots:
+  - lot_id: PL-DIMSUM-013
+    source_lot_id: null
+    quantity: 20
+    unit: PACK
+    attributes:
+      product_name: Dimsum ayam beku
+      product_category: FROZEN_PREPARED_FOOD
+      required_storage_type: FROZEN
+      storage_history_status: VERIFIED
+      remaining_shelf_life_days: 45
+  batch_context: {}
+  capability_facts:
+    has_cold_storage: true
+    can_discount: true
+  capability_notes: []
+  partners:
+  - partner_id: PARTNER-01
+    attributes: {}
+    description: P-AMBIENT harga tinggi, transport AMBIENT
+  - partner_id: PARTNER-02
+    attributes: {}
+    description: P-FROZEN capacity=12, frozen transport dan storage tersedia
+  context_notes:
+  - Local frozen clearance capacity=8
+expected:
+  route:
+    statuses: {}
+    notes:
+    - Input lot sudah berada pada layer Core Rescue Planner.
+    - Jalankan validation, coverage, safety, verification, dan feasibility gate sebelum model scoring.
+  allocations:
+  - lot_id: PL-DIMSUM-013
+    source_lot_ids: &id001 []
+    action: EXTERNAL_PARTNER
+    quantity: 12
+    destination: P-FROZEN
+    attributes: {}
+  - lot_id: PL-DIMSUM-013
+    source_lot_ids: &id002 []
+    action: LOCAL_DISCOUNT
+    quantity: 8
+    destination: null
+    attributes: {}
+  metrics:
+    cold_chain_violations: 0
+  objective_runs: {}
+  required_fields: []
+  rejected_alternative: null
+  rejected_partner: null
+  possible_outcomes: []
+  feasible_actions:
+  - P-FROZEN 12
+  - LOCAL_DISCOUNT 8
+  forbidden_actions:
+  - P-AMBIENT
+  - transport duration melebihi allowed out-of-storage time
+  acceptable_decision: Frozen-compatible partner dan local frozen clearance.
+  binding_constraints:
+  - Source storage
+  - Transport storage
+  - Destination storage
+  - Handling continuity
+  explanation: '> Partner ambient ditolak walaupun harga tinggi karena rantai dingin gagal pada transportasi.'
+  failure_conditions:
+  - memeriksa storage tujuan saja
+  - mengabaikan transport
+  - menganggap produk frozen aman karena saat ini beku
+traceability:
+  rule_ids:
+  - STORAGE-RULE-001
+  feature_terms:
+  - source_storage
+  - transport_storage
+  - destination_storage
+  - cold_chain_status
+  - maximum_out_of_storage_hours
+  source_markdown: EVAL-013.md
+  source_references:
+  - Incident-008
+  - External-Incident-003
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  uncertainty_and_source_boundary: 'Batas temperatur spesifik tidak diklaim tanpa domain source; evaluasi
+    memakai status kompatibilitas sintetis.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara
+    eksplisit berasal dari catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak
+    membuktikan probabilitas keberhasilan dunia nyata.'
+assertions:
+- type: CASE_ID_MATCHES_FILE
+  params:
+    expected_case_id: EVAL-013
+- type: HAS_RULE_TRACEABILITY
+  params:
+    minimum_rule_count: 1
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: PL-DIMSUM-013
+    action: EXTERNAL_PARTNER
+    quantity: 12
+    destination: P-FROZEN
+    source_lot_ids: *id001
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: PL-DIMSUM-013
+    action: LOCAL_DISCOUNT
+    quantity: 8
+    destination: null
+    source_lot_ids: *id002
+- type: EXPECTED_METRIC
+  params:
+    name: cold_chain_violations
+    value: 0
+- type: QUANTITY_CONSERVATION
+  params:
+    lot_id: PL-DIMSUM-013
+    input_quantity: 20
+    expected_allocated_quantity: 20.0
+    expected_unallocated_quantity: 0

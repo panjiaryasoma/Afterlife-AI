@@ -1,0 +1,115 @@
+integration_id: INTEGRATION-001
+version: 1.0.0
+phase: PREPRODUCTION_ACCEPTANCE
+status: LOCKED_FOR_PREPRODUCTION
+source_document: INTEGRATION-001.md
+source_type: EVALUATION_FIXTURE
+production_default: false
+automatic_execution_allowed: false
+human_approval_required: true
+artifact: EXPECTED_CANDIDATES
+candidate_generation_is_final_decision: false
+candidates:
+- candidate_id: CAND-003-REPURPOSE
+  planning_lot_id: PLAN-LOT-003
+  action_type: INTERNAL_REPURPOSE
+  generation_reason: SUPPORTED_CAPABILITY_AND_VERIFIED_INTERNAL_DEMAND
+  maximum_feasible_quantity: 6
+  destination_id: STORE-01_PREPARED_DRINK_CHANNEL
+  destination_type: INTERNAL_CHANNEL
+  offered_or_selling_price_per_unit: 3500
+  direct_action_cost: 1100
+  logistics_cost: 0
+  handling_cost: 0
+  category_match_status: MATCH
+  package_size_match_status: NOT_APPLICABLE
+  customer_segment_match_status: MATCH
+  storage_compatibility_status: MATCH
+- candidate_id: CAND-003-BUNDLE
+  planning_lot_id: PLAN-LOT-003
+  action_type: BUNDLE
+  generation_reason: FOUR_ALLOCATABLE_COMPANION_UNITS_AVAILABLE
+  maximum_feasible_quantity: 4
+  destination_id: STORE-01_BUNDLE_CAMPAIGN
+  destination_type: INTERNAL_CHANNEL
+  offered_or_selling_price_per_unit: 1600
+  direct_action_cost: 0
+  logistics_cost: 0
+  handling_cost: 0
+  category_match_status: MATCH
+  package_size_match_status: NOT_APPLICABLE
+  customer_segment_match_status: MATCH
+  storage_compatibility_status: MATCH
+- candidate_id: CAND-003-DISCOUNT
+  planning_lot_id: PLAN-LOT-003
+  action_type: LOCAL_DISCOUNT
+  generation_reason: SUPPORTED_LOCAL_FALLBACK
+  maximum_feasible_quantity: 10
+  destination_id: STORE-01_LOCAL_SALES
+  destination_type: INTERNAL_CHANNEL
+  offered_or_selling_price_per_unit: 1500
+  direct_action_cost: 0
+  logistics_cost: 0
+  handling_cost: 0
+  category_match_status: MATCH
+  package_size_match_status: NOT_APPLICABLE
+  customer_segment_match_status: MATCH
+  storage_compatibility_status: MATCH
+- candidate_id: CAND-006-REPURPOSE
+  planning_lot_id: PLAN-LOT-006
+  action_type: INTERNAL_REPURPOSE
+  generation_reason: SUPPORTED_CAPABILITY_AND_SHARED_REPURPOSE_CAPACITY
+  maximum_feasible_quantity: 6
+  destination_id: STORE-01_PREPARED_DRINK_CHANNEL
+  destination_type: INTERNAL_CHANNEL
+  offered_or_selling_price_per_unit: 3500
+  direct_action_cost: 1100
+  logistics_cost: 0
+  handling_cost: 0
+  category_match_status: MATCH
+  package_size_match_status: NOT_APPLICABLE
+  customer_segment_match_status: MATCH
+  storage_compatibility_status: MATCH
+- candidate_id: CAND-006-DISCOUNT
+  planning_lot_id: PLAN-LOT-006
+  action_type: LOCAL_DISCOUNT
+  generation_reason: SUPPORTED_LOCAL_FALLBACK
+  maximum_feasible_quantity: 8
+  destination_id: STORE-01_LOCAL_SALES
+  destination_type: INTERNAL_CHANNEL
+  offered_or_selling_price_per_unit: 1500
+  direct_action_cost: 0
+  logistics_cost: 0
+  handling_cost: 0
+  category_match_status: MATCH
+  package_size_match_status: NOT_APPLICABLE
+  customer_segment_match_status: MATCH
+  storage_compatibility_status: MATCH
+- candidate_id: CAND-006-BONUS
+  planning_lot_id: PLAN-LOT-006
+  action_type: PROMOTIONAL_BONUS
+  generation_reason: CAPABILITY_EXISTS_BUT_TRANSACTION_GATE_REQUIRED
+  maximum_feasible_quantity_before_gates: 8
+  destination_id: STORE-01_QUALIFYING_TRANSACTIONS
+  destination_type: INTERNAL_CHANNEL
+  offered_or_selling_price_per_unit: 0
+  direct_action_cost: 0
+  logistics_cost: 0
+  handling_cost: 0
+  category_match_status: MATCH
+  package_size_match_status: NOT_APPLICABLE
+  customer_segment_match_status: MATCH
+  storage_compatibility_status: MATCH
+actions_not_generated:
+- action_type: RETURN_TO_SUPPLIER
+  reason: SUPPLIER_RETURN_POLICY_NOT_CONFIRMED
+- action_type: BRANCH_TRANSFER
+  reason: NO_VALID_DESTINATION_BRANCH
+- action_type: WHOLESALE
+  reason: NO_VALID_WHOLESALE_SNAPSHOT_AND_QUANTITY_TOO_SMALL
+- action_type: EXTERNAL_PARTNER
+  reason: NO_ACTIVE_VERIFIED_PARTNER_DEMAND
+- action_type: DONATION
+  reason: NO_VERIFIED_RECIPIENT_IN_SNAPSHOT
+- action_type: SAFE_DISPOSAL
+  reason: SAFE_COMMERCIAL_ACTIONS_REMAIN_FEASIBLE

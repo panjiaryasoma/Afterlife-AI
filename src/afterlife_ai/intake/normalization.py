@@ -1,4 +1,4 @@
-﻿"""Normalize raw spreadsheet values before contract validation."""
+"""Normalize raw spreadsheet values before contract validation."""
 
 from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
@@ -58,6 +58,11 @@ DATETIME_FIELDS = {
 
 TRUE_VALUES = {"true", "1", "yes", "y"}
 FALSE_VALUES = {"false", "0", "no", "n"}
+
+DEFAULT_ON_BLANK_FIELDS = {
+    "safety_stock",
+    "declared_surplus",
+}
 
 
 def _normalize_text(value: Any) -> str | None:
@@ -167,18 +172,45 @@ def normalize_inventory_row(
     normalized: dict[str, object] = {}
 
     for field_name, value in raw_row.items():
+        normalized_value: object
+
         if field_name in TEXT_FIELDS:
-            normalized[field_name] = _normalize_text(value)
+            normalized_value = _normalize_text(value)
         elif field_name in NUMERIC_FIELDS:
-            normalized[field_name] = _normalize_decimal(field_name, value)
+            normalized_value = _normalize_decimal(
+                field_name,
+                value,
+            )
         elif field_name in BOOLEAN_FIELDS:
-            normalized[field_name] = _normalize_boolean(field_name, value)
+            normalized_value = _normalize_boolean(
+                field_name,
+                value,
+            )
         elif field_name in DATE_FIELDS:
-            normalized[field_name] = _normalize_date(field_name, value)
+            normalized_value = _normalize_date(
+                field_name,
+                value,
+            )
         elif field_name in DATETIME_FIELDS:
-            normalized[field_name] = _normalize_datetime(field_name, value)
+            normalized_value = _normalize_datetime(
+                field_name,
+                value,
+            )
         else:
-            normalized[field_name] = value
+            normalized_value = value
+
+        # A blank spreadsheet cell must not override a
+        # non-nullable contract field that already owns a default.
+        #
+        # Example:
+        # safety_stock blank -> omit field -> RawInventoryLot uses 0.
+        if (
+            normalized_value is None
+            and field_name in DEFAULT_ON_BLANK_FIELDS
+        ):
+            continue
+
+        normalized[field_name] = normalized_value
 
     return normalized
 

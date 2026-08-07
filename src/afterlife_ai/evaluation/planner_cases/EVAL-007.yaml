@@ -1,0 +1,115 @@
+contract_version: 1.0.0
+case_id: EVAL-007
+title: Supplier Return Menang
+case_type: SUPPLIER_RETURN_WINS
+evaluation_layer: CORE_RESCUE_PLANNER
+input_entity: SURPLUS_PLANNING_LOT
+purpose: Menguji return-to-supplier ketika kebijakan retur terkonfirmasi, jumlah penuh diterima, dan nilai
+  bersih mengalahkan fallback.
+optimization_objective: BALANCED
+fixtures:
+  lots:
+  - lot_id: PL-PACKAGED-007
+    source_lot_id: null
+    quantity: 30
+    unit: UNIT
+    attributes:
+      product_name: Produk kemasan desain lama
+      product_category: PACKAGED_GOODS
+      remaining_shelf_life_days: 180
+      packaging_condition: INTACT
+      verification_status: VERIFIED
+  batch_context: {}
+  capability_facts:
+    can_return_supplier: true
+    can_discount: true
+  capability_notes: []
+  partners:
+  - partner_id: PARTNER-01
+    attributes: {}
+    description: Supplier menerima retur 30 unit dengan credit terkonfirmasi.
+  context_notes:
+  - return deadline masih aktif
+  - transport cost rendah
+expected:
+  route:
+    statuses: {}
+    notes:
+    - RETURN_TO_SUPPLIER feasible
+    - LOCAL_DISCOUNT feasible
+  allocations:
+  - lot_id: PL-PACKAGED-007
+    source_lot_ids: &id001 []
+    action: RETURN_TO_SUPPLIER
+    quantity: 30
+    destination: null
+    attributes: {}
+  metrics:
+    expected_unallocated_quantity: 0
+  objective_runs: {}
+  required_fields: []
+  rejected_alternative: null
+  rejected_partner: null
+  possible_outcomes: []
+  feasible_actions:
+  - Retur 30 unit
+  forbidden_actions:
+  - retur tanpa supplier confirmation
+  - mencatat refund kotor tanpa cost
+  acceptable_decision: Return to supplier untuk seluruh lot.
+  binding_constraints:
+  - Return eligibility
+  - Confirmed credit
+  - Return deadline
+  - Net recovery after cost
+  explanation: '> Retur dipilih karena seluruh lot eligible dan net supplier credit lebih tinggi daripada
+    markdown.'
+  failure_conditions:
+  - memilih retur berdasarkan asumsi kebijakan
+  - melebihi eligible quantity
+  - mengabaikan biaya
+traceability:
+  rule_ids:
+  - RETURN-RULE-001
+  feature_terms:
+  - supplier_return_status
+  - return_eligible_quantity
+  - supplier_credit
+  - return_deadline
+  - return_cost
+  source_markdown: EVAL-007.md
+  source_references:
+  - Incident-016
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  uncertainty_and_source_boundary: 'Nilai finansial sintetis; pola retur bersyarat berasal dari incident
+    keluarga.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara
+    eksplisit berasal dari catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak
+    membuktikan probabilitas keberhasilan dunia nyata.'
+assertions:
+- type: CASE_ID_MATCHES_FILE
+  params:
+    expected_case_id: EVAL-007
+- type: HAS_RULE_TRACEABILITY
+  params:
+    minimum_rule_count: 1
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: PL-PACKAGED-007
+    action: RETURN_TO_SUPPLIER
+    quantity: 30
+    destination: null
+    source_lot_ids: *id001
+- type: EXPECTED_METRIC
+  params:
+    name: expected_unallocated_quantity
+    value: 0
+- type: QUANTITY_CONSERVATION
+  params:
+    lot_id: PL-PACKAGED-007
+    input_quantity: 30
+    expected_allocated_quantity: 30.0
+    expected_unallocated_quantity: 0

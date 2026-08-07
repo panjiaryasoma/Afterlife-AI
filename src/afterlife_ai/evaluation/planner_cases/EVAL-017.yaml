@@ -1,0 +1,134 @@
+contract_version: 1.0.0
+case_id: EVAL-017
+title: Internal Repurpose Dibatasi Resource Minimum
+case_type: LIMITED_REPURPOSE_CAPACITY
+evaluation_layer: CORE_RESCUE_PLANNER
+input_entity: SURPLUS_PLANNING_LOT
+purpose: Menguji kapasitas repurpose sebagai minimum dari equipment, labor, ingredient, dan demand.
+optimization_objective: BALANCED
+fixtures:
+  lots:
+  - lot_id: PL-SACHET-017
+    source_lot_id: null
+    quantity: 50
+    unit: SACHET
+    attributes:
+      product_name: Minuman sachet slow-moving
+      product_category: POWDERED_BEVERAGE_SACHET
+  batch_context: {}
+  capability_facts:
+    equipment_capacity: 30
+    labor_capacity: 25
+    ingredient_capacity: 20
+    repurpose_demand: 35
+    can_bundle: true
+    can_discount: true
+  capability_notes: []
+  partners:
+  - partner_id: PARTNER-01
+    attributes: {}
+    description: Tidak ada partner eksternal dominan.
+  context_notes:
+  - max repurpose=min(30,25,20,35)=20
+expected:
+  route:
+    statuses: {}
+    notes:
+    - Input lot sudah berada pada layer Core Rescue Planner.
+    - Jalankan validation, coverage, safety, verification, dan feasibility gate sebelum model scoring.
+  allocations:
+  - lot_id: PL-SACHET-017
+    source_lot_ids: &id001 []
+    action: INTERNAL_REPURPOSE
+    quantity: 20
+    destination: null
+    attributes: {}
+  - lot_id: PL-SACHET-017
+    source_lot_ids: &id002 []
+    action: BUNDLE
+    quantity: 15
+    destination: null
+    attributes: {}
+  - lot_id: PL-SACHET-017
+    source_lot_ids: &id003 []
+    action: LOCAL_DISCOUNT
+    quantity: 15
+    destination: null
+    attributes: {}
+  metrics: {}
+  objective_runs: {}
+  required_fields: []
+  rejected_alternative: null
+  rejected_partner: null
+  possible_outcomes: []
+  feasible_actions:
+  - INTERNAL_REPURPOSE 20
+  - BUNDLE 15
+  - LOCAL_DISCOUNT 15
+  forbidden_actions:
+  - Repurpose 50
+  - mengabaikan bahan atau labor
+  acceptable_decision: Mixed allocation dengan repurpose 20.
+  binding_constraints:
+  - Resource minimum
+  - Demand capacity
+  - Quantity conservation
+  explanation: '> Bahan menjadi binding constraint, sehingga hanya 20 sachet dapat ditransformasi.'
+  failure_conditions:
+  - mengambil max resource
+  - menggunakan capacity boolean
+  - remainder tidak dialokasikan
+traceability:
+  rule_ids:
+  - CAPABILITY-RULE-002
+  feature_terms:
+  - equipment_capacity
+  - labor_capacity
+  - ingredient_capacity
+  - repurpose_demand
+  - binding_resource
+  source_markdown: EVAL-017.md
+  source_references:
+  - Incident-004
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  uncertainty_and_source_boundary: 'Capacity sintetis.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara
+    eksplisit berasal dari catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak
+    membuktikan probabilitas keberhasilan dunia nyata.'
+assertions:
+- type: CASE_ID_MATCHES_FILE
+  params:
+    expected_case_id: EVAL-017
+- type: HAS_RULE_TRACEABILITY
+  params:
+    minimum_rule_count: 1
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: PL-SACHET-017
+    action: INTERNAL_REPURPOSE
+    quantity: 20
+    destination: null
+    source_lot_ids: *id001
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: PL-SACHET-017
+    action: BUNDLE
+    quantity: 15
+    destination: null
+    source_lot_ids: *id002
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: PL-SACHET-017
+    action: LOCAL_DISCOUNT
+    quantity: 15
+    destination: null
+    source_lot_ids: *id003
+- type: QUANTITY_CONSERVATION
+  params:
+    lot_id: PL-SACHET-017
+    input_quantity: 50
+    expected_allocated_quantity: 50.0
+    expected_unallocated_quantity: 0

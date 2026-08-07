@@ -1,0 +1,161 @@
+contract_version: 1.0.0
+case_id: EVAL-010
+title: Mixed Allocation untuk Medium Wholesaler
+case_type: MULTI_CHANNEL_WHOLESALE_SPLIT
+evaluation_layer: CORE_RESCUE_PLANNER
+input_entity: SURPLUS_PLANNING_LOT
+purpose: Menguji pembagian lot besar ke wholesale, branch, internal use, dan local discount berdasarkan
+  demand serta kapasitas.
+optimization_objective: BALANCED
+fixtures:
+  lots:
+  - lot_id: PL-DETERGENT-010
+    source_lot_id: null
+    quantity: 120
+    unit: SACHET
+    attributes:
+      product_name: Detergen sachet
+      product_category: HOUSEHOLD_CLEANING
+      packaging_condition: INTACT
+      verification_status: VERIFIED
+  batch_context: {}
+  capability_facts:
+    can_wholesale: true
+    can_transfer_branch: true
+    can_internal_use: true
+    can_discount: true
+  capability_notes: []
+  partners:
+  - partner_id: PARTNER-01
+    attributes: {}
+    description: Laundry wholesaler capacity=50
+  - partner_id: PARTNER-02
+    attributes: {}
+    description: Branch demand/capacity=30
+  context_notes:
+  - Verified internal need=10
+  - Local demand supports remainder=30
+expected:
+  route:
+    statuses: {}
+    notes:
+    - Input lot sudah berada pada layer Core Rescue Planner.
+    - Jalankan validation, coverage, safety, verification, dan feasibility gate sebelum model scoring.
+  allocations:
+  - lot_id: PL-DETERGENT-010
+    source_lot_ids: &id001 []
+    action: WHOLESALE
+    quantity: 50
+    destination: null
+    attributes: {}
+  - lot_id: PL-DETERGENT-010
+    source_lot_ids: &id002 []
+    action: BRANCH_TRANSFER
+    quantity: 30
+    destination: null
+    attributes: {}
+  - lot_id: PL-DETERGENT-010
+    source_lot_ids: &id003 []
+    action: INTERNAL_USE
+    quantity: 10
+    destination: null
+    attributes: {}
+  - lot_id: PL-DETERGENT-010
+    source_lot_ids: &id004 []
+    action: LOCAL_DISCOUNT
+    quantity: 30
+    destination: null
+    attributes: {}
+  metrics:
+    total_allocated_quantity: 120
+  objective_runs: {}
+  required_fields: []
+  rejected_alternative: null
+  rejected_partner: null
+  possible_outcomes: []
+  feasible_actions:
+  - WHOLESALE 50
+  - BRANCH_TRANSFER 30
+  - INTERNAL_USE 10
+  - LOCAL_DISCOUNT 30
+  forbidden_actions:
+  - alokasi melebihi channel capacity
+  - seluruh 120 ke satu channel
+  acceptable_decision: Mixed allocation penuh tanpa remainder.
+  binding_constraints:
+  - Channel capacity
+  - Partner demand
+  - Internal need
+  - Quantity conservation
+  explanation: '> Lot besar dibagi ke empat jalur karena tidak ada satu channel yang mampu atau optimal
+    menyerap seluruh unit.'
+  failure_conditions:
+  - menyamakan transfer dengan cash revenue
+  - mengabaikan capacity
+  - remainder tidak dijelaskan
+traceability:
+  rule_ids:
+  - ALLOCATION-RULE-001
+  feature_terms:
+  - channel_capacity
+  - allocation_mix
+  - cash_recovery
+  - future_branch_recovery
+  - avoided_purchase_cost
+  source_markdown: EVAL-010.md
+  source_references:
+  - Incident-011
+  - Incident-013
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  uncertainty_and_source_boundary: 'Value types harus dilaporkan terpisah.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara
+    eksplisit berasal dari catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak
+    membuktikan probabilitas keberhasilan dunia nyata.'
+assertions:
+- type: CASE_ID_MATCHES_FILE
+  params:
+    expected_case_id: EVAL-010
+- type: HAS_RULE_TRACEABILITY
+  params:
+    minimum_rule_count: 1
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: PL-DETERGENT-010
+    action: WHOLESALE
+    quantity: 50
+    destination: null
+    source_lot_ids: *id001
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: PL-DETERGENT-010
+    action: BRANCH_TRANSFER
+    quantity: 30
+    destination: null
+    source_lot_ids: *id002
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: PL-DETERGENT-010
+    action: INTERNAL_USE
+    quantity: 10
+    destination: null
+    source_lot_ids: *id003
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: PL-DETERGENT-010
+    action: LOCAL_DISCOUNT
+    quantity: 30
+    destination: null
+    source_lot_ids: *id004
+- type: EXPECTED_METRIC
+  params:
+    name: total_allocated_quantity
+    value: 120
+- type: QUANTITY_CONSERVATION
+  params:
+    lot_id: PL-DETERGENT-010
+    input_quantity: 120
+    expected_allocated_quantity: 120.0
+    expected_unallocated_quantity: 0

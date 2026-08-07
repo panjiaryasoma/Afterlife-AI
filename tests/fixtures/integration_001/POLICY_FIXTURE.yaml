@@ -1,0 +1,68 @@
+artifact: POLICY_FIXTURE
+version: '1.0'
+phase: PREPRODUCTION
+status: SYNTHETIC_INTEGRATION_FIXTURE
+production_default: false
+analysis_date: '2026-08-05'
+triage_policy_version: integration-triage-fixture-v1.0
+input_contract:
+  format: XLSX
+  sheet: inventory_lots
+  input_scope: FULL_MIXED_INVENTORY
+  surplus_only_input: false
+  row_semantics: one traceable physical lot or batch
+  fixed_columns: 33
+category_policies:
+  PACKAGED_BEVERAGE:
+    effective_sales_window_days: 10
+    expiry_monitor_threshold_days: 14
+    cold_chain_evidence_required: false
+  FROZEN_PREPARED_FOOD:
+    effective_sales_window_days: 7
+    expiry_monitor_threshold_days: 7
+    cold_chain_evidence_required: true
+    storage_history_required: true
+    temperature_log_required: true
+expiry_policy:
+  explicit_expiry_date_precedence: true
+  expired_consumption_channels_allowed: false
+  final_non_consumption_action: PENDING_DETERMINISTIC_POLICY
+declaration_policy:
+  user_declared_surplus_allowed: true
+  quantity_must_be_positive: true
+  quantity_cannot_exceed_current_quantity: true
+  authorization_policy: PENDING_POLICY_CONFIGURATION
+  evidence_policy: PENDING_POLICY_CONFIGURATION
+  declaration_freshness_policy: PENDING_POLICY_CONFIGURATION
+value_policy:
+  estimated_current_value_basis: ACQUISITION_COST
+  expired_inventory_value_treatment: INVENTORY_LOSS
+  inventory_value_is_not:
+  - cash_recovery
+  - expected_rescue_value
+  - model_output
+evidence_and_routing_principles:
+  safety_before_demand: true
+  recent_receipt_is_evidence_not_status: true
+  unknown_is_not_automatically_safe: true
+  unknown_is_not_automatically_unsafe: true
+  critical_uncertainty_requires_abstention: true
+  planner_input_source: planning_quantity
+  review_quantity_excluded_from:
+  - planner
+  - candidate_generation
+  - model_scoring
+  - allocation
+claim_boundary:
+  all_values_are_synthetic_fixture_values: true
+  category_defaults_validated_in_real_operations: false
+  production_policy_claim_allowed: false
+schema_change_dependency:
+  change_request: SCHEMA-CR-001
+  logical_status: APPROVED
+  file_update_status: DEFERRED_UNTIL_FINAL_PACKAGING
+  required_change:
+    review_quantity_allowed_when_inventory_status_in:
+    - NEEDS_REVIEW
+    - SURPLUS_CANDIDATE
+    review_quantity_never_planner_eligible: true

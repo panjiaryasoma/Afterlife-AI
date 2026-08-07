@@ -1,0 +1,160 @@
+contract_version: 1.0.0
+case_id: EVAL-025
+title: Kapasitas Cold Storage Dibagi Global
+case_type: SHARED_COLD_STORAGE_CAPACITY
+evaluation_layer: CORE_RESCUE_PLANNER
+input_entity: SURPLUS_PLANNING_LOT
+purpose: Menguji prioritas binding storage requirement sebelum optional chilled display.
+optimization_objective: BALANCED
+fixtures:
+  lots:
+  - lot_id: PL-CHOCOLATE-025
+    source_lot_id: null
+    quantity: 20
+    unit: null
+    attributes:
+      product_category: CHOCOLATE
+      storage_requirement_mode: COLD_REQUIRED_FOR_QUALITY_WINDOW
+  - lot_id: PL-DRINK-025
+    source_lot_id: null
+    quantity: 24
+    unit: null
+    attributes:
+      product_category: PACKAGED_BEVERAGE
+      storage_requirement_mode: CHILLED_PREFERRED
+  batch_context:
+    cold_storage:
+      total_capacity_units: 40
+      reserved_capacity_units: 8
+      available_capacity_units: 32
+  capability_facts:
+    has_cold_storage: true
+  capability_notes:
+  - ambient sale allowed for beverage
+  partners:
+  - partner_id: PARTNER-01
+    attributes: {}
+    description: Tidak membutuhkan partner.
+  context_notes:
+  - Chocolate required 20 capacity units
+  - Drink chilled marginal gain Rp2.650/unit
+expected:
+  route:
+    statuses: {}
+    notes:
+    - Input lot sudah berada pada layer Core Rescue Planner.
+    - Jalankan validation, coverage, safety, verification, dan feasibility gate sebelum
+      model scoring.
+  allocations:
+  - lot_id: PL-CHOCOLATE-025
+    source_lot_ids: []
+    action: LOCAL_DISCOUNT
+    quantity: 20
+    destination: COLD_STORAGE_LOCAL_SALE
+    attributes:
+      execution_mode: COLD_REQUIRED
+  - lot_id: PL-DRINK-025
+    source_lot_ids: []
+    action: LOCAL_DISCOUNT
+    quantity: 12
+    destination: CHILLED_DISPLAY
+    attributes:
+      execution_mode: CHILLED_PREFERRED
+  - lot_id: PL-DRINK-025
+    source_lot_ids: []
+    action: LOCAL_DISCOUNT
+    quantity: 12
+    destination: AMBIENT_DISPLAY
+    attributes:
+      execution_mode: AMBIENT_FALLBACK
+  metrics:
+    cold_capacity_used: 32
+    expected_total_net_recovery: 426200
+  objective_runs: {}
+  required_fields: []
+  rejected_alternative: null
+  rejected_partner: null
+  possible_outcomes: []
+  feasible_actions:
+  - Chocolate cold 20
+  - Drink chilled 12
+  - Drink ambient 12
+  forbidden_actions:
+  - Drink chilled 24 + chocolate cold 8
+  - use reserved 8
+  acceptable_decision: Binding cold requirement lebih dulu, optional gain memakai
+    remainder.
+  binding_constraints:
+  - Shared cold capacity
+  - Reserved capacity
+  - Storage priority
+  - Marginal value
+  explanation: '> Cold storage and display mode are execution attributes, not new
+    rescue action types. All three routes remain LOCAL_DISCOUNT/local sale candidates
+    under the locked action catalog.'
+  failure_conditions:
+  - capacity per lot
+  - optional chilled mendahului required
+  - reserved capacity violation
+traceability:
+  rule_ids:
+  - STORAGE-RULE-002
+  feature_terms:
+  - available_cold_capacity
+  - storage_requirement_mode
+  - marginal_value_per_capacity_unit
+  - capacity_shortfall
+  source_markdown: EVAL-025.md
+  source_references:
+  - Incident-006
+  - Incident-008
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  uncertainty_and_source_boundary: 'Control capacity 12 harus menghasilkan shortfall
+    8 untuk cokelat dan tidak memberi slot pada minuman.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery
+    yang tidak secara eksplisit berasal dari catatan transaksi adalah parameter sintetis
+    untuk evaluation. Kasus ini tidak membuktikan probabilitas keberhasilan dunia
+    nyata.'
+assertions:
+- type: CASE_ID_MATCHES_FILE
+  params:
+    expected_case_id: EVAL-025
+- type: HAS_RULE_TRACEABILITY
+  params:
+    minimum_rule_count: 1
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: PL-CHOCOLATE-025
+    action: LOCAL_DISCOUNT
+    quantity: 20
+    destination: COLD_STORAGE_LOCAL_SALE
+    source_lot_ids: []
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: PL-DRINK-025
+    action: LOCAL_DISCOUNT
+    quantity: 12
+    destination: CHILLED_DISPLAY
+    source_lot_ids: []
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: PL-DRINK-025
+    action: LOCAL_DISCOUNT
+    quantity: 12
+    destination: AMBIENT_DISPLAY
+    source_lot_ids: []
+- type: EXPECTED_METRIC
+  params:
+    name: cold_capacity_used
+    value: 32
+- type: EXPECTED_METRIC
+  params:
+    name: expected_total_net_recovery
+    value: 426200
+- type: BATCH_QUANTITY_CONSERVATION
+  params:
+    input_quantity: 44
+    expected_allocated_quantity: 44.0

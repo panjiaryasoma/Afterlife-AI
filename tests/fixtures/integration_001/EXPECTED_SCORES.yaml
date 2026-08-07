@@ -1,0 +1,52 @@
+integration_id: INTEGRATION-001
+version: 1.0.0
+phase: PREPRODUCTION_ACCEPTANCE
+status: LOCKED_FOR_PREPRODUCTION
+source_document: INTEGRATION-001.md
+source_type: EVALUATION_FIXTURE
+production_default: false
+automatic_execution_allowed: false
+human_approval_required: true
+artifact: EXPECTED_SCORES
+score_name: fixture_rescue_success_score
+trained_model_used: false
+real_world_probability_claim: false
+formula: expected_value_per_unit = fixture_rescue_success_score * net_value_if_success_per_unit
+scores:
+- candidate_id: CAND-003-REPURPOSE
+  net_value_if_success_per_unit: 2400
+  expected_value_per_unit: 2064.0
+  score_source: FIXTURE_EXPECTED_SCORE
+  fixture_rescue_success_score: 0.86
+- candidate_id: CAND-003-BUNDLE
+  net_value_if_success_per_unit: 1600
+  expected_value_per_unit: 1280.0
+  score_source: FIXTURE_EXPECTED_SCORE
+  fixture_rescue_success_score: 0.8
+- candidate_id: CAND-003-DISCOUNT
+  net_value_if_success_per_unit: 1500
+  expected_value_per_unit: 1110.0
+  score_source: FIXTURE_EXPECTED_SCORE
+  fixture_rescue_success_score: 0.74
+- candidate_id: CAND-006-REPURPOSE
+  net_value_if_success_per_unit: 2400
+  expected_value_per_unit: 1896.0
+  score_source: FIXTURE_EXPECTED_SCORE
+  fixture_rescue_success_score: 0.79
+- candidate_id: CAND-006-DISCOUNT
+  net_value_if_success_per_unit: 1500
+  expected_value_per_unit: 1140.0
+  score_source: FIXTURE_EXPECTED_SCORE
+  fixture_rescue_success_score: 0.76
+- candidate_id: CAND-006-BONUS
+  net_value_if_success_per_unit: null
+  expected_value_per_unit: null
+  score_source: null
+  reason: REJECTED_BY_HARD_GATE
+  fixture_rescue_success_score: null
+tie_break_rule:
+- higher expected_value_per_unit
+- higher fixture_rescue_success_score
+- lower operational burden
+- candidate_id lexical order
+model_scoring_status_for_feasible_candidates: DEFERRED

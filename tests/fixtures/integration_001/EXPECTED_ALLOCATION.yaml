@@ -1,0 +1,101 @@
+integration_id: INTEGRATION-001
+version: 1.0.0
+phase: PREPRODUCTION_ACCEPTANCE
+status: LOCKED_FOR_PREPRODUCTION
+source_document: INTEGRATION-001.md
+source_type: EVALUATION_FIXTURE
+production_default: false
+automatic_execution_allowed: false
+human_approval_required: true
+artifact: EXPECTED_ALLOCATION
+optimization_objective: BALANCED
+optimizer_used: false
+allocation_method: MANUALLY_DEFINED_ACCEPTANCE_FIXTURE
+deterministic_configuration: STATIC_FIXTURE_NO_RANDOMNESS
+shared_constraints:
+  total_internal_repurpose_capacity: 6
+  maximum_bundle_quantity: 4
+  maximum_promotional_bonus_quantity: 0
+allocations:
+- planning_lot_id: PLAN-LOT-003
+  candidate_id: CAND-003-REPURPOSE
+  action_type: INTERNAL_REPURPOSE
+  allocated_quantity: 6
+  expected_value_per_unit: 2064
+  expected_total_economic_value: 12384
+  expected_rescued_units: 5.16
+  allocation_id: ALLOC-001
+  fixture_rescue_success_score: 0.86
+  solver_status: FEASIBLE
+  binding_constraint_codes:
+  - SHARED_REPURPOSE_CAPACITY
+  expected_cash_recovery: 12384
+  expected_future_branch_recovery: 0
+  expected_avoided_purchase_cost: 0
+  expected_physical_rescue_quantity: 5.16
+  expected_waste_quantity: 0.84
+- planning_lot_id: PLAN-LOT-003
+  candidate_id: CAND-003-BUNDLE
+  action_type: BUNDLE
+  allocated_quantity: 4
+  expected_value_per_unit: 1280
+  expected_total_economic_value: 5120
+  expected_rescued_units: 3.2
+  allocation_id: ALLOC-002
+  fixture_rescue_success_score: 0.8
+  solver_status: FEASIBLE
+  binding_constraint_codes:
+  - ALLOCATABLE_COMPANION_QUANTITY
+  expected_cash_recovery: 5120
+  expected_future_branch_recovery: 0
+  expected_avoided_purchase_cost: 0
+  expected_physical_rescue_quantity: 3.2
+  expected_waste_quantity: 0.8
+- planning_lot_id: PLAN-LOT-006
+  candidate_id: CAND-006-DISCOUNT
+  action_type: LOCAL_DISCOUNT
+  allocated_quantity: 8
+  expected_value_per_unit: 1140
+  expected_total_economic_value: 9120
+  expected_rescued_units: 6.08
+  allocation_id: ALLOC-003
+  fixture_rescue_success_score: 0.76
+  solver_status: FEASIBLE
+  binding_constraint_codes: []
+  expected_cash_recovery: 9120
+  expected_future_branch_recovery: 0
+  expected_avoided_purchase_cost: 0
+  expected_physical_rescue_quantity: 6.08
+  expected_waste_quantity: 1.92
+feasible_but_not_selected:
+- candidate_id: CAND-003-DISCOUNT
+  reason: LOWER_EXPECTED_VALUE_THAN_SELECTED_REPURPOSE_AND_BUNDLE
+- candidate_id: CAND-006-REPURPOSE
+  reason: SHARED_REPURPOSE_CAPACITY_USED_BY_HIGHER_EXPECTED_VALUE_CANDIDATE
+rejected_candidates:
+- candidate_id: CAND-006-BONUS
+  reason: NO_QUALIFYING_TRANSACTION
+unallocated:
+- planning_lot_id: PLAN-LOT-003
+  unallocated_quantity: 0
+  fallback: null
+- planning_lot_id: PLAN-LOT-006
+  unallocated_quantity: 0
+  fallback: null
+reconciliation:
+  PLAN-LOT-003:
+    planning_quantity: 10
+    allocated_quantity: 10
+    unallocated_quantity: 0
+  PLAN-LOT-006:
+    planning_quantity: 8
+    allocated_quantity: 8
+    unallocated_quantity: 0
+  total_planning_quantity: 18
+  total_allocated_quantity: 18
+  total_unallocated_quantity: 0
+  expected_total_economic_value: 26624
+  expected_rescued_units: 14.44
+  fixture_weighted_rescue_score: 0.802222
+  assertion: 18 == 18 + 0
+  expected_result: PASS

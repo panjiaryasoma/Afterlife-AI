@@ -1,0 +1,155 @@
+contract_version: 1.0.0
+case_id: EVAL-002
+title: Internal Repurpose Menang pada Bisnis yang Mampu Memproses
+case_type: INTERNAL_REPURPOSE_WINS
+evaluation_layer: CORE_RESCUE_PLANNER
+input_entity: SURPLUS_PLANNING_LOT
+purpose: Menguji apakah capability-aware planner memilih transformasi internal ketika toko memiliki alat,
+  bahan, waktu, dan demand yang cukup.
+optimization_objective: BALANCED
+fixtures:
+  lots:
+  - lot_id: PL-NUTRISARI-002
+    source_lot_id: null
+    quantity: 40
+    unit: SACHET
+    attributes:
+      product_name: Nutrisari Es Rujak
+      product_category: POWDERED_BEVERAGE_SACHET
+      remaining_shelf_life_days: 45
+      product_condition: GOOD
+      packaging_condition: INTACT
+      verification_status: VERIFIED
+  batch_context: {}
+  capability_facts:
+    can_internal_repurpose: true
+    ice_available: true
+    cup_capacity: 20
+    labor_capacity: 20
+    can_bundle: true
+    can_discount: true
+  capability_notes: []
+  partners:
+  - partner_id: PARTNER-01
+    attributes: {}
+    description: Tidak ada partner eksternal yang memberi nilai lebih baik setelah biaya.
+  context_notes:
+  - Repurpose hanya boleh memakai kapasitas minimum dari alat, tenaga, bahan, dan demand.
+expected:
+  route:
+    statuses:
+      inventory_status: SURPLUS_CANDIDATE
+      safety_status: PASS
+      coverage_status: PASS
+      model_scoring_status: ALLOWED
+    notes: []
+  allocations:
+  - lot_id: PL-NUTRISARI-002
+    source_lot_ids: &id001 []
+    action: INTERNAL_REPURPOSE
+    quantity: 20
+    destination: null
+    attributes: {}
+  - lot_id: PL-NUTRISARI-002
+    source_lot_ids: &id002 []
+    action: BUNDLE
+    quantity: 10
+    destination: null
+    attributes: {}
+  - lot_id: PL-NUTRISARI-002
+    source_lot_ids: &id003 []
+    action: LOCAL_DISCOUNT
+    quantity: 10
+    destination: null
+    attributes: {}
+  metrics:
+    unallocated_quantity: 0
+  objective_runs: {}
+  required_fields: []
+  rejected_alternative: null
+  rejected_partner: null
+  possible_outcomes: []
+  feasible_actions:
+  - INTERNAL_REPURPOSE maksimal 20
+  - BUNDLE maksimal 10
+  - LOCAL_DISCOUNT untuk remainder
+  forbidden_actions:
+  - Repurpose di atas kapasitas 20
+  - Bonus tanpa qualifying transaction
+  - Disposal saat opsi komersial feasible
+  acceptable_decision: Mixed allocation dengan internal repurpose sebagai tindakan utama.
+  binding_constraints:
+  - Repurpose capacity=20
+  - Quantity conservation
+  - Action capability
+  - Remaining shelf life
+  explanation: '> Dua puluh sachet ditransformasi karena kapasitas operasional dan demand tersedia. Sisa
+    lot dibagi ke bundle dan markdown.'
+  failure_conditions:
+  - mengalokasikan >20 ke repurpose
+  - memilih repurpose ketika capability false
+  - menghitung seluruh revenue repurpose tanpa biaya bahan/gelas
+traceability:
+  rule_ids:
+  - CAPABILITY-RULE-001
+  feature_terms:
+  - repurpose_equipment_capacity
+  - labor_capacity
+  - ingredient_capacity
+  - repurpose_demand
+  - expected_yield
+  source_markdown: EVAL-002.md
+  source_references:
+  - Incident-001
+  - Incident-004
+  source_type: INCIDENT_OR_RULE_GROUNDED_SYNTHETIC
+  synthetic_status: SYNTHETIC_PARAMETERS_WITH_SOURCE_GROUNDED_RULES
+  uncertainty_and_source_boundary: 'Nilai dan kapasitas adalah sintetis; pola tindakan bersumber dari
+    incident keluarga.
+
+
+    **Catatan umum:** nilai quantity, harga, duration, capacity, score, dan recovery yang tidak secara
+    eksplisit berasal dari catatan transaksi adalah parameter sintetis untuk evaluation. Kasus ini tidak
+    membuktikan probabilitas keberhasilan dunia nyata.'
+assertions:
+- type: CASE_ID_MATCHES_FILE
+  params:
+    expected_case_id: EVAL-002
+- type: HAS_RULE_TRACEABILITY
+  params:
+    minimum_rule_count: 1
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: PL-NUTRISARI-002
+    action: INTERNAL_REPURPOSE
+    quantity: 20
+    destination: null
+    source_lot_ids: *id001
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: PL-NUTRISARI-002
+    action: BUNDLE
+    quantity: 10
+    destination: null
+    source_lot_ids: *id002
+- type: EXPECTED_ALLOCATION
+  params:
+    lot_id: PL-NUTRISARI-002
+    action: LOCAL_DISCOUNT
+    quantity: 10
+    destination: null
+    source_lot_ids: *id003
+- type: STATUS_EQUALS
+  params:
+    field: model_scoring_status
+    value: ALLOWED
+- type: EXPECTED_METRIC
+  params:
+    name: unallocated_quantity
+    value: 0
+- type: QUANTITY_CONSERVATION
+  params:
+    lot_id: PL-NUTRISARI-002
+    input_quantity: 40
+    expected_allocated_quantity: 40.0
+    expected_unallocated_quantity: 0
