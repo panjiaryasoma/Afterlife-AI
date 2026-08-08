@@ -1,0 +1,30 @@
+config_version: "1.0.0"
+
+b0_rule_priority:
+  baseline_id: "B0"
+  description: "Rule Priority Greedy ranking baseline"
+  score_semantics: "ORDINAL_PRIORITY_SCORE"
+  action_priority:
+    - INTERNAL_REPURPOSE
+    - BUNDLE
+    - LOCAL_DISCOUNT
+    - PROMOTIONAL_BONUS
+    - INTERNAL_USE
+    - RETURN_TO_SUPPLIER
+    - BRANCH_TRANSFER
+    - WHOLESALE
+    - EXTERNAL_PARTNER
+    - DONATION
+
+b1_action_prior:
+  baseline_id: "B1"
+  description: "Action Prior baseline estimated from training rows only"
+  score_semantics: "TRAIN_ACTION_SUCCESS_RATE"
+  action_column: "action_type"
+  target_column: "simulated_rescue_outcome"
+  unseen_action_policy: "GLOBAL_TRAIN_PRIOR"
+
+split_policy:
+  fit_split: "train"
+  selection_split: "validation"
+  test_access_allowed: false

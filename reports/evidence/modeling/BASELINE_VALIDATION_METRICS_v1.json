@@ -1,0 +1,26 @@
+{
+  "baselines": {
+    "B0": {
+      "candidate_rows": 1805,
+      "mrr": 0.9054166666666666,
+      "ndcg_at_3": 0.8644336955031945,
+      "pr_auc": 0.8201480118002513,
+      "roc_auc": 0.5580524344569289,
+      "scenario_groups": 360,
+      "top1_success_rate": 0.825
+    },
+    "B1": {
+      "candidate_rows": 1805,
+      "mrr": 0.9176851851851852,
+      "ndcg_at_3": 0.8727349572045606,
+      "pr_auc": 0.8345238078788991,
+      "roc_auc": 0.5708547545381937,
+      "scenario_groups": 360,
+      "top1_success_rate": 0.8444444444444444
+    }
+  },
+  "evaluation_split": "validation",
+  "report_version": "1.0.0",
+  "score_layer_only": true,
+  "test_accessed": false
+}
