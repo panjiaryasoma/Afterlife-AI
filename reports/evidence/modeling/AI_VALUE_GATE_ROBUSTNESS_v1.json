@@ -1,0 +1,113 @@
+{
+  "evaluation_version": "1.0.0",
+  "selected_model": "HGB_E",
+  "selected_model_config": {
+    "model_id": "M1_HIST_GRADIENT_BOOSTING",
+    "learning_rate": 0.05,
+    "max_iter": 150,
+    "max_leaf_nodes": 7,
+    "min_samples_leaf": 40,
+    "l2_regularization": 2.0,
+    "max_bins": 255,
+    "early_stopping": false,
+    "random_state": 42
+  },
+  "baseline": "B1",
+  "robustness_seeds": [
+    42,
+    137,
+    2026
+  ],
+  "primary_seed": 42,
+  "locked_test_group_count": 360,
+  "locked_test_group_sha256": "bdefd0f2807c26c8f7468ef3f1037e8741ae6c7a1d9613978db1f20301aa3503",
+  "test_accessed": false,
+  "bootstrap": {
+    "unit": "scenario_group_id",
+    "iterations": 5000,
+    "base_seed": 42001,
+    "aggregate_method": "mean of independently group-bootstrapped seed-level PR-AUC deltas"
+  },
+  "aggregate_metrics": {
+    "hgb_e_pr_auc_mean": 0.8566322362689488,
+    "hgb_e_pr_auc_std": 0.003957824908418329,
+    "b1_pr_auc_mean": 0.8340863154204075,
+    "b1_pr_auc_std": 0.007207558411724232,
+    "mean_delta_pr_auc": 0.022545920848541345,
+    "hgb_e_brier_mean": 0.1541217939634603,
+    "hgb_e_brier_std": 0.0010766079822663896,
+    "b1_brier_mean": 0.15624693139357204,
+    "b1_brier_std": 0.0004655006985736891,
+    "mean_delta_brier": -0.002125137430111751,
+    "aggregate_delta_pr_auc_ci_95": {
+      "low": 0.012831659079991307,
+      "high": 0.032416989435507325
+    },
+    "aggregate_probability_delta_positive": 1.0,
+    "consistent_seed_count": 3
+  },
+  "gate": {
+    "criterion_1_mean_pr_auc_higher": true,
+    "criterion_2_mean_brier_not_worse_by_more_than_0_01": true,
+    "criterion_3_bootstrap_lower_bound_above_zero": true,
+    "criterion_4_consistent_at_least_2_of_3_seeds": true,
+    "passed": true
+  },
+  "seed_results": [
+    {
+      "robustness_seed": 42,
+      "train_groups": 1680,
+      "validation_groups": 360,
+      "train_rows": 8435,
+      "validation_rows": 1805,
+      "hgb_e_pr_auc": 0.853663712379382,
+      "b1_pr_auc": 0.8345238078788991,
+      "delta_pr_auc": 0.019139904500482863,
+      "hgb_e_brier": 0.15514519580051822,
+      "b1_brier": 0.1567706840436056,
+      "delta_brier": -0.0016254882430873918,
+      "bootstrap_ci_95_low": 0.0011976292990965812,
+      "bootstrap_ci_95_high": 0.036719531596379855,
+      "bootstrap_probability_positive": 0.9812,
+      "seed_consistent": true,
+      "test_accessed": false
+    },
+    {
+      "robustness_seed": 137,
+      "train_groups": 1680,
+      "validation_groups": 360,
+      "train_rows": 8415,
+      "validation_rows": 1825,
+      "hgb_e_pr_auc": 0.8611256970179823,
+      "b1_pr_auc": 0.826669975946195,
+      "delta_pr_auc": 0.03445572107178729,
+      "hgb_e_brier": 0.15299888828594335,
+      "b1_brier": 0.15588039718992347,
+      "delta_brier": -0.002881508903980118,
+      "bootstrap_ci_95_low": 0.018168193059968595,
+      "bootstrap_ci_95_high": 0.050376201823244024,
+      "bootstrap_probability_positive": 1.0,
+      "seed_consistent": true,
+      "test_accessed": false
+    },
+    {
+      "robustness_seed": 2026,
+      "train_groups": 1680,
+      "validation_groups": 360,
+      "train_rows": 8458,
+      "validation_rows": 1782,
+      "hgb_e_pr_auc": 0.8551072994094822,
+      "b1_pr_auc": 0.8410651624361282,
+      "delta_pr_auc": 0.014042136973353991,
+      "hgb_e_brier": 0.1542212978039193,
+      "b1_brier": 0.15608971294718707,
+      "delta_brier": -0.001868415143267771,
+      "bootstrap_ci_95_low": -0.003204733817551225,
+      "bootstrap_ci_95_high": 0.03158997357507254,
+      "bootstrap_probability_positive": 0.9476,
+      "seed_consistent": true,
+      "test_accessed": false
+    }
+  ],
+  "claim_boundary": "Metrics quantify performance only against the frozen synthetic benchmark generation process."
+}
