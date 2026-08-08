@@ -1,0 +1,314 @@
+{
+  "metric_policy": {
+    "primary": [
+      "top1_success_rate",
+      "mrr",
+      "ndcg_at_3"
+    ],
+    "secondary": [
+      "brier",
+      "pr_auc",
+      "roc_auc"
+    ]
+  },
+  "models": {
+    "HGB": {
+      "train": {
+        "brier": 0.10020274107024084,
+        "calibration_bins": [
+          {
+            "absolute_gap": 0.18941146178065563,
+            "bin": "(0.1, 0.2]",
+            "mean_score": 0.18941146178065563,
+            "observed_rate": 0.0,
+            "rows": 3
+          },
+          {
+            "absolute_gap": 0.26156785760470413,
+            "bin": "(0.2, 0.3]",
+            "mean_score": 0.26156785760470413,
+            "observed_rate": 0.0,
+            "rows": 33
+          },
+          {
+            "absolute_gap": 0.3561699180640831,
+            "bin": "(0.3, 0.4]",
+            "mean_score": 0.3561699180640831,
+            "observed_rate": 0.0,
+            "rows": 121
+          },
+          {
+            "absolute_gap": 0.4444790569763605,
+            "bin": "(0.4, 0.5]",
+            "mean_score": 0.45336794586524937,
+            "observed_rate": 0.008888888888888889,
+            "rows": 225
+          },
+          {
+            "absolute_gap": 0.4343764284208089,
+            "bin": "(0.5, 0.6]",
+            "mean_score": 0.553617620832733,
+            "observed_rate": 0.11924119241192412,
+            "rows": 369
+          },
+          {
+            "absolute_gap": 0.3061356085904542,
+            "bin": "(0.6, 0.7]",
+            "mean_score": 0.6538407546266155,
+            "observed_rate": 0.3477051460361613,
+            "rows": 719
+          },
+          {
+            "absolute_gap": 0.006012862097665828,
+            "bin": "(0.7, 0.8]",
+            "mean_score": 0.7568136308356543,
+            "observed_rate": 0.7508007687379885,
+            "rows": 1561
+          },
+          {
+            "absolute_gap": 0.1132060010132302,
+            "bin": "(0.8, 0.9]",
+            "mean_score": 0.8556766015327387,
+            "observed_rate": 0.9688826025459689,
+            "rows": 3535
+          },
+          {
+            "absolute_gap": 0.07561141501473578,
+            "bin": "(0.9, 1.0]",
+            "mean_score": 0.9233184940275329,
+            "observed_rate": 0.9989299090422686,
+            "rows": 1869
+          }
+        ],
+        "ece_10_bin": 0.1284632782731848,
+        "pairwise_within_group_accuracy": 0.9448286460734594,
+        "pr_auc": 0.9849348767702022,
+        "roc_auc": 0.9455380199593747,
+        "score_separation": {
+          "mean_group_score_range": 0.26019655916021317,
+          "mean_group_score_std": 0.09695771602339776,
+          "mean_top1_margin": 0.05215605443778696,
+          "median_group_score_range": 0.23262823498557073,
+          "median_top1_margin": 0.03177737064253022
+        },
+        "top1_success_rate": 0.9857142857142858
+      },
+      "validation": {
+        "brier": 0.1563688525481009,
+        "calibration_bins": [
+          {
+            "absolute_gap": 0.2154890316707651,
+            "bin": "(0.2, 0.3]",
+            "mean_score": 0.2845109683292349,
+            "observed_rate": 0.5,
+            "rows": 2
+          },
+          {
+            "absolute_gap": 0.1337942680738105,
+            "bin": "(0.3, 0.4]",
+            "mean_score": 0.3662057319261895,
+            "observed_rate": 0.5,
+            "rows": 6
+          },
+          {
+            "absolute_gap": 0.06569005550265794,
+            "bin": "(0.4, 0.5]",
+            "mean_score": 0.4581194683068659,
+            "observed_rate": 0.5238095238095238,
+            "rows": 21
+          },
+          {
+            "absolute_gap": 0.11885589144009723,
+            "bin": "(0.5, 0.6]",
+            "mean_score": 0.5597155371313314,
+            "observed_rate": 0.6785714285714286,
+            "rows": 56
+          },
+          {
+            "absolute_gap": 0.07410659129925623,
+            "bin": "(0.6, 0.7]",
+            "mean_score": 0.659226742034077,
+            "observed_rate": 0.7333333333333333,
+            "rows": 165
+          },
+          {
+            "absolute_gap": 0.009851375487992864,
+            "bin": "(0.7, 0.8]",
+            "mean_score": 0.7552649035817746,
+            "observed_rate": 0.7651162790697674,
+            "rows": 430
+          },
+          {
+            "absolute_gap": 0.02729060353751156,
+            "bin": "(0.8, 0.9]",
+            "mean_score": 0.8528434290903371,
+            "observed_rate": 0.8255528255528255,
+            "rows": 814
+          },
+          {
+            "absolute_gap": 0.040666259449311126,
+            "bin": "(0.9, 1.0]",
+            "mean_score": 0.9216951983560635,
+            "observed_rate": 0.8810289389067524,
+            "rows": 311
+          }
+        ],
+        "ece_10_bin": 0.03357041648225487,
+        "pairwise_within_group_accuracy": 0.5979457079970653,
+        "pr_auc": 0.854330049718234,
+        "roc_auc": 0.6004082629632215,
+        "score_separation": {
+          "mean_group_score_range": 0.21359164373573752,
+          "mean_group_score_std": 0.0783846856742214,
+          "mean_top1_margin": 0.04884071844064284,
+          "median_group_score_range": 0.2042469901203966,
+          "median_top1_margin": 0.03165394101551089
+        },
+        "top1_success_rate": 0.8472222222222222
+      }
+    },
+    "LR": {
+      "train": {
+        "brier": 0.15011180376825012,
+        "calibration_bins": [
+          {
+            "absolute_gap": 0.267501106150698,
+            "bin": "(0.2, 0.3]",
+            "mean_score": 0.267501106150698,
+            "observed_rate": 0.0,
+            "rows": 1
+          },
+          {
+            "absolute_gap": 0.27409020627192593,
+            "bin": "(0.3, 0.4]",
+            "mean_score": 0.3649992971810168,
+            "observed_rate": 0.09090909090909091,
+            "rows": 11
+          },
+          {
+            "absolute_gap": 0.008379531976662025,
+            "bin": "(0.4, 0.5]",
+            "mean_score": 0.46619673920977867,
+            "observed_rate": 0.4745762711864407,
+            "rows": 59
+          },
+          {
+            "absolute_gap": 0.06585448424344542,
+            "bin": "(0.5, 0.6]",
+            "mean_score": 0.5600714416824805,
+            "observed_rate": 0.6259259259259259,
+            "rows": 270
+          },
+          {
+            "absolute_gap": 0.007033011306350034,
+            "bin": "(0.6, 0.7]",
+            "mean_score": 0.6580868754749682,
+            "observed_rate": 0.6510538641686182,
+            "rows": 854
+          },
+          {
+            "absolute_gap": 0.009101649730618444,
+            "bin": "(0.7, 0.8]",
+            "mean_score": 0.756860932701169,
+            "observed_rate": 0.7477592829705506,
+            "rows": 2343
+          },
+          {
+            "absolute_gap": 0.0025821638906505795,
+            "bin": "(0.8, 0.9]",
+            "mean_score": 0.8514438101353234,
+            "observed_rate": 0.854025974025974,
+            "rows": 3850
+          },
+          {
+            "absolute_gap": 0.0027298337494774394,
+            "bin": "(0.9, 1.0]",
+            "mean_score": 0.9199062694023851,
+            "observed_rate": 0.9226361031518625,
+            "rows": 1047
+          }
+        ],
+        "ece_10_bin": 0.007313387124678691,
+        "pairwise_within_group_accuracy": 0.665437221453819,
+        "pr_auc": 0.8814760167285485,
+        "roc_auc": 0.6653658924313345,
+        "score_separation": {
+          "mean_group_score_range": 0.19036528668968264,
+          "mean_group_score_std": 0.07020580322061319,
+          "mean_top1_margin": 0.04700410588442435,
+          "median_group_score_range": 0.18428504641960963,
+          "median_top1_margin": 0.03263500205820247
+        },
+        "top1_success_rate": 0.893452380952381
+      },
+      "validation": {
+        "brier": 0.15605489917487814,
+        "calibration_bins": [
+          {
+            "absolute_gap": 0.2819443026783575,
+            "bin": "(0.3, 0.4]",
+            "mean_score": 0.3847223639883091,
+            "observed_rate": 0.6666666666666666,
+            "rows": 3
+          },
+          {
+            "absolute_gap": 0.023798748793385616,
+            "bin": "(0.4, 0.5]",
+            "mean_score": 0.4612987487933856,
+            "observed_rate": 0.4375,
+            "rows": 16
+          },
+          {
+            "absolute_gap": 0.10548350090690406,
+            "bin": "(0.5, 0.6]",
+            "mean_score": 0.5611831657597626,
+            "observed_rate": 0.6666666666666666,
+            "rows": 51
+          },
+          {
+            "absolute_gap": 0.0701910238257335,
+            "bin": "(0.6, 0.7]",
+            "mean_score": 0.6599677063329966,
+            "observed_rate": 0.7301587301587301,
+            "rows": 189
+          },
+          {
+            "absolute_gap": 0.03345281588523441,
+            "bin": "(0.7, 0.8]",
+            "mean_score": 0.756838446250688,
+            "observed_rate": 0.7902912621359224,
+            "rows": 515
+          },
+          {
+            "absolute_gap": 0.027053406317370188,
+            "bin": "(0.8, 0.9]",
+            "mean_score": 0.8495953727442287,
+            "observed_rate": 0.8225419664268585,
+            "rows": 834
+          },
+          {
+            "absolute_gap": 0.03140869625646725,
+            "bin": "(0.9, 1.0]",
+            "mean_score": 0.919733569352914,
+            "observed_rate": 0.8883248730964467,
+            "rows": 197
+          }
+        ],
+        "ece_10_bin": 0.036482343019474506,
+        "pairwise_within_group_accuracy": 0.607483492296405,
+        "pr_auc": 0.8496529673093498,
+        "roc_auc": 0.5967269174401563,
+        "score_separation": {
+          "mean_group_score_range": 0.18911883077651923,
+          "mean_group_score_std": 0.07006561848034573,
+          "mean_top1_margin": 0.04997795636612301,
+          "median_group_score_range": 0.17359683738393222,
+          "median_top1_margin": 0.0327170128715254
+        },
+        "top1_success_rate": 0.8694444444444445
+      }
+    }
+  },
+  "report_version": "1.0.0",
+  "test_accessed": false
+}

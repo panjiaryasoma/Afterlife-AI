@@ -47,6 +47,7 @@ class ModelingConfig(BaseModel):
     config_version: Literal["1.0.0"]
     development_policy: DevelopmentPolicy
     logistic_regression: LogisticRegressionConfig
+    hist_gradient_boosting: dict[str, object]
 
     @model_validator(mode="after")
     def validate_test_lock(self) -> Self:

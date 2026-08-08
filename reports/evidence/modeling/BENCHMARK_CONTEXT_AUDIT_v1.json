@@ -1,0 +1,156 @@
+{
+  "benchmark_scope": "Frozen synthetic benchmark diagnostic only.",
+  "empirical_invariants": {
+    "completion_exceeds_safe_window_rows": 0,
+    "maximum_completion_pressure": 0.3165926152903324,
+    "maximum_completion_to_safe_window_ratio": 0.9497778458709972,
+    "urgent_short_window_rule_reachable": false
+  },
+  "epistemic_boundary": {
+    "confirmed": [
+      "Additive logistic core exists.",
+      "Sparse threshold nonlinearities exist.",
+      "Bernoulli outcome sampling exists.",
+      "Oracle reconstruction matches the frozen generator output."
+    ],
+    "not_yet_proven": [
+      "HGB overfit is primarily caused by Bernoulli realization noise.",
+      "Additive generator structure is the primary causal reason LR ranks better."
+    ]
+  },
+  "oracle_reconstruction": {
+    "max_absolute_probability_error": 2.220446049250313e-16,
+    "status": "PASS"
+  },
+  "recipe_version": "1.0.0",
+  "report_version": "1.0.0",
+  "splits": {
+    "train": {
+      "additive_score_std": 0.4700369608040702,
+      "additive_vs_full_rank_correlation": 0.9476714792679464,
+      "mean_abs_nonlinear_contribution": 0.15627504445761706,
+      "mean_nonlinear_contribution": 0.08872791938352104,
+      "nonlinear_contribution_std": 0.20365907405264722,
+      "nonlinear_row_rate": 0.5404860699466508,
+      "nonlinear_triggers": {
+        "long_distance_fragile_penalty": {
+          "coefficient": -0.28,
+          "rate": 0.09021932424422051,
+          "rows": 761
+        },
+        "strong_demand_bonus": {
+          "coefficient": 0.3,
+          "rate": 0.4454060462359218,
+          "rows": 3757
+        },
+        "urgent_short_window_penalty": {
+          "coefficient": -0.35,
+          "rate": 0.0,
+          "rows": 0
+        },
+        "weak_demand_penalty": {
+          "coefficient": -0.4,
+          "rate": 0.04908120924718435,
+          "rows": 414
+        }
+      },
+      "p95_abs_nonlinear_contribution": 0.3,
+      "positive_prevalence": 0.8014226437462952,
+      "rows": 8435,
+      "rows_with_nonzero_nonlinear_term": 4559,
+      "scenario_groups": 1680,
+      "top1_changed_by_nonlinear_terms_rate": 0.12023809523809524,
+      "uniform_random_top1_expectation": 0.8043331916099772,
+      "uninformative_pr_auc_baseline": 0.8014226437462952
+    },
+    "validation": {
+      "additive_score_std": 0.4553934861719946,
+      "additive_vs_full_rank_correlation": 0.9434622592272216,
+      "mean_abs_nonlinear_contribution": 0.1578836565096953,
+      "mean_nonlinear_contribution": 0.09437119113573407,
+      "nonlinear_contribution_std": 0.2021595476739986,
+      "nonlinear_row_rate": 0.5473684210526316,
+      "nonlinear_triggers": {
+        "long_distance_fragile_penalty": {
+          "coefficient": -0.28,
+          "rate": 0.08975069252077562,
+          "rows": 162
+        },
+        "strong_demand_bonus": {
+          "coefficient": 0.3,
+          "rate": 0.4581717451523546,
+          "rows": 827
+        },
+        "urgent_short_window_penalty": {
+          "coefficient": -0.35,
+          "rate": 0.0,
+          "rows": 0
+        },
+        "weak_demand_penalty": {
+          "coefficient": -0.4,
+          "rate": 0.04487534626038781,
+          "rows": 81
+        }
+      },
+      "p95_abs_nonlinear_contribution": 0.3,
+      "positive_prevalence": 0.8027700831024931,
+      "rows": 1805,
+      "rows_with_nonzero_nonlinear_term": 988,
+      "scenario_groups": 360,
+      "top1_changed_by_nonlinear_terms_rate": 0.13055555555555556,
+      "uniform_random_top1_expectation": 0.7968882275132276,
+      "uninformative_pr_auc_baseline": 0.8027700831024931
+    }
+  },
+  "test_accessed": false,
+  "validation_model_context": {
+    "B0": {
+      "candidate_rows": 1805,
+      "mrr": 0.9054166666666666,
+      "ndcg_at_3": 0.8644336955031945,
+      "pr_auc": 0.8201480118002513,
+      "roc_auc": 0.5580524344569289,
+      "scenario_groups": 360,
+      "top1_success_rate": 0.825
+    },
+    "B1": {
+      "candidate_rows": 1805,
+      "mrr": 0.9176851851851852,
+      "ndcg_at_3": 0.8727349572045606,
+      "pr_auc": 0.8345238078788991,
+      "roc_auc": 0.5708547545381937,
+      "scenario_groups": 360,
+      "top1_success_rate": 0.8444444444444444
+    },
+    "HGB": {
+      "brier_score": 0.1563688525481009,
+      "evaluation_split": "validation",
+      "fit_split": "train",
+      "model_id": "M1_HIST_GRADIENT_BOOSTING",
+      "mrr": 0.9194444444444444,
+      "ndcg_at_3": 0.8775211143378819,
+      "pr_auc": 0.854330049718234,
+      "report_version": "1.0.0",
+      "roc_auc": 0.6004082629632215,
+      "test_accessed": false,
+      "top1_success_rate": 0.8472222222222222,
+      "training_rows": 8435,
+      "validation_rows": 1805
+    },
+    "LR": {
+      "brier_score": 0.15605489917487814,
+      "evaluation_split": "validation",
+      "fit_split": "train",
+      "model_id": "B2_LOGISTIC_REGRESSION",
+      "mrr": 0.9296296296296295,
+      "ndcg_at_3": 0.8829834321410593,
+      "pr_auc": 0.8496529673093498,
+      "report_version": "1.0.0",
+      "roc_auc": 0.5967269174401563,
+      "test_accessed": false,
+      "top1_success_rate": 0.8694444444444445,
+      "training_rows": 8435,
+      "validation_rows": 1805
+    }
+  }
+}
