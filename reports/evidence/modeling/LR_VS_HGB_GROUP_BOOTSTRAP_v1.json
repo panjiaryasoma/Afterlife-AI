@@ -1,0 +1,86 @@
+{
+  "bootstrap_seed": 42,
+  "bootstrap_unit": "scenario_group_id",
+  "candidate_rows": 1805,
+  "claim_boundary": "Synthetic validation benchmark only; not real-world rescue performance.",
+  "delta_definition": "LR minus HGB; negative favors LR only for Brier.",
+  "evaluation_split": "validation",
+  "iterations": 5000,
+  "metrics": {
+    "brier_score": {
+      "better_direction": "lower",
+      "bootstrap_delta_mean": -0.0003264388890366747,
+      "bootstrap_delta_std": 0.0014522482687012988,
+      "ci_95_lower": -0.003133574722366826,
+      "ci_95_upper": 0.0025255797799271585,
+      "delta_lr_minus_hgb": -0.00031395337322276395,
+      "hgb": 0.1563688525481009,
+      "lr": 0.15605489917487814,
+      "lr_win_fraction": 0.587,
+      "relative_delta_vs_hgb": -0.0020077743623922047
+    },
+    "mrr": {
+      "better_direction": "higher",
+      "bootstrap_delta_mean": 0.010325833333333341,
+      "bootstrap_delta_std": 0.0088249360330059,
+      "ci_95_lower": -0.006944444444444642,
+      "ci_95_upper": 0.027314814814814903,
+      "delta_lr_minus_hgb": 0.010185185185185075,
+      "hgb": 0.9194444444444444,
+      "lr": 0.9296296296296295,
+      "lr_win_fraction": 0.873,
+      "relative_delta_vs_hgb": 0.011077542799597061
+    },
+    "ndcg_at_3": {
+      "better_direction": "higher",
+      "bootstrap_delta_mean": 0.005580630798356166,
+      "bootstrap_delta_std": 0.0069558427031519475,
+      "ci_95_lower": -0.007898149947451806,
+      "ci_95_upper": 0.019219908481323718,
+      "delta_lr_minus_hgb": 0.005462317803177408,
+      "hgb": 0.8775211143378819,
+      "lr": 0.8829834321410593,
+      "lr_win_fraction": 0.7904,
+      "relative_delta_vs_hgb": 0.006224713814776871
+    },
+    "pr_auc": {
+      "better_direction": "higher",
+      "bootstrap_delta_mean": -0.004306546026003534,
+      "bootstrap_delta_std": 0.00679261539254423,
+      "ci_95_lower": -0.01779201035352202,
+      "ci_95_upper": 0.008867064260324907,
+      "delta_lr_minus_hgb": -0.004677082408884203,
+      "hgb": 0.854330049718234,
+      "lr": 0.8496529673093498,
+      "lr_win_fraction": 0.258,
+      "relative_delta_vs_hgb": -0.005474561512177581
+    },
+    "roc_auc": {
+      "better_direction": "higher",
+      "bootstrap_delta_mean": -0.003516862352840218,
+      "bootstrap_delta_std": 0.011407270294030235,
+      "ci_95_lower": -0.026149659323462485,
+      "ci_95_upper": 0.01851880488406226,
+      "delta_lr_minus_hgb": -0.003681345523065205,
+      "hgb": 0.6004082629632215,
+      "lr": 0.5967269174401563,
+      "lr_win_fraction": 0.3818,
+      "relative_delta_vs_hgb": -0.006131403829948138
+    },
+    "top1_success_rate": {
+      "better_direction": "higher",
+      "bootstrap_delta_mean": 0.022516111111111115,
+      "bootstrap_delta_std": 0.01714125731979611,
+      "ci_95_lower": -0.011111111111111072,
+      "ci_95_upper": 0.05555555555555558,
+      "delta_lr_minus_hgb": 0.022222222222222254,
+      "hgb": 0.8472222222222222,
+      "lr": 0.8694444444444445,
+      "lr_win_fraction": 0.8886,
+      "relative_delta_vs_hgb": 0.02622950819672135
+    }
+  },
+  "report_version": "1.0.0",
+  "scenario_groups": 360,
+  "test_accessed": false
+}
