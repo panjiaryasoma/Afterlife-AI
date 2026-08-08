@@ -1,7 +1,7 @@
 # Afterlife AI ? Model Selection and AI Value Gate Decision
 
-**Version:** 1.0  
-**Status:** FROZEN BEFORE TEST ACCESS  
+**Version:** 1.0
+**Status:** FROZEN BEFORE TEST ACCESS
 **Test accessed:** No
 
 ## 1. Selected production model
