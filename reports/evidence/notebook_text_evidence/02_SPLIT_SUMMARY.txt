@@ -1,0 +1,5 @@
+            scenario_groups  candidate_rows  positive_rate
+split                                                     
+train                  1680            8435       0.801423
+validation              360            1805       0.802770
+test                    360            1780       0.801124

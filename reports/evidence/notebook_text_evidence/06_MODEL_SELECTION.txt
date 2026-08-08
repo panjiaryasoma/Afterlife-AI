@@ -1,0 +1,7 @@
+              Model   PR-AUC    Brier    Top-1
+Logistic Regression 0.849653 0.156055 0.869444
+              HGB-B 0.858194 0.155372 0.861111
+              HGB-E 0.853664 0.155145 0.847222
+
+Selected model: HGB-E
+Selection rule: best validation Brier among models within 1% relative PR-AUC of the best model.

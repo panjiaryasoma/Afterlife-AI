@@ -1,0 +1,27 @@
+CANDIDATE COUNT BY ACTION TYPE
+======================================================================
+action_type
+LOCAL_DISCOUNT        1235
+BUNDLE                1222
+DONATION              1218
+PROMOTIONAL_BONUS     1210
+EXTERNAL_PARTNER      1201
+RETURN_TO_SUPPLIER    1199
+WHOLESALE             1195
+INTERNAL_REPURPOSE    1192
+INTERNAL_USE          1174
+BRANCH_TRANSFER       1174
+
+SYNTHETIC OUTCOME RATE BY ACTION TYPE
+======================================================================
+action_type
+DONATION             0.694581
+INTERNAL_USE         0.730835
+WHOLESALE            0.795816
+EXTERNAL_PARTNER     0.797669
+BRANCH_TRANSFER      0.806644
+RETURN_TO_SUPPLIER   0.819850
+PROMOTIONAL_BONUS    0.826446
+INTERNAL_REPURPOSE   0.827181
+LOCAL_DISCOUNT       0.856680
+BUNDLE               0.857610

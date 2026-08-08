@@ -1,0 +1,10 @@
+SUPPORTED CLAIM:
+HGB-E is the selected feature-aware rescue-success model for Afterlife AI. It passed the AI Value Gate on the frozen synthetic development benchmark and retained an advantage over B1 on the final locked synthetic test for predictive quality, ranking quality, and allocation regret, while quantity conservation remained PASS and hard-constraint violations remained zero.
+
+NOT SUPPORTED BY THIS NOTEBOOK:
+- real-world rescue probability accuracy
+- real-world transaction performance
+- real-world economic impact
+- real-world prevalence of operational constraints
+
+This notebook is a reporting and visualization layer only. It must not be used to retrain, tune, recalibrate, or reselect the model after the final locked test has been consumed.

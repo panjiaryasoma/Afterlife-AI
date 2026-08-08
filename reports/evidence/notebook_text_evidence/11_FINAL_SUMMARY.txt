@@ -1,0 +1,18 @@
+                Metric        HGB-E            B1
+                PR-AUC     0.874229      0.834923
+                 Brier     0.151383      0.156801
+               ROC-AUC     0.650268      0.584409
+                   MRR     0.930093      0.915972
+                NDCG@3     0.890749      0.869309
+    Top-1 Success Rate     0.872222      0.844444
+Mean Allocation Regret 9,454.805111 20,545.045250
+ Oracle Value Retained     0.998591      0.996938
+
+Selected model: HGB-E
+AI Value Gate: PASS
+Final PR-AUC improvement: +0.039306
+Final Brier difference: -0.005417 (negative = better)
+Allocation regret reduction: 53.98%
+
+Quantity conservation: PASS
+Hard constraint violations: 0

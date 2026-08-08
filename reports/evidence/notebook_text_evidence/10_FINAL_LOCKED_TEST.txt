@@ -1,0 +1,30 @@
+Benchmark run: FINAL_LOCKED_TEST_v1
+Status: COMPLETED
+Selected model: HGB-E
+Selection frozen before test: True
+Test accessed: True
+Test rows: 1780
+Test scenario groups: 360
+
+PREDICTIVE METRICS
+======================================================================
+        pr_auc    brier  roc_auc  log_loss  positive_rate
+HGB_E 0.874229 0.151383 0.650268  0.474976       0.801124
+B1    0.834923 0.156801 0.584409  0.491227       0.801124
+
+RANKING METRICS
+======================================================================
+       scenario_groups      mrr  ndcg_at_3  top1_success_rate  pairwise_accuracy
+HGB_E       360.000000 0.930093   0.890749           0.872222           0.663004
+B1          360.000000 0.915972   0.869309           0.844444           0.596337
+
+ALLOCATION METRICS
+======================================================================
+       scenario_groups   mean_regret  median_regret     p95_regret  mean_normalized_regret  zero_regret_rate  exact_allocation_match_rate  oracle_value_retained  hard_constraint_violations
+B1          360.000000 20,545.045250       0.000000 120,531.406000                0.003828          0.916667                     0.916667               0.996938                    0.000000
+HGB_E       360.000000  9,454.805111       0.000000   4,860.740000                0.001588          0.944444                     0.944444               0.998591                    0.000000
+
+SAFETY
+======================================================================
+Quantity conservation: PASS
+Hard constraint violations: 0

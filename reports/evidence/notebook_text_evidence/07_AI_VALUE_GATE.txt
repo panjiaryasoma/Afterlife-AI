@@ -1,0 +1,11 @@
+HGB-E mean PR-AUC: 0.856632
+B1 mean PR-AUC: 0.834086
+Mean PR-AUC improvement: 0.022546
+
+HGB-E mean Brier: 0.154122
+B1 mean Brier: 0.156247
+Mean Brier difference: -0.002125
+
+Aggregate PR-AUC delta 95% CI: 0.012832 to 0.032417
+Consistent seeds: 3 / 3
+AI VALUE GATE: PASS

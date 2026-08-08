@@ -1,0 +1,56 @@
+Dataset shape: (12020, 38)
+Scenario groups: 2400
+Candidate rows: 12020
+
+Missing values:
+scenario_group_id                    0
+business_profile_id                  0
+request_id                           0
+lot_id                               0
+candidate_id                         0
+source_type                          0
+product_category                     0
+product_subcategory                  0
+action_type                          0
+business_type                        0
+storage_requirement_mode             0
+urgency_level                        0
+surplus_source                       0
+destination_type                     0
+seasonality_status                   0
+package_format                       0
+planning_quantity                    0
+remaining_shelf_life_days            0
+remaining_safe_window_hours          0
+remaining_commercial_window_days     0
+unit_cost                            0
+normal_selling_price                 0
+offered_or_selling_price_per_unit    0
+direct_action_cost                   0
+logistics_cost                       0
+handling_cost                        0
+estimated_completion_hours           0
+active_demand_quantity               0
+available_capacity                   0
+minimum_order_quantity               0
+capability_resource_ratio            0
+demand_coverage_ratio                0
+demand_freshness_hours               0
+distance_km                          0
+package_volume_ml                    0
+package_weight_g                     0
+simulated_rescue_outcome             0
+split                                0
+
+Duplicate rows: 0
+Unique candidate IDs: 12020
+
+Label distribution:
+simulated_rescue_outcome
+1    9635
+0    2385
+
+Label distribution percentage:
+simulated_rescue_outcome
+1   80.160000
+0   19.840000
