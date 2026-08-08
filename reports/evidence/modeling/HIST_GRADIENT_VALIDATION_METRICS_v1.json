@@ -1,0 +1,15 @@
+{
+  "brier_score": 0.1563688525481009,
+  "evaluation_split": "validation",
+  "fit_split": "train",
+  "model_id": "M1_HIST_GRADIENT_BOOSTING",
+  "mrr": 0.9194444444444444,
+  "ndcg_at_3": 0.8775211143378819,
+  "pr_auc": 0.854330049718234,
+  "report_version": "1.0.0",
+  "roc_auc": 0.6004082629632215,
+  "test_accessed": false,
+  "top1_success_rate": 0.8472222222222222,
+  "training_rows": 8435,
+  "validation_rows": 1805
+}

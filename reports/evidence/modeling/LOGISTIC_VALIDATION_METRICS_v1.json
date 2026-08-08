@@ -1,0 +1,15 @@
+{
+  "brier_score": 0.15605489917487814,
+  "evaluation_split": "validation",
+  "fit_split": "train",
+  "model_id": "B2_LOGISTIC_REGRESSION",
+  "mrr": 0.9296296296296295,
+  "ndcg_at_3": 0.8829834321410593,
+  "pr_auc": 0.8496529673093498,
+  "report_version": "1.0.0",
+  "roc_auc": 0.5967269174401563,
+  "test_accessed": false,
+  "top1_success_rate": 0.8694444444444445,
+  "training_rows": 8435,
+  "validation_rows": 1805
+}

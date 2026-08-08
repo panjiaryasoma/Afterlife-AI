@@ -1,0 +1,26 @@
+config_version: "1.0.0"
+
+development_policy:
+  fit_split: "train"
+  selection_split: "validation"
+  test_access_allowed: false
+
+logistic_regression:
+  model_id: "B2_LOGISTIC_REGRESSION"
+  solver: "lbfgs"
+  l1_ratio: 0.0
+  C: 1.0
+  max_iter: 2000
+  class_weight: null
+  random_state: 42
+
+hist_gradient_boosting:
+  model_id: "M1_HIST_GRADIENT_BOOSTING"
+  learning_rate: 0.05
+  max_iter: 250
+  max_leaf_nodes: 15
+  min_samples_leaf: 20
+  l2_regularization: 1.0
+  max_bins: 255
+  early_stopping: false
+  random_state: 42
