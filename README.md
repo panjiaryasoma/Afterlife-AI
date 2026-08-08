@@ -36,9 +36,9 @@ Progress awal:
 - [x] XLSX intake implemented
 - [x] Input validation implemented
 - [x] Deterministic inventory triage implemented
-- [ ] Rescue planner implemented
-- [ ] Synthetic dataset generator implemented
-- [ ] Candidate models evaluated
+- [x] Rescue planner implemented
+- [x] Synthetic dataset generator implemented
+- [x] Candidate models evaluated
 - [ ] FastAPI and minimal UI integrated
 - [ ] Docker Compose verified
 - [ ] Technical MVP release candidate completed
