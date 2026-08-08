@@ -135,6 +135,75 @@ def test_safe_disposal_is_never_generated_for_model_scoring() -> None:
     assert "SAFE_DISPOSAL" not in actions
 
 
+def test_generated_candidates_satisfy_model_eligibility_invariants() -> None:
+    contract = _contract()
+
+    candidates = generate_scenario_candidates(
+        seed=42,
+        scenario_groups=200,
+        candidates_per_group_min=2,
+        candidates_per_group_max=8,
+        contract=contract,
+    )
+
+    for candidate in candidates:
+        features = candidate.feature_values
+
+        planning_quantity = float(
+            features["planning_quantity"]
+        )
+        demand_quantity = float(
+            features["active_demand_quantity"]
+        )
+        available_capacity = float(
+            features["available_capacity"]
+        )
+
+        assert (
+            float(features["remaining_safe_window_hours"])
+            <= float(features["remaining_shelf_life_days"]) * 24.0
+        )
+
+        assert (
+            float(features["estimated_completion_hours"])
+            <= float(features["remaining_safe_window_hours"])
+        )
+
+        assert (
+            float(features["estimated_completion_hours"])
+            <= float(
+                features["remaining_commercial_window_days"]
+            )
+            * 24.0
+        )
+
+        allocatable_quantity = min(
+            planning_quantity,
+            demand_quantity,
+            available_capacity,
+        )
+
+        assert (
+            float(features["minimum_order_quantity"])
+            <= allocatable_quantity
+        )
+
+        assert float(
+            features["capability_resource_ratio"]
+        ) == pytest.approx(
+            available_capacity / planning_quantity,
+            abs=0.0001,
+        )
+
+        assert float(
+            features["demand_coverage_ratio"]
+        ) == pytest.approx(
+            demand_quantity / planning_quantity,
+            abs=0.0001,
+        )
+
+
+
 @pytest.mark.parametrize(
     ("minimum", "maximum"),
     [

@@ -8,8 +8,8 @@ Quality checks validate internal synthetic consistency only. They do not validat
 
 ## Dataset Structure
 
-- Candidate rows: 12037
-- Oracle rows: 12037
+- Candidate rows: 12020
+- Oracle rows: 12020
 - Scenario groups: 2400
 - Missing cells: 0
 - Duplicate rows: 0
@@ -18,25 +18,25 @@ Quality checks validate internal synthetic consistency only. They do not validat
 
 ## Class Distribution
 
-- Positive rows: 9117
-- Negative rows: 2920
-- Positive rate: 0.757415
-- Minority rate: 0.242585
+- Positive rows: 9635
+- Negative rows: 2385
+- Positive rate: 0.801581
+- Minority rate: 0.198419
 
 ## Label Generation
 
-- Oracle probability min: 0.159625
-- Oracle probability max: 0.948523
-- Oracle probability mean: 0.759029
-- Observed positive rate: 0.757415
-- Overall calibration gap: 0.001614
+- Oracle probability min: 0.258361
+- Oracle probability max: 0.952370
+- Oracle probability mean: 0.806126
+- Observed positive rate: 0.801581
+- Overall calibration gap: 0.004545
 
 ## Group Distribution
 
 - Group count: 2400
 - Min candidates/group: 2
 - Max candidates/group: 8
-- Mean candidates/group: 5.015417
+- Mean candidates/group: 5.008333
 
 ## Errors
 
@@ -44,4 +44,4 @@ Quality checks validate internal synthetic consistency only. They do not validat
 
 ## Warnings
 
-- None
+- class minority berada di bawah 20%; interpretasikan ranking dan calibration dengan hati-hati

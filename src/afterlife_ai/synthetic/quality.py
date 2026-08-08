@@ -292,6 +292,74 @@ def audit_synthetic_dataset(
         ),
     }
 
+    allocatable_quantity = candidate[
+        [
+            "planning_quantity",
+            "active_demand_quantity",
+            "available_capacity",
+        ]
+    ].min(axis=1)
+
+    impossible_checks["safe_window_exceeds_shelf_life"] = int(
+        (
+            candidate["remaining_safe_window_hours"]
+            > candidate["remaining_shelf_life_days"] * 24.0
+        ).sum()
+    )
+
+    impossible_checks["completion_exceeds_safe_window"] = int(
+        (
+            candidate["estimated_completion_hours"]
+            > candidate["remaining_safe_window_hours"]
+        ).sum()
+    )
+
+    impossible_checks["completion_exceeds_commercial_window"] = int(
+        (
+            candidate["estimated_completion_hours"]
+            > candidate["remaining_commercial_window_days"] * 24.0
+        ).sum()
+    )
+
+    impossible_checks[
+        "minimum_order_exceeds_allocatable_quantity"
+    ] = int(
+        (
+            candidate["minimum_order_quantity"]
+            > allocatable_quantity
+        ).sum()
+    )
+
+    expected_capability_ratio = (
+        candidate["available_capacity"]
+        / candidate["planning_quantity"]
+    )
+
+    expected_demand_ratio = (
+        candidate["active_demand_quantity"]
+        / candidate["planning_quantity"]
+    )
+
+    impossible_checks["capability_ratio_inconsistent"] = int(
+        (
+            (
+                candidate["capability_resource_ratio"]
+                - expected_capability_ratio
+            ).abs()
+            > 0.0001
+        ).sum()
+    )
+
+    impossible_checks["demand_ratio_inconsistent"] = int(
+        (
+            (
+                candidate["demand_coverage_ratio"]
+                - expected_demand_ratio
+            ).abs()
+            > 0.0001
+        ).sum()
+    )
+
     local_mask = candidate["action_type"].isin(_LOCAL_ACTIONS)
 
     impossible_checks["local_action_nonzero_distance"] = int(

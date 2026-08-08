@@ -107,11 +107,46 @@ def _numeric_features(
     action: ActionType,
     planning_quantity: int,
 ) -> dict[str, float | int]:
-    """Generate bounded synthetic numeric model features."""
+    """Generate internally consistent feasible numeric model features."""
 
     unit_cost, normal_price, offered_price = _price_features(
         rng,
         action,
+    )
+
+    remaining_shelf_life_days = int(rng.integers(1, 366))
+
+    max_safe_window_hours = min(
+        720.0,
+        remaining_shelf_life_days * 24.0,
+    )
+
+    remaining_safe_window_hours = _rounded_uniform(
+        rng,
+        4.0,
+        max_safe_window_hours,
+    )
+
+    max_commercial_window_days = min(
+        120.0,
+        float(remaining_shelf_life_days),
+    )
+
+    remaining_commercial_window_days = _rounded_uniform(
+        rng,
+        1.0,
+        max_commercial_window_days,
+    )
+
+    binding_window_hours = min(
+        remaining_safe_window_hours,
+        remaining_commercial_window_days * 24.0,
+    )
+
+    estimated_completion_hours = _rounded_uniform(
+        rng,
+        0.5,
+        max(0.5, binding_window_hours * 0.95),
     )
 
     active_demand = int(
@@ -120,6 +155,7 @@ def _numeric_features(
             planning_quantity * 3 + 1,
         )
     )
+
     available_capacity = int(
         rng.integers(
             max(1, planning_quantity // 2),
@@ -127,12 +163,28 @@ def _numeric_features(
         )
     )
 
-    minimum_order_quantity = int(
-        rng.integers(
-            1,
-            max(2, planning_quantity + 1),
-        )
+    allocatable_quantity = min(
+        planning_quantity,
+        active_demand,
+        available_capacity,
     )
+
+    minimum_order_actions = {
+        ActionType.RETURN_TO_SUPPLIER,
+        ActionType.BRANCH_TRANSFER,
+        ActionType.WHOLESALE,
+        ActionType.EXTERNAL_PARTNER,
+    }
+
+    if action in minimum_order_actions:
+        minimum_order_quantity = int(
+            rng.integers(
+                1,
+                allocatable_quantity + 1,
+            )
+        )
+    else:
+        minimum_order_quantity = 1
 
     if action in {
         ActionType.LOCAL_DISCOUNT,
@@ -144,21 +196,35 @@ def _numeric_features(
         distance_km = 0.0
         logistics_cost = 0.0
     else:
-        distance_km = _rounded_uniform(rng, 0.5, 40.0)
-        logistics_cost = _rounded_uniform(rng, 1_000.0, 75_000.0)
+        distance_km = _rounded_uniform(
+            rng,
+            0.5,
+            40.0,
+        )
+        logistics_cost = _rounded_uniform(
+            rng,
+            1_000.0,
+            75_000.0,
+        )
+
+    capability_resource_ratio = round(
+        available_capacity / planning_quantity,
+        4,
+    )
+
+    demand_coverage_ratio = round(
+        active_demand / planning_quantity,
+        4,
+    )
 
     return {
         "planning_quantity": planning_quantity,
-        "remaining_shelf_life_days": int(rng.integers(1, 366)),
-        "remaining_safe_window_hours": _rounded_uniform(
-            rng,
-            4.0,
-            720.0,
+        "remaining_shelf_life_days": remaining_shelf_life_days,
+        "remaining_safe_window_hours": (
+            remaining_safe_window_hours
         ),
-        "remaining_commercial_window_days": _rounded_uniform(
-            rng,
-            1.0,
-            120.0,
+        "remaining_commercial_window_days": (
+            remaining_commercial_window_days
         ),
         "unit_cost": unit_cost,
         "normal_selling_price": normal_price,
@@ -174,26 +240,14 @@ def _numeric_features(
             0.0,
             25_000.0,
         ),
-        "estimated_completion_hours": _rounded_uniform(
-            rng,
-            0.5,
-            168.0,
+        "estimated_completion_hours": (
+            estimated_completion_hours
         ),
         "active_demand_quantity": active_demand,
         "available_capacity": available_capacity,
         "minimum_order_quantity": minimum_order_quantity,
-        "capability_resource_ratio": _rounded_uniform(
-            rng,
-            0.25,
-            1.50,
-            4,
-        ),
-        "demand_coverage_ratio": _rounded_uniform(
-            rng,
-            0.10,
-            2.00,
-            4,
-        ),
+        "capability_resource_ratio": capability_resource_ratio,
+        "demand_coverage_ratio": demand_coverage_ratio,
         "demand_freshness_hours": _rounded_uniform(
             rng,
             0.0,

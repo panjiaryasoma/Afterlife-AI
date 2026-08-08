@@ -1,5 +1,5 @@
 {
-  "candidate_artifact_sha256": "17b6cbb6e63082f6944031ac6fa6015f0be9281d41155ae63f2fcf2ddf6ffaa9",
+  "candidate_artifact_sha256": "c1c47ace2097f6a566e9d825436fd2b6b4483905b6e2e4a447bf961d3f944ca0",
   "claim_boundary": "Split assignments are deterministic grouped partitions. The test partition is reserved for final locked evaluation.",
   "configured_fraction": {
     "test": 0.15,
@@ -16,24 +16,24 @@
     "test": {
       "group_count": 360,
       "group_fraction": 0.15,
-      "row_count": 1759,
-      "row_fraction": 0.14613275733156103
+      "row_count": 1780,
+      "row_fraction": 0.1480865224625624
     },
     "train": {
       "group_count": 1680,
       "group_fraction": 0.7,
-      "row_count": 8468,
-      "row_fraction": 0.7034975492232284
+      "row_count": 8435,
+      "row_fraction": 0.7017470881863561
     },
     "validation": {
       "group_count": 360,
       "group_fraction": 0.15,
-      "row_count": 1810,
-      "row_fraction": 0.1503696934452106
+      "row_count": 1805,
+      "row_fraction": 0.15016638935108154
     }
   },
   "test_outcomes_inspected_for_model_selection": false,
   "test_split_policy": "LOCKED_FINAL_EVALUATION",
   "total_group_count": 2400,
-  "total_row_count": 12037
+  "total_row_count": 12020
 }
