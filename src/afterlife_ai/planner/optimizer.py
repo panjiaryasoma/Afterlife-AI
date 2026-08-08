@@ -1,6 +1,6 @@
 """CP-SAT allocation optimizer for deterministic rescue planning."""
 
-from decimal import Decimal
+from decimal import ROUND_HALF_UP, Decimal
 
 from ortools.sat.python import cp_model
 from pydantic import BaseModel, ConfigDict, Field
@@ -19,6 +19,12 @@ from afterlife_ai.contracts.enums import (
 
 ZERO = Decimal("0")
 ONE = Decimal("1")
+
+# CP-SAT requires integer coefficients. Bound economic
+# objective precision before integer scaling so repeating
+# Decimal divisions cannot create unsafe coefficient scales.
+OPTIMIZER_VALUE_QUANTUM = Decimal("0.0001")
+MONEY_QUANTUM = Decimal("0.01")
 
 
 class OptimizationAllocation(BaseModel):
@@ -144,9 +150,14 @@ def _expected_value_per_unit(
             "maximum_feasible_quantity harus positif."
         )
 
-    return (
+    value_per_unit = (
         candidate.expected_net_recovery
         / candidate.maximum_feasible_quantity
+    )
+
+    return value_per_unit.quantize(
+        OPTIMIZER_VALUE_QUANTUM,
+        rounding=ROUND_HALF_UP,
     )
 
 
@@ -948,6 +959,9 @@ def optimize_with_cp_sat(
         allocation_expected_value = (
             allocated_quantity
             * expected_per_unit
+        ).quantize(
+            MONEY_QUANTUM,
+            rounding=ROUND_HALF_UP,
         )
 
         allocation_expected_rescue = (

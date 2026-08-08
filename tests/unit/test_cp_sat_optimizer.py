@@ -785,3 +785,32 @@ def test_optimizer_balanced_objective_matches_eval_029() -> None:
         result.expected_physical_rescue_quantity
         == Decimal("36.02")
     )
+
+
+def test_optimizer_bounds_high_precision_objective_values() -> None:
+    candidate = build_candidate(
+        candidate_id="CAND-HIGH-PRECISION",
+        planning_lot_id="PLAN-LOT-HIGH-PRECISION",
+        action_type=ActionType.LOCAL_DISCOUNT,
+        maximum_quantity="5",
+        expected_value_per_unit=(
+            "98990.17480769230769230769231"
+        ),
+    )
+
+    result = optimize_with_cp_sat(
+        candidates=[candidate],
+        planning_quantities={
+            "PLAN-LOT-HIGH-PRECISION": Decimal("5"),
+        },
+    )
+
+    assert result.solver_status in {
+        SolverStatus.OPTIMAL,
+        SolverStatus.FEASIBLE,
+    }
+
+    assert (
+        result.allocations[0].allocated_quantity
+        == Decimal("5")
+    )

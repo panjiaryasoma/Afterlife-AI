@@ -272,7 +272,7 @@ def test_integration_001_matches_global_allocation() -> None:
 
     assert (
         optimization.objective_value
-        == Decimal("26624")
+        == Decimal("31354.00")
     )
 
 
@@ -303,7 +303,7 @@ def test_integration_001_builds_locked_rescue_decision_report() -> None:
     )
     assert (
         report.batch_metrics.expected_total_economic_value
-        == Decimal("26624")
+        == Decimal("31354.00")
     )
 
     assert {

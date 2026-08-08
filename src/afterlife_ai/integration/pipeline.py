@@ -584,6 +584,32 @@ def _score_and_value_candidates(
             or ZERO
         )
 
+        value_quantity = (
+            scored_candidate
+            .maximum_feasible_quantity
+        )
+
+        if value_quantity <= ZERO:
+            raise RuntimeError(
+                "Valued candidate harus memiliki "
+                "maximum_feasible_quantity positif."
+            )
+
+        direct_action_cost_per_unit = (
+            scored_candidate.direct_action_cost
+            / value_quantity
+        )
+
+        logistics_cost_per_unit = (
+            scored_candidate.logistics_cost
+            / value_quantity
+        )
+
+        handling_cost_per_unit = (
+            scored_candidate.handling_cost
+            / value_quantity
+        )
+
         value_result = (
             calculate_expected_value(
                 ExpectedValueInput(
@@ -600,16 +626,13 @@ def _score_and_value_candidates(
                     future_branch_recovery_per_unit=ZERO,
                     avoided_purchase_cost_per_unit=ZERO,
                     direct_action_cost_per_unit=(
-                        scored_candidate
-                        .direct_action_cost
+                        direct_action_cost_per_unit
                     ),
                     logistics_cost_per_unit=(
-                        scored_candidate
-                        .logistics_cost
+                        logistics_cost_per_unit
                     ),
                     handling_cost_per_unit=(
-                        scored_candidate
-                        .handling_cost
+                        handling_cost_per_unit
                     ),
                     failure_penalty_per_unit=ZERO,
                 )
