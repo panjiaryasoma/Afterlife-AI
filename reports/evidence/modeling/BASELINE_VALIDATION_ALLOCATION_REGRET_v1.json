@@ -1,0 +1,48 @@
+{
+  "evaluation_version": "1.0.0",
+  "split": "validation",
+  "scenario_groups": 360,
+  "regret_semantics": "oracle_objective_value - oracle_evaluated_system_allocation",
+  "baselines": [
+    {
+      "baseline_id": "B0",
+      "scenario_groups": 360,
+      "mean_regret": 499738.7622222222,
+      "median_regret": 0.0,
+      "p90_regret": 1365205.8110000007,
+      "p95_regret": 2864628.947,
+      "total_regret": 179905954.4,
+      "mean_normalized_regret": 0.07190716901843514,
+      "zero_regret_rate": 0.6805555555555556,
+      "exact_allocation_match_rate": 0.6805555555555556,
+      "oracle_value_retained": 0.9306793618463677,
+      "quantity_conservation": "PASS",
+      "hard_constraint_violations": 0
+    },
+    {
+      "baseline_id": "B1",
+      "scenario_groups": 360,
+      "mean_regret": 24748.610638888887,
+      "median_regret": 0.0,
+      "p90_regret": 0.0,
+      "p95_regret": 133198.63400000008,
+      "total_regret": 8909499.83,
+      "mean_normalized_regret": 0.0038049464955993754,
+      "zero_regret_rate": 0.9194444444444444,
+      "exact_allocation_match_rate": 0.9194444444444444,
+      "oracle_value_retained": 0.9965670273899213,
+      "quantity_conservation": "PASS",
+      "hard_constraint_violations": 0
+    }
+  ],
+  "selected_model_reference": {
+    "model": "HGB-E",
+    "evidence": "VALIDATION_ALLOCATION_REGRET_v1.json",
+    "mean_regret": 14793.478944444445,
+    "mean_normalized_regret": 0.0020398545076795636,
+    "exact_allocation_match_rate": 0.9416666666666667
+  },
+  "quantity_conservation": "PASS",
+  "hard_constraint_violations": 0,
+  "test_accessed": false
+}
