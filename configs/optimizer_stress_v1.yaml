@@ -1,0 +1,57 @@
+benchmark_version: "1.0.0"
+
+status: "LOCKED_BEFORE_GENERATION"
+
+purpose: "OPTIMIZER_VALUE_GATE_ONLY"
+
+selected_model:
+  label: "HGB_E"
+  learning_rate: 0.05
+  max_iter: 150
+  max_leaf_nodes: 7
+  min_samples_leaf: 40
+  l2_regularization: 2.0
+  max_bins: 255
+  early_stopping: false
+  random_state: 42
+
+source:
+  split: "validation"
+  canonical_group_count: 360
+  test_access_allowed: false
+
+construction:
+  seed: 314159
+  planning_lots_per_stress_group: 3
+  stress_group_count: 120
+  use_each_source_lot_once: true
+
+strata:
+  shared_capacity:
+    groups: 40
+
+  logistics_budget:
+    groups: 40
+
+  shared_resource:
+    groups: 40
+
+evaluation:
+  oracle_field: "generator_success_probability"
+  regret_improvement_definition: "A1_REGRET_MINUS_P_REGRET"
+
+bootstrap:
+  unit: "scenario_group_id"
+  iterations: 10000
+  seed: 314160
+
+optimizer_value_gate:
+  require_lower_mean_regret: true
+  require_zero_p_hard_constraint_violations: true
+  require_zero_a1_hard_constraint_violations: true
+  require_conflict_stratum_improvement: true
+  require_bootstrap_lower_bound_above_zero: true
+
+claim_boundary: >
+  Synthetic optimizer stress benchmark only.
+  Not evidence of real-world effect magnitude or conflict prevalence.
