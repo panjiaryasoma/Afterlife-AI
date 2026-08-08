@@ -101,6 +101,35 @@ implementation does not currently expose that constraint.
 
 An evaluation-only greedy comparator may be implemented if required.
 
+### 5.1 A1 deterministic ordering
+
+A1 is a true per-lot greedy comparator.
+
+Planning lots are processed in lexicographic planning_lot_id order.
+
+Within each planning lot, eligible candidates are ranked by:
+
+1. expected value per unit descending;
+2. candidate_id ascending as deterministic tie-breaker.
+
+A1 does not perform cross-lot optimization, backtracking, or reallocation
+after a later planning lot is processed.
+
+For benchmark v1, both A1 and P use:
+
+- MAXIMIZE_RECOVERY_VALUE;
+- no minimum expected rescue-ratio constraint;
+- no aggregate action MOQ constraint.
+
+These optional constraints are excluded because they are not registered
+optimizer-stress strata in benchmark v1.
+
+Logistics budget uses fixed candidate-level logistics cost once whenever a
+candidate receives positive allocation.
+
+Shared resource requirements represent resource units consumed per allocated
+product unit.
+
 ## 6. Oracle evaluation
 
 generator_success_probability is used only after A1 and P have produced

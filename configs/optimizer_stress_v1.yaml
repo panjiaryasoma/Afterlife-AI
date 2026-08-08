@@ -36,6 +36,20 @@ strata:
   shared_resource:
     groups: 40
 
+allocator_contract:
+  a1_semantics: "DETERMINISTIC_PER_LOT_GREEDY"
+  planning_lot_order: "LEXICOGRAPHIC_PLANNING_LOT_ID"
+  candidate_order:
+    primary: "EXPECTED_VALUE_PER_UNIT_DESC"
+    tie_breaker: "CANDIDATE_ID_ASC"
+
+  shared_action_minimum_quantities: {}
+  minimum_expected_rescue_ratio: null
+  optimization_objective: "MAXIMIZE_RECOVERY_VALUE"
+
+  logistics_cost_semantics: "FIXED_PER_SELECTED_CANDIDATE"
+  resource_requirement_semantics: "PER_ALLOCATED_UNIT"
+
 evaluation:
   oracle_field: "generator_success_probability"
   regret_improvement_definition: "A1_REGRET_MINUS_P_REGRET"
