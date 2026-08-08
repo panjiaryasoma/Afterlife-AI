@@ -1,0 +1,365 @@
+{
+  "catalog_values_missing_from_dataset": {},
+  "categorical_distribution": {
+    "action_type": {
+      "BRANCH_TRANSFER": 1252,
+      "BUNDLE": 1173,
+      "DONATION": 1208,
+      "EXTERNAL_PARTNER": 1212,
+      "INTERNAL_REPURPOSE": 1214,
+      "INTERNAL_USE": 1181,
+      "LOCAL_DISCOUNT": 1194,
+      "PROMOTIONAL_BONUS": 1193,
+      "RETURN_TO_SUPPLIER": 1205,
+      "WHOLESALE": 1205
+    },
+    "business_type": {
+      "MEDIUM_FNB": 2501,
+      "MEDIUM_RETAIL": 2500,
+      "MEDIUM_WHOLESALER": 2328,
+      "SMALL_FNB": 2466,
+      "SMALL_RETAIL": 2242
+    },
+    "destination_type": {
+      "BRANCH": 1252,
+      "DONATION_PARTNER": 1208,
+      "EXTERNAL_PARTNER": 1212,
+      "INTERNAL_OPERATION": 2395,
+      "LOCAL_CUSTOMER": 3560,
+      "SUPPLIER": 1205,
+      "WHOLESALE_BUYER": 1205
+    },
+    "package_format": {
+      "BAR": 385,
+      "BOTTLE": 1861,
+      "BOX": 2280,
+      "CAN": 482,
+      "CUP": 774,
+      "JAR": 243,
+      "KG": 309,
+      "PACK": 3016,
+      "SACHET": 1354,
+      "TRAY": 1057,
+      "TUBE": 276
+    },
+    "product_category": {
+      "BABY_CARE": 821,
+      "BAKERY": 1035,
+      "CHILLED_DAIRY": 1054,
+      "CHOCOLATE": 1153,
+      "CONDIMENT": 1006,
+      "FRESH_PRODUCE": 1040,
+      "FROZEN_PREPARED_FOOD": 1010,
+      "HOUSEHOLD_CLEANING": 934,
+      "PACKAGED_BEVERAGE": 1060,
+      "PACKAGED_FOOD": 880,
+      "PERSONAL_CARE": 1016,
+      "READY_TO_EAT_MEAL": 1028
+    },
+    "product_subcategory": {
+      "BABY_FOOD": 471,
+      "BABY_HYGIENE": 350,
+      "BAR": 489,
+      "BODY_CARE": 284,
+      "BOTTLED_DRINK": 380,
+      "BREAD": 414,
+      "CAKE": 292,
+      "CANNED_DRINK": 329,
+      "CANNED_FOOD": 321,
+      "CLEANER": 460,
+      "CONFECTIONERY": 664,
+      "DAIRY_DESSERT": 384,
+      "DETERGENT": 474,
+      "DRY_FOOD": 268,
+      "FROZEN_MEAL": 473,
+      "FROZEN_SNACK": 537,
+      "FRUIT": 556,
+      "HAIR_CARE": 401,
+      "HYGIENE": 331,
+      "MILK": 349,
+      "PASTRY": 329,
+      "POWDERED_DRINK": 351,
+      "PREPARED_MEAL": 583,
+      "READY_SNACK": 445,
+      "SAUCE": 324,
+      "SEASONING": 363,
+      "SNACK": 291,
+      "SPREAD": 319,
+      "VEGETABLE": 484,
+      "YOGURT": 321
+    },
+    "seasonality_status": {
+      "IN_SEASON": 2849,
+      "NOT_APPLICABLE": 3061,
+      "POST_SEASON": 3052,
+      "PRE_SEASON": 3075
+    },
+    "storage_requirement_mode": {
+      "AMBIENT_ALLOWED": 4780,
+      "CHILLED_PREFERRED": 1524,
+      "COLD_REQUIRED_FOR_QUALITY_WINDOW": 1670,
+      "NONE": 971,
+      "SAFETY_CRITICAL_COLD_CHAIN": 3092
+    },
+    "surplus_source": {
+      "CALCULATED": 4182,
+      "RULE_TRIGGERED": 3973,
+      "USER_DECLARED": 3882
+    },
+    "urgency_level": {
+      "CRITICAL": 3135,
+      "HIGH": 3057,
+      "LOW": 2756,
+      "MEDIUM": 3089
+    }
+  },
+  "claim_boundary": "Quality checks validate internal synthetic consistency only. They do not validate real-world rescue probabilities.",
+  "class_distribution": {
+    "minority_rate": 0.24258536180111323,
+    "negative_count": 2920,
+    "negative_rate": 0.24258536180111323,
+    "positive_count": 9117,
+    "positive_rate": 0.7574146381988868
+  },
+  "dataset_structure": {
+    "candidate_oracle_aligned": true,
+    "candidate_rows": 12037,
+    "columns": 37,
+    "duplicate_candidate_ids": 0,
+    "duplicate_rows": 0,
+    "forbidden_columns_present": [],
+    "missing_cells": 0,
+    "oracle_rows": 12037,
+    "scenario_groups": 2400
+  },
+  "errors": [],
+  "group_distribution": {
+    "group_count": 2400,
+    "max_candidates_per_group": 8,
+    "mean_candidates_per_group": 5.015416666666667,
+    "min_candidates_per_group": 2
+  },
+  "impossible_values": {
+    "capability_ratio_nonpositive": 0,
+    "capacity_nonpositive": 0,
+    "commercial_window_nonpositive": 0,
+    "completion_nonpositive": 0,
+    "demand_coverage_nonpositive": 0,
+    "demand_nonpositive": 0,
+    "invalid_minimum_order_quantity": 0,
+    "local_action_nonzero_distance": 0,
+    "local_action_nonzero_logistics": 0,
+    "negative_action_cost": 0,
+    "negative_demand_freshness": 0,
+    "negative_distance": 0,
+    "normal_price_below_cost": 0,
+    "offered_price_above_normal": 0,
+    "offered_price_negative": 0,
+    "package_volume_nonpositive": 0,
+    "package_weight_nonpositive": 0,
+    "planning_quantity_nonpositive": 0,
+    "safe_window_nonpositive": 0,
+    "shelf_life_outside_range": 0,
+    "unit_cost_nonpositive": 0
+  },
+  "invalid_categories": {
+    "action_type": 0,
+    "business_type": 0,
+    "destination_type": 0,
+    "package_format": 0,
+    "product_category": 0,
+    "product_subcategory": 0,
+    "seasonality_status": 0,
+    "storage_requirement_mode": 0,
+    "surplus_source": 0,
+    "urgency_level": 0
+  },
+  "label_generation": {
+    "calibration_bins": [
+      {
+        "mean_probability": 0.183405385504338,
+        "observed_positive_rate": 0.2,
+        "probability_bin": "(0.1, 0.2]",
+        "rows": 5
+      },
+      {
+        "mean_probability": 0.2612990036566767,
+        "observed_positive_rate": 0.15151515151515152,
+        "probability_bin": "(0.2, 0.3]",
+        "rows": 33
+      },
+      {
+        "mean_probability": 0.35754503297258494,
+        "observed_positive_rate": 0.3225806451612903,
+        "probability_bin": "(0.3, 0.4]",
+        "rows": 93
+      },
+      {
+        "mean_probability": 0.45870448858497376,
+        "observed_positive_rate": 0.5,
+        "probability_bin": "(0.4, 0.5]",
+        "rows": 242
+      },
+      {
+        "mean_probability": 0.5583524875829216,
+        "observed_positive_rate": 0.5187319884726225,
+        "probability_bin": "(0.5, 0.6]",
+        "rows": 694
+      },
+      {
+        "mean_probability": 0.6558458120646944,
+        "observed_positive_rate": 0.6536082474226804,
+        "probability_bin": "(0.6, 0.7]",
+        "rows": 1940
+      },
+      {
+        "mean_probability": 0.7540319012569436,
+        "observed_positive_rate": 0.76431829700963,
+        "probability_bin": "(0.7, 0.8]",
+        "rows": 3946
+      },
+      {
+        "mean_probability": 0.845770958579703,
+        "observed_positive_rate": 0.8422005886348201,
+        "probability_bin": "(0.8, 0.9]",
+        "rows": 4417
+      },
+      {
+        "mean_probability": 0.9169628650907687,
+        "observed_positive_rate": 0.8935532233883059,
+        "probability_bin": "(0.9, 1.0]",
+        "rows": 667
+      }
+    ],
+    "observed_positive_rate": 0.7574146381988868,
+    "oracle_probability_max": 0.9485232567156464,
+    "oracle_probability_mean": 0.7590288284092591,
+    "oracle_probability_min": 0.1596245049884611,
+    "overall_calibration_gap": 0.001614190210372346
+  },
+  "numeric_distribution": {
+    "active_demand_quantity": {
+      "max": 743.0,
+      "mean": 224.86832267176206,
+      "min": 1.0,
+      "std": 165.77620495130793
+    },
+    "available_capacity": {
+      "max": 745.0,
+      "mean": 224.85552878624242,
+      "min": 1.0,
+      "std": 166.2836053705144
+    },
+    "capability_resource_ratio": {
+      "max": 1.4998,
+      "mean": 0.8734468970673755,
+      "min": 0.2503,
+      "std": 0.3602179450950229
+    },
+    "demand_coverage_ratio": {
+      "max": 1.9999,
+      "mean": 1.0511933704411398,
+      "min": 0.1004,
+      "std": 0.5463505213916123
+    },
+    "demand_freshness_hours": {
+      "max": 167.99,
+      "mean": 83.63077677162084,
+      "min": 0.0,
+      "std": 48.634473314066135
+    },
+    "direct_action_cost": {
+      "max": 49997.85,
+      "mean": 25180.689189997505,
+      "min": 1.91,
+      "std": 14441.093244187421
+    },
+    "distance_km": {
+      "max": 40.0,
+      "mean": 10.206650328154856,
+      "min": 0.0,
+      "std": 12.914788645220042
+    },
+    "estimated_completion_hours": {
+      "max": 168.0,
+      "mean": 84.8195031984714,
+      "min": 0.5,
+      "std": 48.21526963462006
+    },
+    "handling_cost": {
+      "max": 24998.9,
+      "mean": 12457.42434244413,
+      "min": 0.9,
+      "std": 7240.092700568282
+    },
+    "logistics_cost": {
+      "max": 74995.6,
+      "mean": 19313.798135748108,
+      "min": 0.0,
+      "std": 24445.272083081945
+    },
+    "minimum_order_quantity": {
+      "max": 249.0,
+      "mean": 64.43914596660298,
+      "min": 1.0,
+      "std": 55.8553231132133
+    },
+    "normal_selling_price": {
+      "max": 143343.62,
+      "mean": 59853.6702118468,
+      "min": 2298.01,
+      "std": 34101.89676361508
+    },
+    "offered_or_selling_price_per_unit": {
+      "max": 138118.38,
+      "mean": 32295.49915842818,
+      "min": 0.0,
+      "std": 28515.987473037192
+    },
+    "package_volume_ml": {
+      "max": 4999.87,
+      "mean": 2529.484617429592,
+      "min": 50.07,
+      "std": 1429.7808597101052
+    },
+    "package_weight_g": {
+      "max": 9999.77,
+      "mean": 4985.899925230539,
+      "min": 10.27,
+      "std": 2886.2777148877926
+    },
+    "planning_quantity": {
+      "max": 250.0,
+      "mean": 128.059898645842,
+      "min": 2.0,
+      "std": 72.25429890083775
+    },
+    "remaining_commercial_window_days": {
+      "max": 119.99,
+      "mean": 60.56589100274156,
+      "min": 1.01,
+      "std": 34.27114843520165
+    },
+    "remaining_safe_window_hours": {
+      "max": 719.99,
+      "mean": 363.1216756666944,
+      "min": 4.01,
+      "std": 205.80887094857778
+    },
+    "remaining_shelf_life_days": {
+      "max": 365.0,
+      "mean": 181.78341779513167,
+      "min": 1.0,
+      "std": 105.27650896039322
+    },
+    "unit_cost": {
+      "max": 79997.68,
+      "mean": 41233.61130431171,
+      "min": 2017.22,
+      "std": 22574.170542648655
+    }
+  },
+  "report_version": "1.0.0",
+  "status": "PASS",
+  "warnings": []
+}
