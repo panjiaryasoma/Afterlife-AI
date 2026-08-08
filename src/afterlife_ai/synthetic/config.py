@@ -51,7 +51,7 @@ class GenerationConfig(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    scenario_groups: int = Field(ge=2000)
+    scenario_groups: int = Field(gt=0)
     candidate_rows_min: int = Field(gt=0)
     candidate_rows_max: int = Field(gt=0)
     candidates_per_planning_lot_min: int = Field(ge=2)
