@@ -1,0 +1,9 @@
+{
+  "status": "COMPLETED",
+  "started_at_utc": "2026-08-08T16:57:43.909872+00:00",
+  "completed_at_utc": "2026-08-08T16:57:50.015665+00:00",
+  "test_accessed": true,
+  "selected_model": "HGB-E",
+  "artifact_sha256": "a318a2550d97ea0861b85fd7af5f9b2be0291eb29f57b07a00b32ab5ea5295d9",
+  "summary": "reports/evidence/modeling/final_test/FINAL_LOCKED_TEST_v1.json"
+}
