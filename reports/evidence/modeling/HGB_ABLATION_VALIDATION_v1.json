@@ -1,0 +1,353 @@
+{
+  "bounded_variant_ids": [
+    "HGB_A",
+    "HGB_B",
+    "HGB_C",
+    "HGB_D",
+    "HGB_E",
+    "HGB_V1"
+  ],
+  "comparison_table": [
+    {
+      "l2_regularization": 1.0,
+      "max_iter": 50.0,
+      "max_leaf_nodes": 15.0,
+      "min_samples_leaf": 20.0,
+      "model": "HGB_A",
+      "pr_gap": 0.07835483871278581,
+      "roc_gap": 0.18491586492280743,
+      "train_pr_auc": 0.9319267739837668,
+      "validation_brier": 0.15533903768635385,
+      "validation_mrr": 0.9231481481481483,
+      "validation_ndcg_at_3": 0.8799403272116235,
+      "validation_pr_auc": 0.853571935270981,
+      "validation_roc_auc": 0.6010770698118035,
+      "validation_top1": 0.8555555555555555,
+      "within_1pct_relative_best_pr": true
+    },
+    {
+      "l2_regularization": 1.0,
+      "max_iter": 100.0,
+      "max_leaf_nodes": 15.0,
+      "min_samples_leaf": 20.0,
+      "model": "HGB_B",
+      "pr_gap": 0.09734888823878007,
+      "roc_gap": 0.24514455792206213,
+      "train_pr_auc": 0.9555433758543399,
+      "validation_brier": 0.1553719599255642,
+      "validation_mrr": 0.9263888888888889,
+      "validation_ndcg_at_3": 0.8783717664845793,
+      "validation_pr_auc": 0.8581944876155598,
+      "validation_roc_auc": 0.6060243019207356,
+      "validation_top1": 0.8611111111111112,
+      "within_1pct_relative_best_pr": true
+    },
+    {
+      "l2_regularization": 1.0,
+      "max_iter": 150.0,
+      "max_leaf_nodes": 15.0,
+      "min_samples_leaf": 20.0,
+      "model": "HGB_C",
+      "pr_gap": 0.1137218333433826,
+      "roc_gap": 0.2925742286336598,
+      "train_pr_auc": 0.9698526434471212,
+      "validation_brier": 0.15589249942199987,
+      "validation_mrr": 0.9215277777777777,
+      "validation_ndcg_at_3": 0.876732511615471,
+      "validation_pr_auc": 0.8561308101037386,
+      "validation_roc_auc": 0.6026279262722839,
+      "validation_top1": 0.8527777777777777,
+      "within_1pct_relative_best_pr": true
+    },
+    {
+      "l2_regularization": 2.0,
+      "max_iter": 100.0,
+      "max_leaf_nodes": 7.0,
+      "min_samples_leaf": 40.0,
+      "model": "HGB_D",
+      "pr_gap": 0.06735638316052384,
+      "roc_gap": 0.1552941810723999,
+      "train_pr_auc": 0.9200097480786018,
+      "validation_brier": 0.15530781915509392,
+      "validation_mrr": 0.925,
+      "validation_ndcg_at_3": 0.8775916460756326,
+      "validation_pr_auc": 0.852653364918078,
+      "validation_roc_auc": 0.5991869635005931,
+      "validation_top1": 0.8611111111111112,
+      "within_1pct_relative_best_pr": true
+    },
+    {
+      "l2_regularization": 2.0,
+      "max_iter": 150.0,
+      "max_leaf_nodes": 7.0,
+      "min_samples_leaf": 40.0,
+      "model": "HGB_E",
+      "pr_gap": 0.07863804163194554,
+      "roc_gap": 0.18382117930871245,
+      "train_pr_auc": 0.9323017540113275,
+      "validation_brier": 0.15514519580051822,
+      "validation_mrr": 0.9199074074074073,
+      "validation_ndcg_at_3": 0.874650614588099,
+      "validation_pr_auc": 0.853663712379382,
+      "validation_roc_auc": 0.6011895069051884,
+      "validation_top1": 0.8472222222222222,
+      "within_1pct_relative_best_pr": true
+    },
+    {
+      "l2_regularization": 1.0,
+      "max_iter": 250.0,
+      "max_leaf_nodes": 15.0,
+      "min_samples_leaf": 20.0,
+      "model": "HGB_V1",
+      "pr_gap": 0.1306048270519682,
+      "roc_gap": 0.3451297569961532,
+      "train_pr_auc": 0.9849348767702022,
+      "validation_brier": 0.1563688525481009,
+      "validation_mrr": 0.9194444444444444,
+      "validation_ndcg_at_3": 0.8775211143378819,
+      "validation_pr_auc": 0.854330049718234,
+      "validation_roc_auc": 0.6004082629632215,
+      "validation_top1": 0.8472222222222222,
+      "within_1pct_relative_best_pr": true
+    },
+    {
+      "l2_regularization": NaN,
+      "max_iter": NaN,
+      "max_leaf_nodes": NaN,
+      "min_samples_leaf": NaN,
+      "model": "LR",
+      "pr_gap": 0.03182304941919867,
+      "roc_gap": 0.06863897499117821,
+      "train_pr_auc": 0.8814760167285485,
+      "validation_brier": 0.15605489917487814,
+      "validation_mrr": 0.9296296296296295,
+      "validation_ndcg_at_3": 0.8829834321410593,
+      "validation_pr_auc": 0.8496529673093498,
+      "validation_roc_auc": 0.5967269174401563,
+      "validation_top1": 0.8694444444444445,
+      "within_1pct_relative_best_pr": true
+    }
+  ],
+  "evaluation_split": "validation",
+  "experiment": "BOUNDED_HGB_REGULARIZATION",
+  "hgb_variants": {
+    "HGB_A": {
+      "diagnostic_gap": {
+        "pr_auc": 0.07835483871278581,
+        "roc_auc": 0.18491586492280743
+      },
+      "hypothesis": "iteration_reduction",
+      "parameters": {
+        "early_stopping": false,
+        "l2_regularization": 1.0,
+        "learning_rate": 0.05,
+        "max_iter": 50,
+        "max_leaf_nodes": 15,
+        "min_samples_leaf": 20,
+        "random_state": 42
+      },
+      "train": {
+        "brier_score": 0.13790109518047167,
+        "mrr": 0.967361111111111,
+        "ndcg_at_3": 0.937385127861459,
+        "pr_auc": 0.9319267739837668,
+        "roc_auc": 0.785992934734611,
+        "top1_success_rate": 0.9428571428571428
+      },
+      "validation": {
+        "brier_score": 0.15533903768635385,
+        "mrr": 0.9231481481481483,
+        "ndcg_at_3": 0.8799403272116235,
+        "pr_auc": 0.853571935270981,
+        "roc_auc": 0.6010770698118035,
+        "top1_success_rate": 0.8555555555555555
+      }
+    },
+    "HGB_B": {
+      "diagnostic_gap": {
+        "pr_auc": 0.09734888823878007,
+        "roc_auc": 0.24514455792206213
+      },
+      "hypothesis": "iteration_reduction",
+      "parameters": {
+        "early_stopping": false,
+        "l2_regularization": 1.0,
+        "learning_rate": 0.05,
+        "max_iter": 100,
+        "max_leaf_nodes": 15,
+        "min_samples_leaf": 20,
+        "random_state": 42
+      },
+      "train": {
+        "brier_score": 0.12586187877587,
+        "mrr": 0.9775793650793652,
+        "ndcg_at_3": 0.9562564165200282,
+        "pr_auc": 0.9555433758543399,
+        "roc_auc": 0.8511688598427978,
+        "top1_success_rate": 0.9625
+      },
+      "validation": {
+        "brier_score": 0.1553719599255642,
+        "mrr": 0.9263888888888889,
+        "ndcg_at_3": 0.8783717664845793,
+        "pr_auc": 0.8581944876155598,
+        "roc_auc": 0.6060243019207356,
+        "top1_success_rate": 0.8611111111111112
+      }
+    },
+    "HGB_C": {
+      "diagnostic_gap": {
+        "pr_auc": 0.1137218333433826,
+        "roc_auc": 0.2925742286336598
+      },
+      "hypothesis": "iteration_reduction",
+      "parameters": {
+        "early_stopping": false,
+        "l2_regularization": 1.0,
+        "learning_rate": 0.05,
+        "max_iter": 150,
+        "max_leaf_nodes": 15,
+        "min_samples_leaf": 20,
+        "random_state": 42
+      },
+      "train": {
+        "brier_score": 0.11612484278923539,
+        "mrr": 0.9851190476190477,
+        "ndcg_at_3": 0.9700293750225731,
+        "pr_auc": 0.9698526434471212,
+        "roc_auc": 0.8952021549059437,
+        "top1_success_rate": 0.9773809523809524
+      },
+      "validation": {
+        "brier_score": 0.15589249942199987,
+        "mrr": 0.9215277777777777,
+        "ndcg_at_3": 0.876732511615471,
+        "pr_auc": 0.8561308101037386,
+        "roc_auc": 0.6026279262722839,
+        "top1_success_rate": 0.8527777777777777
+      }
+    },
+    "HGB_D": {
+      "diagnostic_gap": {
+        "pr_auc": 0.06735638316052384,
+        "roc_auc": 0.1552941810723999
+      },
+      "hypothesis": "regularized_configuration_package",
+      "parameters": {
+        "early_stopping": false,
+        "l2_regularization": 2.0,
+        "learning_rate": 0.05,
+        "max_iter": 100,
+        "max_leaf_nodes": 7,
+        "min_samples_leaf": 40,
+        "random_state": 42
+      },
+      "train": {
+        "brier_score": 0.14044052390970083,
+        "mrr": 0.9619047619047619,
+        "ndcg_at_3": 0.9254868664729198,
+        "pr_auc": 0.9200097480786018,
+        "roc_auc": 0.754481144572993,
+        "top1_success_rate": 0.9321428571428572
+      },
+      "validation": {
+        "brier_score": 0.15530781915509392,
+        "mrr": 0.925,
+        "ndcg_at_3": 0.8775916460756326,
+        "pr_auc": 0.852653364918078,
+        "roc_auc": 0.5991869635005931,
+        "top1_success_rate": 0.8611111111111112
+      }
+    },
+    "HGB_E": {
+      "diagnostic_gap": {
+        "pr_auc": 0.07863804163194554,
+        "roc_auc": 0.18382117930871245
+      },
+      "hypothesis": "regularized_configuration_package",
+      "parameters": {
+        "early_stopping": false,
+        "l2_regularization": 2.0,
+        "learning_rate": 0.05,
+        "max_iter": 150,
+        "max_leaf_nodes": 7,
+        "min_samples_leaf": 40,
+        "random_state": 42
+      },
+      "train": {
+        "brier_score": 0.13578056371584402,
+        "mrr": 0.9665674603174603,
+        "ndcg_at_3": 0.9349665194469118,
+        "pr_auc": 0.9323017540113275,
+        "roc_auc": 0.7850106862139008,
+        "top1_success_rate": 0.9410714285714286
+      },
+      "validation": {
+        "brier_score": 0.15514519580051822,
+        "mrr": 0.9199074074074073,
+        "ndcg_at_3": 0.874650614588099,
+        "pr_auc": 0.853663712379382,
+        "roc_auc": 0.6011895069051884,
+        "top1_success_rate": 0.8472222222222222
+      }
+    },
+    "HGB_V1": {
+      "diagnostic_gap": {
+        "pr_auc": 0.1306048270519682,
+        "roc_auc": 0.3451297569961532
+      },
+      "hypothesis": "current_reference",
+      "parameters": {
+        "early_stopping": false,
+        "l2_regularization": 1.0,
+        "learning_rate": 0.05,
+        "max_iter": 250,
+        "max_leaf_nodes": 15,
+        "min_samples_leaf": 20,
+        "random_state": 42
+      },
+      "train": {
+        "brier_score": 0.10020274107024084,
+        "mrr": 0.9892857142857143,
+        "ndcg_at_3": 0.9803326452894727,
+        "pr_auc": 0.9849348767702022,
+        "roc_auc": 0.9455380199593747,
+        "top1_success_rate": 0.9857142857142858
+      },
+      "validation": {
+        "brier_score": 0.1563688525481009,
+        "mrr": 0.9194444444444444,
+        "ndcg_at_3": 0.8775211143378819,
+        "pr_auc": 0.854330049718234,
+        "roc_auc": 0.6004082629632215,
+        "top1_success_rate": 0.8472222222222222
+      }
+    }
+  },
+  "hypotheses": {
+    "H1": "HGB v1 may use too many boosting iterations.",
+    "H2": "A lower-capacity regularized configuration package may generalize better."
+  },
+  "interpretation_guardrails": [
+    "Train-validation gap is diagnostic only and is not a model-selection objective.",
+    "HGB_D and HGB_E jointly change tree size, minimum leaf samples, and L2; they are configuration packages, not single-factor ablations.",
+    "Validation is used for bounded configuration selection; any post-selection interval is selection-conditional.",
+    "The locked test split remains untouched until the final model/configuration is frozen.",
+    "Ranking metrics are diagnostic and do not override the locked PR-AUC/Brier selection policy."
+  ],
+  "report_version": "1.0.0",
+  "selection_policy": {
+    "best_validation_pr_auc": 0.8581944876155598,
+    "competitive_pr_auc_threshold": 0.8496125427394042,
+    "final_selection_complete": false,
+    "probability_metric_shortlist_winner": "HGB_E",
+    "relative_window": 0.01,
+    "remaining_selection_stages": [
+      "allocation_regret",
+      "complexity",
+      "robustness_seeds",
+      "AI_value_gate"
+    ]
+  },
+  "test_accessed": false
+}

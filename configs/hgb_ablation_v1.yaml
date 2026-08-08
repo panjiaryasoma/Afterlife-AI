@@ -1,0 +1,63 @@
+experiment_version: "1.0.0"
+
+claim_boundary: >
+  Bounded validation-only HGB regularization experiment.
+  This experiment does not access the locked test split and does not
+  establish final model superiority.
+
+selection_policy:
+  pr_auc_relative_window: 0.01
+  primary_stage_1: "PR_AUC_COMPETITIVE_SET"
+  primary_stage_2: "MIN_BRIER_WITHIN_COMPETITIVE_SET"
+  later_stage_3: "ALLOCATION_REGRET"
+  later_stage_4: "COMPLEXITY"
+  ranking_metrics_are_diagnostic: true
+
+fixed:
+  learning_rate: 0.05
+  max_bins: 255
+  early_stopping: false
+  random_state: 42
+
+variants:
+  HGB_A:
+    max_iter: 50
+    max_leaf_nodes: 15
+    min_samples_leaf: 20
+    l2_regularization: 1.0
+    hypothesis: "iteration_reduction"
+
+  HGB_B:
+    max_iter: 100
+    max_leaf_nodes: 15
+    min_samples_leaf: 20
+    l2_regularization: 1.0
+    hypothesis: "iteration_reduction"
+
+  HGB_C:
+    max_iter: 150
+    max_leaf_nodes: 15
+    min_samples_leaf: 20
+    l2_regularization: 1.0
+    hypothesis: "iteration_reduction"
+
+  HGB_D:
+    max_iter: 100
+    max_leaf_nodes: 7
+    min_samples_leaf: 40
+    l2_regularization: 2.0
+    hypothesis: "regularized_configuration_package"
+
+  HGB_E:
+    max_iter: 150
+    max_leaf_nodes: 7
+    min_samples_leaf: 40
+    l2_regularization: 2.0
+    hypothesis: "regularized_configuration_package"
+
+  HGB_V1:
+    max_iter: 250
+    max_leaf_nodes: 15
+    min_samples_leaf: 20
+    l2_regularization: 1.0
+    hypothesis: "current_reference"
