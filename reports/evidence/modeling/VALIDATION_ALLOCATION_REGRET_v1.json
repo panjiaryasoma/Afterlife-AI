@@ -1,0 +1,58 @@
+{
+  "evaluation_version": "1.0.0",
+  "split": "validation",
+  "test_accessed": false,
+  "regret_semantics": "oracle_objective_value - oracle_evaluated_system_allocation",
+  "optimizer": "production_cp_sat",
+  "cost_semantics": "candidate total costs amortized across maximum feasible quantity before expected-value calculation",
+  "models": [
+    {
+      "model": "LR",
+      "scenario_groups": 360,
+      "mean_regret": 5978.697861111111,
+      "median_regret": 0.0,
+      "p90_regret": 0.0,
+      "p95_regret": 0.0,
+      "total_regret": 2152331.23,
+      "mean_normalized_regret": 0.0012141668941224979,
+      "zero_regret_rate": 0.9555555555555556,
+      "exact_allocation_match_rate": 0.9555555555555556,
+      "oracle_value_total": 2595272622.87,
+      "system_oracle_value_total": 2593120291.64,
+      "economic_value_retained_ratio": 0.9991706723944787,
+      "negative_true_value_groups": 0
+    },
+    {
+      "model": "HGB_B",
+      "scenario_groups": 360,
+      "mean_regret": 11401.584055555557,
+      "median_regret": 0.0,
+      "p90_regret": 0.0,
+      "p95_regret": 0.0,
+      "total_regret": 4104570.2600000002,
+      "mean_normalized_regret": 0.0017174527358031866,
+      "zero_regret_rate": 0.9555555555555556,
+      "exact_allocation_match_rate": 0.9555555555555556,
+      "oracle_value_total": 2595272622.87,
+      "system_oracle_value_total": 2591168052.6099997,
+      "economic_value_retained_ratio": 0.9984184435100074,
+      "negative_true_value_groups": 0
+    },
+    {
+      "model": "HGB_E",
+      "scenario_groups": 360,
+      "mean_regret": 14793.478944444445,
+      "median_regret": 0.0,
+      "p90_regret": 0.0,
+      "p95_regret": 30255.20450000007,
+      "total_regret": 5325652.42,
+      "mean_normalized_regret": 0.0020398545076795636,
+      "zero_regret_rate": 0.9416666666666667,
+      "exact_allocation_match_rate": 0.9416666666666667,
+      "oracle_value_total": 2595272622.87,
+      "system_oracle_value_total": 2589946970.45,
+      "economic_value_retained_ratio": 0.9979479410474763,
+      "negative_true_value_groups": 0
+    }
+  ]
+}

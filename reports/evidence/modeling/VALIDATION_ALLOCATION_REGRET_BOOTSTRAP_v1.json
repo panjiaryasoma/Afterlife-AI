@@ -1,0 +1,81 @@
+{
+  "evaluation_version": "1.0.0",
+  "split": "validation",
+  "test_accessed": false,
+  "bootstrap_unit": "scenario_group_id",
+  "bootstrap_iterations": 10000,
+  "bootstrap_seed": 42,
+  "mean_regret_comparisons": {
+    "LR_vs_HGB_B": {
+      "paired_group_context": {
+        "first_lower_regret_groups": 11,
+        "equal_regret_groups": 339,
+        "second_lower_regret_groups": 10,
+        "mean_delta": -5422.886194444445,
+        "median_delta": 0.0
+      },
+      "delta_definition": "first_model_minus_second_model",
+      "observed_delta": -5422.886194444445,
+      "ci_95_low": -14748.222729861109,
+      "ci_95_high": 3212.2034708333317,
+      "probability_first_lower_regret": 0.8855,
+      "probability_second_lower_regret": 0.1145
+    },
+    "LR_vs_HGB_E": {
+      "paired_group_context": {
+        "first_lower_regret_groups": 15,
+        "equal_regret_groups": 336,
+        "second_lower_regret_groups": 9,
+        "mean_delta": -8814.781083333331,
+        "median_delta": 0.0
+      },
+      "delta_definition": "first_model_minus_second_model",
+      "observed_delta": -8814.781083333331,
+      "ci_95_low": -19601.09043333333,
+      "ci_95_high": 655.5434777777706,
+      "probability_first_lower_regret": 0.9646,
+      "probability_second_lower_regret": 0.0354
+    },
+    "HGB_B_vs_HGB_E": {
+      "paired_group_context": {
+        "first_lower_regret_groups": 8,
+        "equal_regret_groups": 349,
+        "second_lower_regret_groups": 3,
+        "mean_delta": -3391.8948888888885,
+        "median_delta": 0.0
+      },
+      "delta_definition": "first_model_minus_second_model",
+      "observed_delta": -3391.8948888888885,
+      "ci_95_low": -9873.27525625,
+      "ci_95_high": 1482.1130673611092,
+      "probability_first_lower_regret": 0.8956,
+      "probability_second_lower_regret": 0.1044
+    }
+  },
+  "mean_normalized_regret_comparisons": {
+    "LR_vs_HGB_B": {
+      "delta_definition": "first_model_minus_second_model",
+      "observed_delta": -0.0005032858416806887,
+      "ci_95_low": -0.001794140014968397,
+      "ci_95_high": 0.0006850165949966045,
+      "probability_first_lower_regret": 0.7879,
+      "probability_second_lower_regret": 0.2121
+    },
+    "LR_vs_HGB_E": {
+      "delta_definition": "first_model_minus_second_model",
+      "observed_delta": -0.0008256876135570652,
+      "ci_95_low": -0.002198273968390961,
+      "ci_95_high": 0.00042638996202908237,
+      "probability_first_lower_regret": 0.8942,
+      "probability_second_lower_regret": 0.1058
+    },
+    "HGB_B_vs_HGB_E": {
+      "delta_definition": "first_model_minus_second_model",
+      "observed_delta": -0.0003224017718763764,
+      "ci_95_low": -0.0014550492487701273,
+      "ci_95_high": 0.0006979987093459823,
+      "probability_first_lower_regret": 0.7233,
+      "probability_second_lower_regret": 0.2767
+    }
+  }
+}
