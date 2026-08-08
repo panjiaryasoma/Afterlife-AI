@@ -1,0 +1,27 @@
+﻿selection_version: "1.0.0"
+status: "FROZEN_BEFORE_FINAL_TEST"
+
+selected_label: "HGB_E"
+selected_model_family: "HistGradientBoostingClassifier"
+
+selection_basis:
+  pr_auc_competitive_window: "within 1% relative of best validation PR-AUC"
+  decisive_metric: "lowest validation Brier score"
+  ai_value_gate: "PASS"
+
+source_decision_record: "reports/evidence/modeling/MODEL_SELECTION_AND_AI_VALUE_GATE_DECISION_v1.md"
+
+fit_split: "train"
+selection_split: "validation"
+test_accessed: false
+
+hist_gradient_boosting:
+  model_id: "M1_HIST_GRADIENT_BOOSTING"
+  learning_rate: 0.05
+  max_iter: 150
+  max_leaf_nodes: 7
+  min_samples_leaf: 40
+  l2_regularization: 2.0
+  max_bins: 255
+  early_stopping: false
+  random_state: 42

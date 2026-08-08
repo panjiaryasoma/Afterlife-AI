@@ -1,0 +1,67 @@
+{
+  "manifest_version": "1.0.0",
+  "status": "FROZEN_BEFORE_FINAL_TEST",
+  "selected_label": "HGB_E",
+  "model_family": "HistGradientBoostingClassifier",
+  "model_id": "M1_HIST_GRADIENT_BOOSTING",
+  "configuration": {
+    "model_id": "M1_HIST_GRADIENT_BOOSTING",
+    "learning_rate": 0.05,
+    "max_iter": 150,
+    "max_leaf_nodes": 7,
+    "min_samples_leaf": 40,
+    "l2_regularization": 2.0,
+    "max_bins": 255,
+    "early_stopping": false,
+    "random_state": 42
+  },
+  "training": {
+    "split": "train",
+    "rows": 8435,
+    "scenario_groups": 1680,
+    "duration_seconds": 1.939687800128013
+  },
+  "selection_validation": {
+    "rows": 1805,
+    "scenario_groups": 360,
+    "pr_auc": 0.853663712379382,
+    "brier": 0.15514519580051822,
+    "expected_pr_auc": 0.853664,
+    "expected_brier": 0.155145,
+    "artifact_roundtrip_verified": true
+  },
+  "artifact": {
+    "path": "models/HGB_E_v1.joblib",
+    "sha256": "a318a2550d97ea0861b85fd7af5f9b2be0291eb29f57b07a00b32ab5ea5295d9"
+  },
+  "inputs": {
+    "feature_schema": {
+      "path": "docs/contracts/FEATURE_SCHEMA_FINAL_v2.0.yaml",
+      "sha256": "9c22910c442fcfd8132b905856d26ea7866c0d173f81811473f188a736e29996"
+    },
+    "synthetic_candidates": {
+      "path": "data/generated/synthetic_candidates_v2.csv",
+      "sha256": "c1c47ace2097f6a566e9d825436fd2b6b4483905b6e2e4a447bf961d3f944ca0"
+    },
+    "split_manifest": {
+      "path": "reports/evidence/synthetic_dataset/SPLIT_GROUPS_v2.csv",
+      "sha256": "eb4d3041f4d7327623082b0479fcf8ddf09da4794a58eb86caf97234b0c71966"
+    },
+    "selected_model_config": {
+      "path": "configs/selected_model_v1.yaml",
+      "sha256": "294c0cd9803e7c1a38707e17e498a74d8d6caf201015076b58a9350fb70e3a10"
+    }
+  },
+  "environment": {
+    "python": "3.12.7",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "pandas": "3.0.5",
+    "scikit_learn": "1.9.0",
+    "joblib": "1.5.3"
+  },
+  "repository": {
+    "packaging_commit_parent": "37ca94bb9be85474d303418c412e1e6c3a1e617b"
+  },
+  "claim_boundary": "Selected model was trained on the frozen synthetic benchmark. This artifact is not evidence of real-world rescue probability accuracy.",
+  "test_accessed": false
+}
