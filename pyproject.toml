@@ -55,7 +55,7 @@ afterlife_ai = ["evaluation/planner_cases/*.yaml"]
 minversion = "8.0"
 addopts = "-ra --strict-markers --strict-config"
 testpaths = ["tests"]
-pythonpath = ["src"]
+pythonpath = ["src", "."]
 
 
 [tool.coverage.run]
