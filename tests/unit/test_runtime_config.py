@@ -47,3 +47,35 @@ def test_load_runtime_config_reads_static_mvp_defaults() -> None:
     assert config.model.artifact_path == Path(
         "models/HGB_E_v1.joblib"
     )
+
+def test_load_runtime_config_reads_capability_defaults() -> None:
+    config = load_runtime_config(
+        Path("configs/runtime_v1.yaml")
+    )
+
+    capabilities = config.capabilities
+
+    assert capabilities.profile_version == "runtime-capability-v1.0"
+    assert capabilities.real_world_validated is False
+
+    assert (
+        capabilities.supported_actions["INTERNAL_REPURPOSE"]
+        is True
+    )
+    assert capabilities.supported_actions["BUNDLE"] is True
+    assert capabilities.supported_actions["LOCAL_DISCOUNT"] is True
+    assert capabilities.supported_actions["SAFE_DISPOSAL"] is True
+    assert capabilities.supported_actions["PROMOTIONAL_BONUS"] is False
+
+    assert (
+        capabilities.internal_repurpose.maximum_quantity
+        == Decimal("6")
+    )
+    assert (
+        capabilities.bundle.maximum_quantity
+        == Decimal("4")
+    )
+    assert (
+        capabilities.local_discount.price_fraction_of_normal
+        == Decimal("0.75")
+    )

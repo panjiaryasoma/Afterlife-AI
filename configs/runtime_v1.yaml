@@ -1,4 +1,4 @@
-config_name: Afterlife AI Runtime Configuration
+﻿config_name: Afterlife AI Runtime Configuration
 version: 1.0.0
 status: MVP_STATIC_DEFAULTS
 
@@ -39,3 +39,65 @@ triage:
       expiry_monitor_threshold_days: 7
       cold_chain_evidence_required: true
       provenance: INTEGRATION_001_STATIC_MVP_DEFAULT
+capabilities:
+  profile_version: runtime-capability-v1.0
+
+  provenance: INTEGRATION_001_DERIVED_STATIC_MVP_DEFAULT
+  real_world_validated: false
+
+  supported_actions:
+    INTERNAL_REPURPOSE: true
+    BUNDLE: true
+    LOCAL_DISCOUNT: true
+    PROMOTIONAL_BONUS: false
+    INTERNAL_USE: false
+    RETURN_TO_SUPPLIER: false
+    BRANCH_TRANSFER: false
+    WHOLESALE: false
+    EXTERNAL_PARTNER: false
+    DONATION: false
+    SAFE_DISPOSAL: true
+
+  internal_repurpose:
+    maximum_quantity: 6
+    estimated_completion_hours: 4
+
+  bundle:
+    maximum_quantity: 4
+    estimated_completion_hours: 2
+    supported_categories:
+      - PACKAGED_BEVERAGE
+
+  local_discount:
+    price_fraction_of_normal: 0.75
+    estimated_completion_hours: 1
+    destination_id: STORE-01_LOCAL_SALES
+    destination_type: INTERNAL_CHANNEL
+    direct_action_cost: 0
+  safe_disposal:
+    estimated_completion_hours: 4
+
+  internal_repurpose:
+    maximum_quantity: 6
+    estimated_completion_hours: 4
+    capacity_scope: SHARED_ACROSS_ALL_PLANNING_LOTS
+    destination_id: STORE-01_PREPARED_DRINK_CHANNEL
+    destination_type: INTERNAL_CHANNEL
+    selling_price_per_unit: 3500
+    direct_action_cost: 1100
+
+  bundle:
+    maximum_quantity: 4
+    estimated_completion_hours: 2
+    supported_categories:
+      - PACKAGED_BEVERAGE
+    supported_source_skus:
+      - PBEV-003
+    destination_id: STORE-01_BUNDLE_CAMPAIGN
+    destination_type: INTERNAL_CHANNEL
+    selling_price_per_unit: 1600
+    direct_action_cost: 0
+
+
+
+

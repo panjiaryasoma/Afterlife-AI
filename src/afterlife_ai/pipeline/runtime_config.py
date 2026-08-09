@@ -1,4 +1,4 @@
-"""Typed loader for Afterlife AI runtime configuration."""
+﻿"""Typed loader for Afterlife AI runtime configuration."""
 
 from __future__ import annotations
 
@@ -10,6 +10,7 @@ import yaml
 from pydantic import BaseModel, ConfigDict, Field
 
 from afterlife_ai.contracts.enums import (
+    ActionType,
     BusinessType,
     ProductCategory,
 )
@@ -84,6 +85,113 @@ class RuntimeTriageConfig(BaseModel):
     ]
 
 
+class InternalRepurposeCapability(BaseModel):
+    """Static internal-repurpose limits for the MVP."""
+
+    model_config = ConfigDict(
+        extra="forbid",
+        frozen=True,
+    )
+
+    maximum_quantity: Decimal = Field(
+        ge=Decimal("0")
+    )
+    estimated_completion_hours: Decimal = Field(
+        ge=Decimal("0")
+    )
+    capacity_scope: Literal[
+        "SHARED_ACROSS_ALL_PLANNING_LOTS"
+    ]
+    destination_id: str
+    destination_type: str
+    selling_price_per_unit: Decimal = Field(
+        ge=Decimal("0")
+    )
+    direct_action_cost: Decimal = Field(
+        ge=Decimal("0")
+    )
+
+
+class BundleCapability(BaseModel):
+    """Static bundle limits for the MVP."""
+
+    model_config = ConfigDict(
+        extra="forbid",
+        frozen=True,
+    )
+
+    maximum_quantity: Decimal = Field(
+        ge=Decimal("0")
+    )
+    estimated_completion_hours: Decimal = Field(
+        ge=Decimal("0")
+    )
+    supported_categories: list[ProductCategory]
+    supported_source_skus: list[str]
+    destination_id: str
+    destination_type: str
+    selling_price_per_unit: Decimal = Field(
+        ge=Decimal("0")
+    )
+    direct_action_cost: Decimal = Field(
+        ge=Decimal("0")
+    )
+
+
+class LocalDiscountCapability(BaseModel):
+    """Static local-discount parameters for the MVP."""
+
+    model_config = ConfigDict(
+        extra="forbid",
+        frozen=True,
+    )
+
+    price_fraction_of_normal: Decimal = Field(
+        gt=Decimal("0"),
+        le=Decimal("1"),
+    )
+    estimated_completion_hours: Decimal = Field(
+        ge=Decimal("0")
+    )
+    destination_id: str
+    destination_type: str
+    direct_action_cost: Decimal = Field(
+        ge=Decimal("0")
+    )
+
+
+class SafeDisposalCapability(BaseModel):
+    """Static safe-disposal parameters for the MVP."""
+
+    model_config = ConfigDict(
+        extra="forbid",
+        frozen=True,
+    )
+
+    estimated_completion_hours: Decimal = Field(
+        ge=Decimal("0")
+    )
+
+class RuntimeCapabilityConfig(BaseModel):
+    """Static business capabilities used by local MVP planning."""
+
+    model_config = ConfigDict(
+        extra="forbid",
+        frozen=True,
+    )
+
+    profile_version: str
+    provenance: str
+    real_world_validated: bool
+
+    supported_actions: dict[ActionType, bool]
+
+    internal_repurpose: InternalRepurposeCapability
+    bundle: BundleCapability
+    local_discount: LocalDiscountCapability
+    safe_disposal: SafeDisposalCapability
+
+
 class RuntimeConfig(BaseModel):
     """Complete local synchronous MVP configuration."""
 
@@ -104,6 +212,7 @@ class RuntimeConfig(BaseModel):
     model: RuntimeModelConfig
     business: RuntimeBusinessConfig
     triage: RuntimeTriageConfig
+    capabilities: RuntimeCapabilityConfig
 
 
 def load_runtime_config(
@@ -129,8 +238,21 @@ def load_runtime_config(
 
 
 __all__ = [
+    "BundleCapability",
+    "InternalRepurposeCapability",
+    "LocalDiscountCapability",
+    "RuntimeCapabilityConfig",
     "RuntimeConfig",
     "RuntimeTriageConfig",
+    "SafeDisposalCapability",
     "TriageCategoryPolicy",
     "load_runtime_config",
 ]
+
+
+
+
+
+
+
+
