@@ -256,7 +256,7 @@ Afterlife-AI/
 │       ├── intake/
 │       ├── optimization/
 │       ├── pipeline/
-│       ├── planning/
+│       ├── planner/
 │       ├── reporting/
 │       ├── scoring/
 │       ├── triage/

@@ -5,7 +5,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 TRIAGE_SOURCE_DIR = REPO_ROOT / "src" / "afterlife_ai" / "triage"
 
 FORBIDDEN_IMPORT_PREFIXES = (
-    "afterlife_ai.planning",
+    "afterlife_ai.planner",
     "afterlife_ai.scoring",
     "afterlife_ai.optimization",
     "afterlife_ai.models",
