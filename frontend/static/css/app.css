@@ -143,3 +143,20 @@ button:disabled {
 .error {
     color: #e3a29b;
 }
+.result-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.secondary-button {
+    border: 1px solid #625b42;
+    background: transparent;
+    color: #ede9df;
+}
+
+.secondary-button:hover {
+    background: #26261f;
+}

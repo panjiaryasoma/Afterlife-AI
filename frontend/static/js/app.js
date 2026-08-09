@@ -8,6 +8,9 @@ const allocations = document.querySelector("#allocations");
 const reviews = document.querySelector("#reviews");
 const limitations = document.querySelector("#limitations");
 const scoringProvider = document.querySelector("#scoring-provider");
+const downloadReport = document.querySelector("#download-report");
+
+let latestReport = null;
 
 function metric(label, value) {
     return `
@@ -77,6 +80,46 @@ function renderReport(report) {
     results.classList.remove("hidden");
 }
 
+function downloadLatestReport() {
+    if (!latestReport) {
+        return;
+    }
+
+    const json = JSON.stringify(
+        latestReport,
+        null,
+        2
+    );
+
+    const blob = new Blob(
+        [json],
+        {
+            type: "application/json",
+        }
+    );
+
+    const objectUrl = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    const requestId =
+        latestReport.request_id || "unknown";
+
+    link.href = objectUrl;
+    link.download =
+        `rescue-decision-report-${requestId}.json`;
+
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    URL.revokeObjectURL(objectUrl);
+}
+
+downloadReport.addEventListener(
+    "click",
+    downloadLatestReport
+);
+
 form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
@@ -91,8 +134,12 @@ form.addEventListener("submit", async (event) => {
     const data = new FormData();
     data.append("inventory_file", file);
 
+    latestReport = null;
+
     button.disabled = true;
+    downloadReport.classList.add("hidden");
     results.classList.add("hidden");
+
     statusMessage.classList.remove("error");
     statusMessage.textContent = "Analyzing inventory...";
 
@@ -110,9 +157,16 @@ form.addEventListener("submit", async (event) => {
             );
         }
 
+        latestReport = payload;
+
         renderReport(payload);
+
+        downloadReport.classList.remove("hidden");
         statusMessage.textContent = "Analysis completed.";
     } catch (error) {
+        latestReport = null;
+        downloadReport.classList.add("hidden");
+
         statusMessage.textContent = error.message;
         statusMessage.classList.add("error");
     } finally {
