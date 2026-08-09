@@ -1,0 +1,145 @@
+:root {
+    font-family: Inter, system-ui, sans-serif;
+    color: #ede9df;
+    background: #11120f;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background:
+        radial-gradient(circle at top, #29271f 0, #11120f 45%);
+}
+
+.shell {
+    width: min(960px, calc(100% - 32px));
+    margin: 0 auto;
+    padding: 72px 0;
+}
+
+.hero {
+    margin-bottom: 32px;
+}
+
+h1 {
+    margin: 8px 0;
+    font-family: Georgia, serif;
+    font-size: clamp(42px, 8vw, 72px);
+}
+
+h2,
+h3 {
+    font-family: Georgia, serif;
+}
+
+.eyebrow {
+    margin: 0;
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    color: #b8aa7c;
+}
+
+.subtitle {
+    color: #bdb9ad;
+    font-size: 18px;
+}
+
+.panel {
+    margin-top: 20px;
+    padding: 28px;
+    border: 1px solid #3c392e;
+    border-radius: 14px;
+    background: rgba(28, 29, 24, 0.94);
+}
+
+form {
+    display: grid;
+    gap: 14px;
+    margin-top: 24px;
+}
+
+input[type="file"] {
+    padding: 14px;
+    border: 1px solid #4a4638;
+    border-radius: 8px;
+    background: #171814;
+    color: inherit;
+}
+
+button {
+    width: fit-content;
+    padding: 12px 20px;
+    border: 0;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    background: #c8b36d;
+    color: #16150f;
+}
+
+button:disabled {
+    opacity: 0.55;
+    cursor: wait;
+}
+
+.status {
+    min-height: 24px;
+    color: #c8b36d;
+}
+
+.hidden {
+    display: none;
+}
+
+.section-heading {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.badge {
+    padding: 7px 10px;
+    border: 1px solid #625b42;
+    border-radius: 999px;
+    font-size: 12px;
+}
+
+.metric-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin: 24px 0;
+}
+
+.metric {
+    padding: 16px;
+    border: 1px solid #37352d;
+    border-radius: 10px;
+    background: #171814;
+}
+
+.metric strong {
+    display: block;
+    margin-top: 6px;
+    font-size: 22px;
+}
+
+.allocation {
+    margin: 10px 0;
+    padding: 14px;
+    border-left: 3px solid #b8aa7c;
+    background: #171814;
+}
+
+.muted {
+    color: #979389;
+}
+
+.error {
+    color: #e3a29b;
+}

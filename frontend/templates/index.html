@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Afterlife AI</title>
+    <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+    <main class="shell">
+        <section class="hero">
+            <p class="eyebrow">RESCUE INVENTORY PLANNING</p>
+            <h1>Afterlife AI</h1>
+            <p class="subtitle">
+                Turn surplus inventory into a traceable rescue plan.
+            </p>
+        </section>
+
+        <section class="panel">
+            <h2>Inventory Analysis</h2>
+            <p>
+                Upload one XLSX inventory workbook. Afterlife AI will validate,
+                triage, score feasible rescue actions, optimize allocation,
+                and return an advisory Rescue Decision Report.
+            </p>
+
+            <form id="analysis-form">
+                <label for="inventory-file">
+                    Inventory workbook
+                </label>
+
+                <input
+                    id="inventory-file"
+                    name="inventory_file"
+                    type="file"
+                    accept=".xlsx"
+                    required
+                >
+
+                <button id="analyze-button" type="submit">
+                    Analyze Inventory
+                </button>
+            </form>
+
+            <p id="status-message" class="status" aria-live="polite"></p>
+        </section>
+
+        <section id="results" class="panel hidden">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">RESCUE DECISION REPORT</p>
+                    <h2>Analysis Result</h2>
+                </div>
+                <span id="scoring-provider" class="badge"></span>
+            </div>
+
+            <div id="metrics" class="metric-grid"></div>
+
+            <h3>Selected Allocations</h3>
+            <div id="allocations"></div>
+
+            <h3>Review Required</h3>
+            <div id="reviews"></div>
+
+            <h3>Limitations</h3>
+            <ul id="limitations"></ul>
+        </section>
+    </main>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
