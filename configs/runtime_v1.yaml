@@ -1,0 +1,41 @@
+config_name: Afterlife AI Runtime Configuration
+version: 1.0.0
+status: MVP_STATIC_DEFAULTS
+
+runtime_mode: LOCAL_SYNCHRONOUS
+
+source_of_truth:
+  feature_schema: docs/contracts/FEATURE_SCHEMA_FINAL_v2.0.yaml
+  domain_rules: docs/evaluation_source_v1.0/domain_rules_v1.0.yaml
+
+claim_boundary: >
+  Operational parameters in this configuration are static MVP defaults
+  for reproducible local demonstration. They are not validated
+  real-world operating thresholds.
+
+model:
+  artifact_path: models/HGB_E_v1.joblib
+  feature_schema_path: docs/contracts/FEATURE_SCHEMA_FINAL_v2.0.yaml
+
+business:
+  business_type: SMALL_RETAIL
+
+triage:
+  policy_version: runtime-triage-v1.0
+
+  declared_surplus_allowed: true
+
+  unsupported_category_behavior: NEEDS_REVIEW
+
+  category_policies:
+    PACKAGED_BEVERAGE:
+      effective_sales_window_days: 10
+      expiry_monitor_threshold_days: 14
+      cold_chain_evidence_required: false
+      provenance: INTEGRATION_001_STATIC_MVP_DEFAULT
+
+    FROZEN_PREPARED_FOOD:
+      effective_sales_window_days: 7
+      expiry_monitor_threshold_days: 7
+      cold_chain_evidence_required: true
+      provenance: INTEGRATION_001_STATIC_MVP_DEFAULT
