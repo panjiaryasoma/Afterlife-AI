@@ -1,0 +1,93 @@
+{
+  "request_id": "REQ-4b22698c09a1434ab5d6c34fdfba2179",
+  "analysis_timestamp": "2026-08-09T20:41:38.700804Z",
+  "feature_schema_version": "2.0.0",
+  "input_snapshot_sha256": "61400124e490b7f8a811aa7ce0777685a7c48e3cf53402eab6dbe921e32c4afd",
+  "ruleset_version": "runtime-triage-v1.0",
+  "capability_snapshot_version": "runtime-capability-v1.0",
+  "objective_policy_version": "runtime-objective-v1.0",
+  "optimization_objective": "MAXIMIZE_RECOVERY_VALUE",
+  "score_provenance": {
+    "provider_name": "M1_HIST_GRADIENT_BOOSTING",
+    "score_type": "MODEL_ESTIMATED_RESCUE_SUCCESS",
+    "source_type": "SYNTHETIC_GENERATED",
+    "fixture_version": null
+  },
+  "model_execution_performed": true,
+  "batch_metrics": {
+    "input_lots": 6,
+    "input_quantity": "102",
+    "protected_quantity": "30",
+    "monitor_quantity": "10",
+    "planning_quantity": "18",
+    "expired_quantity": "12",
+    "review_quantity": "32",
+    "allocated_planning_quantity": "18",
+    "unallocated_planning_quantity": "0",
+    "expected_total_economic_value": "33397.22"
+  },
+  "review_required_lots": [
+    {
+      "source_lot_id": "LOT-005",
+      "review_quantity": "20",
+      "reason_codes": [
+        "UNKNOWN_STORAGE_HISTORY"
+      ]
+    },
+    {
+      "source_lot_id": "LOT-006",
+      "review_quantity": "12",
+      "reason_codes": [
+        "VALID_PARTIAL_USER_DECLARED_SURPLUS"
+      ]
+    }
+  ],
+  "selected_allocations": [
+    {
+      "allocation_id": "ALLOC-003-BUNDLE",
+      "candidate_id": "CAND-003-BUNDLE",
+      "planning_lot_id": "PLAN-LOT-003",
+      "source_lot_id": "LOT-003",
+      "action_type": "BUNDLE",
+      "allocated_quantity": "4",
+      "expected_net_recovery": "5534.93"
+    },
+    {
+      "allocation_id": "ALLOC-003-DISCOUNT",
+      "candidate_id": "CAND-003-DISCOUNT",
+      "planning_lot_id": "PLAN-LOT-003",
+      "source_lot_id": "LOT-003",
+      "action_type": "LOCAL_DISCOUNT",
+      "allocated_quantity": "6",
+      "expected_net_recovery": "7714.52"
+    },
+    {
+      "allocation_id": "ALLOC-006-DISCOUNT",
+      "candidate_id": "CAND-006-DISCOUNT",
+      "planning_lot_id": "PLAN-LOT-006",
+      "source_lot_id": "LOT-006",
+      "action_type": "LOCAL_DISCOUNT",
+      "allocated_quantity": "2",
+      "expected_net_recovery": "2571.92"
+    },
+    {
+      "allocation_id": "ALLOC-006-REPURPOSE",
+      "candidate_id": "CAND-006-REPURPOSE",
+      "planning_lot_id": "PLAN-LOT-006",
+      "source_lot_id": "LOT-006",
+      "action_type": "INTERNAL_REPURPOSE",
+      "allocated_quantity": "6",
+      "expected_net_recovery": "17575.85"
+    }
+  ],
+  "rejected_candidates": [],
+  "fallback_chain": [],
+  "limitations": [
+    "Rescue-success probabilities come from a model trained on the frozen synthetic benchmark and must not be interpreted as validated real-world probabilities.",
+    "Runtime capability, cost, capacity, and pricing parameters are static MVP defaults and are not validated real-world operating thresholds.",
+    "This Rescue Decision Report is advisory only. No discount, repurpose, bundle, transfer, donation, disposal, or other physical action is automatically executed."
+  ],
+  "human_exception_review_required": true,
+  "human_final_approval_status": "PENDING",
+  "execution_performed": false
+}

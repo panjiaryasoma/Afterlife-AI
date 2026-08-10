@@ -51,8 +51,8 @@ Implemented:
 - [x] Dockerfile and Docker Compose runtime
 - [x] Full local regression suite
 - [x] Container end-to-end verification
-- [ ] Final clean-clone verification
-- [ ] Technical MVP Release Candidate evidence package
+- [x] Final clean-clone verification
+- [x] Technical MVP Release Candidate evidence package
 
 ---
 
@@ -203,74 +203,74 @@ User / Browser
     |
     v
 Web Interface
-├── Jinja2
-├── HTML / CSS / JavaScript
-└── JSON Report Download
+â”œâ”€â”€ Jinja2
+â”œâ”€â”€ HTML / CSS / JavaScript
+â””â”€â”€ JSON Report Download
     |
     v
 FastAPI Interface
-├── GET /
-├── GET /health
-└── POST /api/analyze
+â”œâ”€â”€ GET /
+â”œâ”€â”€ GET /health
+â””â”€â”€ POST /api/analyze
     |
     v
 Application Orchestration
-└── run_production_pipeline()
+â””â”€â”€ run_production_pipeline()
     |
     v
 Inventory Intake & Validation
-├── workbook validation
-├── worksheet validation
-├── column validation
-├── row / contract validation
-└── canonical inventory records
+â”œâ”€â”€ workbook validation
+â”œâ”€â”€ worksheet validation
+â”œâ”€â”€ column validation
+â”œâ”€â”€ row / contract validation
+â””â”€â”€ canonical inventory records
     |
     v
 Deterministic Triage
-├── healthy-stock protection
-├── monitor routing
-├── surplus calculation
-├── expired routing
-└── needs-review routing
+â”œâ”€â”€ healthy-stock protection
+â”œâ”€â”€ monitor routing
+â”œâ”€â”€ surplus calculation
+â”œâ”€â”€ expired routing
+â””â”€â”€ needs-review routing
     |
     v
 Rescue Planning
-├── planning-lot construction
-└── candidate generation
+â”œâ”€â”€ planning-lot construction
+â””â”€â”€ candidate generation
     |
     v
 Deterministic Hard Gates
-├── safety
-├── verification
-├── storage compatibility
-├── timing
-├── action eligibility
-├── shelf-life
-├── logistics
-└── capability / coverage
+â”œâ”€â”€ safety
+â”œâ”€â”€ verification
+â”œâ”€â”€ storage compatibility
+â”œâ”€â”€ timing
+â”œâ”€â”€ action eligibility
+â”œâ”€â”€ shelf-life
+â”œâ”€â”€ logistics
+â””â”€â”€ capability / coverage
     |
     v
 Rescue-Success Scoring
-├── HGB-E model provider
-└── deterministic fallback 0.50
+â”œâ”€â”€ HGB-E model provider
+â””â”€â”€ deterministic fallback 0.50
     |
     v
 Expected-Value Calculation
     |
     v
 Global Allocation Optimization
-├── CP-SAT
-├── quantity constraints
-└── shared-capacity constraints
+â”œâ”€â”€ CP-SAT
+â”œâ”€â”€ quantity constraints
+â””â”€â”€ shared-capacity constraints
     |
     v
 Rescue Decision Report
-├── allocation
-├── unallocated quantity
-├── scoring provenance
-├── review flags
-├── limitations
-└── human approval status
+â”œâ”€â”€ allocation
+â”œâ”€â”€ unallocated quantity
+â”œâ”€â”€ scoring provenance
+â”œâ”€â”€ review flags
+â”œâ”€â”€ limitations
+â””â”€â”€ human approval status
 ```
 
 ### Runtime Contracts and Configuration
@@ -279,12 +279,12 @@ The production pipeline is constrained by versioned runtime artifacts rather tha
 
 ```text
 Runtime Contracts & Configuration
-├── configs/runtime_v1.yaml
-├── docs/contracts/FEATURE_SCHEMA_FINAL_v2.0.yaml
-├── docs/evaluation_source_v1.0/domain_rules_v1.0.yaml
-├── docs/evaluation_source_v1.0/evaluation_spec_v1.0.yaml
-├── models/HGB_E_v1.joblib
-└── uv.lock
+â”œâ”€â”€ configs/runtime_v1.yaml
+â”œâ”€â”€ docs/contracts/FEATURE_SCHEMA_FINAL_v2.0.yaml
+â”œâ”€â”€ docs/evaluation_source_v1.0/domain_rules_v1.0.yaml
+â”œâ”€â”€ docs/evaluation_source_v1.0/evaluation_spec_v1.0.yaml
+â”œâ”€â”€ models/HGB_E_v1.joblib
+â””â”€â”€ uv.lock
 ```
 
 Application core berada di:
