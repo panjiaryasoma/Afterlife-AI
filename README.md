@@ -203,115 +203,113 @@ User / Browser
     |
     v
 Web Interface
-â”œâ”€â”€ Jinja2
-â”œâ”€â”€ HTML / CSS / JavaScript
-â””â”€â”€ JSON Report Download
+|-- Jinja2
+|-- HTML / CSS / JavaScript
+`-- JSON Report Download
     |
     v
 FastAPI Interface
-â”œâ”€â”€ GET /
-â”œâ”€â”€ GET /health
-â””â”€â”€ POST /api/analyze
+|-- GET /
+|-- GET /health
+`-- POST /api/analyze
     |
     v
 Application Orchestration
-â””â”€â”€ run_production_pipeline()
+`-- run_production_pipeline()
     |
     v
 Inventory Intake & Validation
-â”œâ”€â”€ workbook validation
-â”œâ”€â”€ worksheet validation
-â”œâ”€â”€ column validation
-â”œâ”€â”€ row / contract validation
-â””â”€â”€ canonical inventory records
+|-- workbook validation
+|-- worksheet validation
+|-- column validation
+|-- row / contract validation
+`-- canonical inventory records
     |
     v
 Deterministic Triage
-â”œâ”€â”€ healthy-stock protection
-â”œâ”€â”€ monitor routing
-â”œâ”€â”€ surplus calculation
-â”œâ”€â”€ expired routing
-â””â”€â”€ needs-review routing
+|-- healthy-stock protection
+|-- monitor routing
+|-- surplus calculation
+|-- expired routing
+`-- needs-review routing
     |
     v
 Rescue Planning
-â”œâ”€â”€ planning-lot construction
-â””â”€â”€ candidate generation
+|-- planning-lot construction
+`-- candidate generation
     |
     v
 Deterministic Hard Gates
-â”œâ”€â”€ safety
-â”œâ”€â”€ verification
-â”œâ”€â”€ storage compatibility
-â”œâ”€â”€ timing
-â”œâ”€â”€ action eligibility
-â”œâ”€â”€ shelf-life
-â”œâ”€â”€ logistics
-â””â”€â”€ capability / coverage
+|-- safety
+|-- verification
+|-- storage compatibility
+|-- timing
+|-- action eligibility
+|-- shelf-life
+|-- logistics
+`-- capability / coverage
     |
     v
 Rescue-Success Scoring
-â”œâ”€â”€ HGB-E model provider
-â””â”€â”€ deterministic fallback 0.50
+|-- HGB-E model provider
+`-- deterministic fallback 0.50
     |
     v
 Expected-Value Calculation
     |
     v
 Global Allocation Optimization
-â”œâ”€â”€ CP-SAT
-â”œâ”€â”€ quantity constraints
-â””â”€â”€ shared-capacity constraints
+|-- CP-SAT
+|-- quantity constraints
+`-- shared-capacity constraints
     |
     v
 Rescue Decision Report
-â”œâ”€â”€ allocation
-â”œâ”€â”€ unallocated quantity
-â”œâ”€â”€ scoring provenance
-â”œâ”€â”€ review flags
-â”œâ”€â”€ limitations
-â””â”€â”€ human approval status
+|-- allocation
+|-- unallocated quantity
+|-- scoring provenance
+|-- review flags
+|-- limitations
+`-- human approval status
 ```
 
 ### Runtime Contracts and Configuration
 
-The production pipeline is constrained by versioned runtime artifacts rather than ad-hoc values embedded in the HTTP or UI layer:
-
 ```text
 Runtime Contracts & Configuration
-â”œâ”€â”€ configs/runtime_v1.yaml
-â”œâ”€â”€ docs/contracts/FEATURE_SCHEMA_FINAL_v2.0.yaml
-â”œâ”€â”€ docs/evaluation_source_v1.0/domain_rules_v1.0.yaml
-â”œâ”€â”€ docs/evaluation_source_v1.0/evaluation_spec_v1.0.yaml
-â”œâ”€â”€ models/HGB_E_v1.joblib
-â””â”€â”€ uv.lock
+|-- configs/runtime_v1.yaml
+|-- docs/contracts/FEATURE_SCHEMA_FINAL_v2.0.yaml
+|-- docs/evaluation_source_v1.0/domain_rules_v1.0.yaml
+|-- docs/evaluation_source_v1.0/evaluation_spec_v1.0.yaml
+|-- models/HGB_E_v1.joblib
+`-- uv.lock
 ```
 
-Application core berada di:
+Application core:
 
 ```text
 src/afterlife_ai/
 ```
 
-Production orchestration entry point berada di:
+Production orchestration:
 
 ```text
 src/afterlife_ai/pipeline/application.py
 ```
 
-HTTP entry point berada di:
+HTTP entry point:
 
 ```text
 backend/main.py
 ```
 
-HTTP analysis route berada di:
+HTTP analysis route:
 
 ```text
 backend/api/routes.py
 ```
 
-Frontend berada di:
+Frontend:
 
 ```text
 frontend/templates/
@@ -319,7 +317,6 @@ frontend/static/
 ```
 
 ---
-
 ## Technology Stack
 
 ```yaml
