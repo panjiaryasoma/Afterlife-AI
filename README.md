@@ -370,10 +370,14 @@ Afterlife-AI/
 |-- src/
 |   `-- afterlife_ai/
 |       |-- contracts/
+|       |-- evaluation/
 |       |-- intake/
+|       |-- integration/
+|       |-- modeling/
 |       |-- pipeline/
 |       |-- planner/
 |       |-- scoring/
+|       |-- synthetic/
 |       `-- triage/
 |
 |-- tests/
