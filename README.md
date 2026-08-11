@@ -619,7 +619,7 @@ Important test coverage includes:
 - web UI smoke test;
 - JSON report download behavior.
 
-Known third-party warnings currently include deprecation warnings emitted by the installed NumPy/joblib combination when loading the trained model artifact, plus a Starlette TestClient deprecation warning. These warnings do not currently cause regression-test failures.
+The current locked dependency set has been re-verified from a fresh environment. The previous Starlette TestClient and NumPy/joblib model-loading deprecation warnings are no longer reproducible. A fresh locked-environment regression run also passes with `DeprecationWarning` promoted to errors.
 
 ---
 
@@ -680,7 +680,6 @@ Technical MVP limitations:
 - an infeasible optimization result produces no automatic rescue allocation and requires human exception review;
 - no automatic retraining or online learning;
 - runtime is designed for one synchronous analysis request;
-- third-party NumPy/joblib deprecation warnings remain during model loading;
 - UI is functional MVP styling, not final competition polish.
 
 These limitations are disclosed intentionally and should not be interpreted as validated real-world capabilities.
