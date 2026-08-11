@@ -16,6 +16,7 @@ from afterlife_ai.contracts.enums import (
     ApprovalStatus,
     ModelScoringStatus,
     OptimizationObjective,
+    SolverStatus,
     SourceType,
 )
 from afterlife_ai.contracts.inventory import RawInventoryLot
@@ -291,7 +292,14 @@ def _build_report(
             "rejection_reason_codes": (
                 list(candidate.rejection_reason_codes)
                 if candidate.rejection_reason_codes
-                else ["OPTIMIZER_NOT_SELECTED"]
+                else (
+                    ["OPTIMIZER_INFEASIBLE"]
+                    if (
+                        optimization_result.solver_status
+                        is SolverStatus.INFEASIBLE
+                    )
+                    else ["OPTIMIZER_NOT_SELECTED"]
+                )
             ),
         }
         for candidate in valued_candidates
@@ -377,6 +385,19 @@ def _build_report(
     ) = _score_report_metadata(
         valued_candidates
     )
+    if (
+        optimization_result.solver_status
+        is SolverStatus.INFEASIBLE
+    ):
+        limitations = [
+            *limitations,
+            (
+                "Global optimization found no feasible "
+                "allocation for the current planning "
+                "quantities and constraints. No rescue "
+                "allocation was automatically selected."
+            ),
+        ]
 
     input_hash = sha256(
         workbook_path.read_bytes()
@@ -401,6 +422,9 @@ def _build_report(
         ),
         optimization_objective=(
             OptimizationObjective.MAXIMIZE_RECOVERY_VALUE
+        ),
+        optimization_solver_status=(
+            optimization_result.solver_status
         ),
         score_provenance=score_provenance,
         model_execution_performed=(
@@ -434,8 +458,12 @@ def _build_report(
         ),
         fallback_chain=fallback_chain,
         limitations=limitations,
-        human_exception_review_required=bool(
-            review_required_lots
+        human_exception_review_required=(
+            bool(review_required_lots)
+            or (
+                optimization_result.solver_status
+                is SolverStatus.INFEASIBLE
+            )
         ),
         human_final_approval_status=(
             ApprovalStatus.PENDING

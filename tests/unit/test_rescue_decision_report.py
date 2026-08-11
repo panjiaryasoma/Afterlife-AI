@@ -7,6 +7,7 @@ from afterlife_ai.contracts.enums import (
     ActionType,
     ApprovalStatus,
     OptimizationObjective,
+    SolverStatus,
 )
 from afterlife_ai.planner.report import (
     build_rescue_decision_report,
@@ -27,6 +28,7 @@ def build_report():
         capability_snapshot_version="INTEGRATION-001-fixture-v1",
         objective_policy_version="BALANCED_FIXTURE_v1",
         optimization_objective=OptimizationObjective.BALANCED,
+        optimization_solver_status=SolverStatus.OPTIMAL,
         score_provenance={
             "provider_name": "FixtureScoreProvider",
             "score_type": "FIXTURE_EXPECTED_SCORE",
@@ -231,6 +233,7 @@ def test_report_rejects_broken_quantity_reconciliation() -> None:
             capability_snapshot_version="INTEGRATION-001-fixture-v1",
             objective_policy_version="BALANCED_FIXTURE_v1",
             optimization_objective=OptimizationObjective.BALANCED,
+            optimization_solver_status=SolverStatus.OPTIMAL,
             score_provenance={
                 "provider_name": "FixtureScoreProvider",
                 "score_type": "FIXTURE_EXPECTED_SCORE",
@@ -309,6 +312,11 @@ def test_report_contains_contract_versions() -> None:
         is OptimizationObjective.BALANCED
     )
 
+    assert (
+        report.optimization_solver_status
+        is SolverStatus.OPTIMAL
+    )
+
 
 def test_report_marks_that_no_trained_model_was_executed() -> None:
     report = build_report()
@@ -329,6 +337,7 @@ def test_report_requires_valid_sha256_snapshot_hash() -> None:
             capability_snapshot_version="fixture-v1",
             objective_policy_version="BALANCED_FIXTURE_v1",
             optimization_objective=OptimizationObjective.BALANCED,
+            optimization_solver_status=SolverStatus.OPTIMAL,
             score_provenance={
                 "provider_name": "FixtureScoreProvider",
                 "score_type": "FIXTURE_EXPECTED_SCORE",

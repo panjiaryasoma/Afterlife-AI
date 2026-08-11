@@ -2,6 +2,8 @@
 from decimal import Decimal
 from pathlib import Path
 
+from pytest import MonkeyPatch
+
 from afterlife_ai.contracts.enums import (
     ApprovalStatus,
     OptimizationObjective,
@@ -10,6 +12,7 @@ from afterlife_ai.contracts.enums import (
 from afterlife_ai.pipeline.application import (
     run_production_pipeline,
 )
+from afterlife_ai.planner.optimizer import OptimizationResult
 
 FIXTURE_DIR = (
     Path(__file__).resolve().parents[1]
@@ -44,6 +47,11 @@ def test_one_xlsx_runs_to_rescue_decision_report() -> None:
         SolverStatus.OPTIMAL,
         SolverStatus.FEASIBLE,
     }
+
+    assert (
+        report.optimization_solver_status
+        is result.optimization_result.solver_status
+    )
 
     assert report.request_id == "PRODUCTION-TEST-001"
     assert report.feature_schema_version == "2.0.0"
@@ -148,3 +156,89 @@ def test_one_xlsx_runs_to_rescue_decision_report() -> None:
         assert report.model_execution_performed is True
     else:
         assert report.model_execution_performed is False
+
+
+def test_infeasible_optimizer_is_explicit_in_rescue_report(
+    monkeypatch: MonkeyPatch,
+) -> None:
+    def fake_optimizer(
+        *,
+        candidates: object,
+        planning_lots: object,
+        config: object,
+    ) -> OptimizationResult:
+        del candidates, config
+
+        planning_quantities = {
+            lot.planning_lot_id: lot.planning_quantity
+            for lot in planning_lots
+        }
+
+        return OptimizationResult(
+            solver_status=SolverStatus.INFEASIBLE,
+            objective_value=Decimal("0"),
+            allocations=[],
+            unallocated_quantities=planning_quantities,
+        )
+
+    monkeypatch.setattr(
+        (
+            "afterlife_ai.pipeline.application."
+            "optimize_production_candidates"
+        ),
+        fake_optimizer,
+    )
+
+    result = run_production_pipeline(
+        workbook_path=WORKBOOK_PATH,
+        runtime_config_path=RUNTIME_CONFIG_PATH,
+        analysis_at=datetime(
+            2026,
+            8,
+            5,
+            tzinfo=UTC,
+        ),
+        request_id="PRODUCTION-INFEASIBLE-TEST",
+    )
+
+    report = result.report
+
+    assert (
+        result.optimization_result.solver_status
+        is SolverStatus.INFEASIBLE
+    )
+
+    assert (
+        report.optimization_solver_status
+        is SolverStatus.INFEASIBLE
+    )
+
+    assert report.selected_allocations == []
+
+    assert (
+        report.batch_metrics.allocated_planning_quantity
+        == Decimal("0")
+    )
+
+    assert (
+        report.batch_metrics.unallocated_planning_quantity
+        == report.batch_metrics.planning_quantity
+    )
+
+    assert report.rejected_candidates
+
+    assert all(
+        item.rejection_reason_codes
+        == ["OPTIMIZER_INFEASIBLE"]
+        for item in report.rejected_candidates
+    )
+
+    assert any(
+        "no feasible allocation" in limitation.lower()
+        for limitation in report.limitations
+    )
+
+    assert (
+        report.human_exception_review_required
+        is True
+    )

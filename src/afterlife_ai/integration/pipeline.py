@@ -1092,6 +1092,9 @@ def run_integration_001(
             optimization_objective=(
                 OptimizationObjective.BALANCED
             ),
+            optimization_solver_status=(
+                optimization_result.solver_status
+            ),
             score_provenance={
                 "provider_name": (
                     "FixtureScoreProvider"

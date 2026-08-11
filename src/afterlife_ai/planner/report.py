@@ -15,6 +15,7 @@ from afterlife_ai.contracts.enums import (
     ActionType,
     ApprovalStatus,
     OptimizationObjective,
+    SolverStatus,
     SourceType,
 )
 
@@ -125,6 +126,7 @@ class RescueDecisionReport(BaseModel):
     capability_snapshot_version: str
     objective_policy_version: str
     optimization_objective: OptimizationObjective
+    optimization_solver_status: SolverStatus
 
     score_provenance: ReportScoreProvenance
     model_execution_performed: bool
@@ -240,6 +242,7 @@ def build_rescue_decision_report(
     capability_snapshot_version: str,
     objective_policy_version: str,
     optimization_objective: OptimizationObjective,
+    optimization_solver_status: SolverStatus,
     score_provenance: dict[str, Any],
     model_execution_performed: bool,
     analysis_timestamp: datetime,
@@ -266,6 +269,9 @@ def build_rescue_decision_report(
         ),
         objective_policy_version=objective_policy_version,
         optimization_objective=optimization_objective,
+        optimization_solver_status=(
+            optimization_solver_status
+        ),
         score_provenance=ReportScoreProvenance(
             **score_provenance
         ),
