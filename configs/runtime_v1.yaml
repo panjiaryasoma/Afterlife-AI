@@ -58,16 +58,6 @@ capabilities:
     DONATION: false
     SAFE_DISPOSAL: true
 
-  internal_repurpose:
-    maximum_quantity: 6
-    estimated_completion_hours: 4
-
-  bundle:
-    maximum_quantity: 4
-    estimated_completion_hours: 2
-    supported_categories:
-      - PACKAGED_BEVERAGE
-
   local_discount:
     price_fraction_of_normal: 0.75
     estimated_completion_hours: 1
