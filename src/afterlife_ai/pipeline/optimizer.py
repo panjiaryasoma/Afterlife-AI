@@ -5,10 +5,18 @@ from __future__ import annotations
 from decimal import Decimal
 
 from afterlife_ai.contracts.candidate import CandidateAction
-from afterlife_ai.contracts.enums import ActionType
+from afterlife_ai.contracts.enums import (
+    ActionType,
+    SolverStatus,
+)
 from afterlife_ai.contracts.planning import SurplusPlanningLot
 from afterlife_ai.pipeline.runtime_config import RuntimeConfig
+from afterlife_ai.planner.fallback import (
+    FallbackResult,
+    allocate_with_deterministic_fallback,
+)
 from afterlife_ai.planner.optimizer import (
+    OptimizationAllocation,
     OptimizationResult,
     optimize_with_cp_sat,
 )
@@ -69,6 +77,43 @@ def _shared_action_capacities(
 
     return capacities
 
+def _fallback_result_to_optimization_result(
+    fallback_result: FallbackResult,
+) -> OptimizationResult:
+    """Adapt deterministic fallback output to production optimizer contract."""
+
+    return OptimizationResult(
+        solver_status=fallback_result.solver_status,
+        objective_value=fallback_result.objective_value,
+        allocations=[
+            OptimizationAllocation(
+                allocation_id=allocation.allocation_id,
+                candidate_id=allocation.candidate_id,
+                planning_lot_id=(
+                    allocation.planning_lot_id
+                ),
+                action_type=allocation.action_type,
+                allocated_quantity=(
+                    allocation.allocated_quantity
+                ),
+                expected_value_per_unit=(
+                    allocation.expected_value_per_unit
+                ),
+                expected_net_recovery=(
+                    allocation.expected_net_recovery
+                ),
+                solver_status=allocation.solver_status,
+                binding_constraint_codes=(
+                    allocation.binding_constraint_codes
+                ),
+            )
+            for allocation in fallback_result.allocations
+        ],
+        unallocated_quantities=(
+            fallback_result.unallocated_quantities
+        ),
+    )
+
 
 def optimize_production_candidates(
     *,
@@ -90,12 +135,37 @@ def optimize_production_candidates(
             "Production planning quantity tidak boleh negatif."
         )
 
-    return optimize_with_cp_sat(
+    shared_action_capacities = (
+        _shared_action_capacities(config)
+    )
+
+    cp_sat_result = optimize_with_cp_sat(
         candidates=candidates,
         planning_quantities=planning_quantities,
         shared_action_capacities=(
-            _shared_action_capacities(config)
+            shared_action_capacities
         ),
+    )
+
+    if cp_sat_result.solver_status in {
+        SolverStatus.OPTIMAL,
+        SolverStatus.FEASIBLE,
+        SolverStatus.INFEASIBLE,
+    }:
+        return cp_sat_result
+
+    fallback_result = (
+        allocate_with_deterministic_fallback(
+            candidates=candidates,
+            planning_quantities=planning_quantities,
+            shared_action_capacities=(
+                shared_action_capacities
+            ),
+        )
+    )
+
+    return _fallback_result_to_optimization_result(
+        fallback_result
     )
 
 
