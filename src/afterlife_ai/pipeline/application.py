@@ -278,17 +278,28 @@ def _build_report(
         for allocation in optimization_result.allocations
     ]
 
+    selected_candidate_ids = {
+        allocation.candidate_id
+        for allocation in optimization_result.allocations
+    }
+
     rejected_candidates = [
         {
             "candidate_id": candidate.candidate_id,
             "planning_lot_id": candidate.planning_lot_id,
             "action_type": candidate.action_type,
-            "rejection_reason_codes": list(
-                candidate.rejection_reason_codes
+            "rejection_reason_codes": (
+                list(candidate.rejection_reason_codes)
+                if candidate.rejection_reason_codes
+                else ["OPTIMIZER_NOT_SELECTED"]
             ),
         }
         for candidate in valued_candidates
-        if candidate.rejection_reason_codes
+        if (
+            candidate.rejection_reason_codes
+            or candidate.candidate_id
+            not in selected_candidate_ids
+        )
     ]
 
     review_required_lots = (

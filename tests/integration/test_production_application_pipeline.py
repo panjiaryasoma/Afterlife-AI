@@ -91,6 +91,51 @@ def test_one_xlsx_runs_to_rescue_decision_report() -> None:
         == metrics.allocated_planning_quantity
     )
 
+    selected_candidate_ids = {
+        item.candidate_id
+        for item in report.selected_allocations
+    }
+
+    reported_alternative_ids = {
+        item.candidate_id
+        for item in report.rejected_candidates
+    }
+
+    valued_candidate_ids = {
+        candidate.candidate_id
+        for candidate in result.valued_candidates
+    }
+
+    assert (
+        selected_candidate_ids
+        | reported_alternative_ids
+        == valued_candidate_ids
+    )
+
+    assert (
+        selected_candidate_ids
+        & reported_alternative_ids
+        == set()
+    )
+
+    candidate_by_id = {
+        candidate.candidate_id: candidate
+        for candidate in result.valued_candidates
+    }
+
+    for item in report.rejected_candidates:
+        candidate = candidate_by_id[item.candidate_id]
+
+        if candidate.rejection_reason_codes:
+            assert (
+                item.rejection_reason_codes
+                == candidate.rejection_reason_codes
+            )
+        else:
+            assert item.rejection_reason_codes == [
+                "OPTIMIZER_NOT_SELECTED"
+            ]
+
     assert report.score_provenance.provider_name in {
         "M1_HIST_GRADIENT_BOOSTING",
         "DETERMINISTIC_FALLBACK_V1",
