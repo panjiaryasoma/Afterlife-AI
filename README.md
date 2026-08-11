@@ -1,6 +1,6 @@
 # Afterlife AI
 
-> AI-assisted rescue inventory planning for retail and F&B surplus.
+AI-assisted rescue inventory planning for retail and F&B surplus.
 
 Afterlife AI adalah decision-support system untuk memisahkan stok normal dari inventori yang perlu ditangani, mengevaluasi opsi rescue yang aman dan feasible, memberi rescue-success score pada kandidat yang lolos hard gate, lalu mengoptimalkan alokasi inventori menjadi satu Rescue Decision Report.
 
@@ -44,6 +44,8 @@ Implemented:
 - [x] Deterministic scoring fallback
 - [x] Expected-value calculation
 - [x] Global CP-SAT allocation optimizer
+- [x] Deterministic optimizer fallback for non-definitive solver outcomes
+- [x] Explicit infeasible-optimizer reporting
 - [x] Rescue Decision Report
 - [x] FastAPI HTTP interface
 - [x] Minimal Jinja2 web UI
@@ -129,6 +131,7 @@ Satu `Rescue Decision Report` yang mencakup:
 - ruleset version;
 - capability snapshot version;
 - optimization objective;
+- optimization solver status;
 - scoring provenance;
 - inventory batch metrics;
 - selected allocations;
@@ -171,6 +174,28 @@ Fallback tidak boleh:
 - melewati hard safety gates;
 - mengubah candidate `BLOCKED` menjadi `ALLOWED`;
 - membuat klaim probabilitas dunia nyata.
+
+### Optimization Runtime Semantics
+
+CP-SAT tetap menjadi primary global allocation optimizer.
+
+Jika solver menghasilkan outcome non-definitif yang tidak dapat digunakan sebagai keputusan akhir, production optimizer adapter dapat menggunakan deterministic allocation fallback.
+
+Fallback optimizer tetap wajib menjaga:
+
+- quantity conservation;
+- shared-capacity constraints;
+- hard-gate decisions;
+- blocked-candidate exclusion.
+
+Outcome `INFEASIBLE` tidak diubah menjadi fallback success. Jika CP-SAT menyatakan problem infeasible:
+
+- solver status tetap dilaporkan sebagai `INFEASIBLE`;
+- tidak ada rescue allocation yang dipilih;
+- planning quantity tetap tercatat sebagai unallocated;
+- human exception review diwajibkan.
+
+Dengan demikian, `OPTIMIZER_INFEASIBLE` dibedakan dari kandidat feasible yang sekadar tidak dipilih optimizer.
 
 ---
 
@@ -261,12 +286,14 @@ Expected-Value Calculation
 Global Allocation Optimization
 |-- CP-SAT
 |-- quantity constraints
-`-- shared-capacity constraints
+|-- shared-capacity constraints
+`-- deterministic fallback for non-definitive outcomes
     |
     v
 Rescue Decision Report
 |-- allocation
 |-- unallocated quantity
+|-- optimization solver status
 |-- scoring provenance
 |-- review flags
 |-- limitations
@@ -317,6 +344,7 @@ frontend/static/
 ```
 
 ---
+
 ## Technology Stack
 
 ```yaml
@@ -338,6 +366,7 @@ frontend:
   - vanilla JavaScript
 testing: pytest
 linting: Ruff
+type_checking: mypy
 containerization:
   - Docker
   - Docker Compose
@@ -408,7 +437,7 @@ uv
 Install locked dependencies:
 
 ```powershell
-uv sync
+uv sync --frozen
 ```
 
 Run the application locally:
@@ -419,21 +448,15 @@ uv run uvicorn backend.main:app --reload
 
 Open:
 
-```text
-http://127.0.0.1:8000
-```
+<http://127.0.0.1:8000>
 
 API documentation:
 
-```text
-http://127.0.0.1:8000/docs
-```
+<http://127.0.0.1:8000/docs>
 
 Health endpoint:
 
-```text
-http://127.0.0.1:8000/health
-```
+<http://127.0.0.1:8000/health>
 
 ---
 
@@ -545,20 +568,32 @@ uv run pytest -q
 Latest local Technical MVP regression:
 
 ```text
-287 passed
+294 passed
 0 failed
 ```
 
-Run production lint scope:
+Run repository lint scope:
 
 ```powershell
-uv run ruff check src/afterlife_ai backend tests/unit tests/integration tests/acceptance tests/api
+uv run ruff check src tests backend scripts
 ```
 
 Latest result:
 
 ```text
 All checks passed!
+```
+
+Run production type checking:
+
+```powershell
+uv run mypy src backend
+```
+
+Latest result:
+
+```text
+Success: no issues found in 68 source files
 ```
 
 Important test coverage includes:
@@ -576,6 +611,8 @@ Important test coverage includes:
 - expected-value calculation;
 - shared-capacity optimization;
 - quantity conservation;
+- deterministic optimizer fallback;
+- infeasible optimizer semantics;
 - application end-to-end pipeline;
 - API happy path;
 - API invalid upload;
@@ -636,10 +673,11 @@ Technical MVP limitations:
 - real-world probability calibration has not been validated;
 - runtime capability, cost, capacity, and price parameters are static MVP defaults;
 - business adoption and willingness-to-pay remain unvalidated;
-- current Partner Demand Registry behavior is not a live marketplace;
+- Partner Demand Registry is not currently wired into the production runtime; partner-demand rules and fixtures are retained as preproduction and evaluation evidence;
 - no authentication or multi-user isolation;
 - no server-side history or database;
 - no automatic action execution;
+- an infeasible optimization result produces no automatic rescue allocation and requires human exception review;
 - no automatic retraining or online learning;
 - runtime is designed for one synchronous analysis request;
 - third-party NumPy/joblib deprecation warnings remain during model loading;
@@ -676,7 +714,7 @@ Local path:
 
 ```text
 clone repository
--> uv sync
+-> uv sync --frozen
 -> uv run pytest -q
 -> uv run uvicorn backend.main:app --reload
 -> upload one XLSX
@@ -697,6 +735,28 @@ Dependency versions are locked in:
 
 ```text
 uv.lock
+```
+
+Clean-clone verification at the current Technical MVP checkpoint confirms:
+
+```text
+uv sync --frozen -> PASS
+required artifacts -> PASS
+ruff -> PASS
+mypy -> PASS
+pytest -> 294 passed
+working tree -> clean
+```
+
+Docker Compose verification confirms:
+
+```text
+fresh build -> PASS
+service startup -> PASS
+healthcheck -> healthy
+GET /health -> 200
+GET / -> 200
+clean shutdown -> PASS
 ```
 
 ---
