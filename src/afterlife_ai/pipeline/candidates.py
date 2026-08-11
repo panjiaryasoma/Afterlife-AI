@@ -60,24 +60,34 @@ def _build_action_specs(
         config,
         ActionType.INTERNAL_REPURPOSE,
     ):
-        capability = config.capabilities.internal_repurpose
+        internal_repurpose_capability = (
+            config.capabilities.internal_repurpose
+        )
 
         specs.append(
             CandidateActionSpec(
                 action_type=ActionType.INTERNAL_REPURPOSE,
-                maximum_quantity=capability.maximum_quantity,
-                destination_id=capability.destination_id,
-                destination_type=capability.destination_type,
+                maximum_quantity=(
+                    internal_repurpose_capability.maximum_quantity
+                ),
+                destination_id=(
+                    internal_repurpose_capability.destination_id
+                ),
+                destination_type=(
+                    internal_repurpose_capability.destination_type
+                ),
                 offered_or_selling_price_per_unit=(
-                    capability.selling_price_per_unit
+                    internal_repurpose_capability.selling_price_per_unit
                 ),
                 direct_action_cost=(
-                    capability.direct_action_cost
+                    internal_repurpose_capability.direct_action_cost
                 ),
                 estimated_completion_hours=(
-                    capability.estimated_completion_hours
+                    internal_repurpose_capability.estimated_completion_hours
                 ),
-                available_capacity=capability.maximum_quantity,
+                available_capacity=(
+                    internal_repurpose_capability.maximum_quantity
+                ),
             )
         )
 
@@ -91,24 +101,32 @@ def _build_action_specs(
         and planning_lot.sku
         in config.capabilities.bundle.supported_source_skus
     ):
-        capability = config.capabilities.bundle
+        bundle_capability = config.capabilities.bundle
 
         specs.append(
             CandidateActionSpec(
                 action_type=ActionType.BUNDLE,
-                maximum_quantity=capability.maximum_quantity,
-                destination_id=capability.destination_id,
-                destination_type=capability.destination_type,
+                maximum_quantity=(
+                    bundle_capability.maximum_quantity
+                ),
+                destination_id=(
+                    bundle_capability.destination_id
+                ),
+                destination_type=(
+                    bundle_capability.destination_type
+                ),
                 offered_or_selling_price_per_unit=(
-                    capability.selling_price_per_unit
+                    bundle_capability.selling_price_per_unit
                 ),
                 direct_action_cost=(
-                    capability.direct_action_cost
+                    bundle_capability.direct_action_cost
                 ),
                 estimated_completion_hours=(
-                    capability.estimated_completion_hours
+                    bundle_capability.estimated_completion_hours
                 ),
-                available_capacity=capability.maximum_quantity,
+                available_capacity=(
+                    bundle_capability.maximum_quantity
+                ),
             )
         )
 
@@ -116,14 +134,22 @@ def _build_action_specs(
         config,
         ActionType.LOCAL_DISCOUNT,
     ):
-        capability = config.capabilities.local_discount
+        local_discount_capability = (
+            config.capabilities.local_discount
+        )
 
         specs.append(
             CandidateActionSpec(
                 action_type=ActionType.LOCAL_DISCOUNT,
-                maximum_quantity=planning_lot.planning_quantity,
-                destination_id=capability.destination_id,
-                destination_type=capability.destination_type,
+                maximum_quantity=(
+                    planning_lot.planning_quantity
+                ),
+                destination_id=(
+                    local_discount_capability.destination_id
+                ),
+                destination_type=(
+                    local_discount_capability.destination_type
+                ),
                 offered_or_selling_price_per_unit=(
                     _local_discount_price(
                         planning_lot,
@@ -131,12 +157,14 @@ def _build_action_specs(
                     )
                 ),
                 direct_action_cost=(
-                    capability.direct_action_cost
+                    local_discount_capability.direct_action_cost
                 ),
                 estimated_completion_hours=(
-                    capability.estimated_completion_hours
+                    local_discount_capability.estimated_completion_hours
                 ),
-                available_capacity=planning_lot.planning_quantity,
+                available_capacity=(
+                    planning_lot.planning_quantity
+                ),
             )
         )
 
@@ -147,17 +175,23 @@ def _build_action_specs(
             ActionType.SAFE_DISPOSAL,
         )
     ):
-        capability = config.capabilities.safe_disposal
+        safe_disposal_capability = (
+            config.capabilities.safe_disposal
+        )
 
         specs.append(
             CandidateActionSpec(
                 action_type=ActionType.SAFE_DISPOSAL,
-                maximum_quantity=planning_lot.planning_quantity,
+                maximum_quantity=(
+                    planning_lot.planning_quantity
+                ),
                 offered_or_selling_price_per_unit=ZERO,
                 estimated_completion_hours=(
-                    capability.estimated_completion_hours
+                    safe_disposal_capability.estimated_completion_hours
                 ),
-                available_capacity=planning_lot.planning_quantity,
+                available_capacity=(
+                    planning_lot.planning_quantity
+                ),
             )
         )
 
