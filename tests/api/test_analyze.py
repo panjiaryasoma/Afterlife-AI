@@ -136,3 +136,56 @@ def test_analyze_rejects_corrupt_xlsx() -> None:
     assert response.json()["detail"] == (
         "XLSX tidak valid atau rusak."
     )
+
+def test_analyze_accepts_dynamic_optimizer_request_context() -> None:
+    with WORKBOOK_PATH.open("rb") as handle:
+        response = client.post(
+            "/api/analyze",
+            data={
+                "optimization_objective": "BALANCED",
+                "max_logistics_budget": "30000",
+                "minimum_expected_rescue_ratio": "0.50",
+            },
+            files={
+                "inventory_file": (
+                    "inventory.xlsx",
+                    handle,
+                    XLSX_MIME_TYPE,
+                )
+            },
+        )
+
+    assert response.status_code == 200
+
+    payload = response.json()
+
+    assert (
+        payload["optimization_objective"]
+        == "BALANCED"
+    )   
+
+def test_analyze_rejects_balanced_without_minimum_rescue_ratio() -> None:
+    with WORKBOOK_PATH.open("rb") as handle:
+        response = client.post(
+            "/api/analyze",
+            data={
+                "optimization_objective": "BALANCED",
+            },
+            files={
+                "inventory_file": (
+                    "inventory.xlsx",
+                    handle,
+                    XLSX_MIME_TYPE,
+                )
+            },
+        )
+
+    assert response.status_code == 422
+
+    payload = response.json()
+
+    assert any(
+        "minimum_expected_rescue_ratio"
+        in str(error)
+        for error in payload["detail"]
+    )

@@ -1,9 +1,11 @@
 ﻿from datetime import UTC, datetime
 from decimal import Decimal
 from pathlib import Path
+from typing import Any
 
 from pytest import MonkeyPatch
 
+import afterlife_ai.pipeline.application as application_module
 from afterlife_ai.contracts.enums import (
     ApprovalStatus,
     OptimizationObjective,
@@ -166,6 +168,7 @@ def test_infeasible_optimizer_is_explicit_in_rescue_report(
         candidates: object,
         planning_lots: object,
         config: object,
+        **_: object,
     ) -> OptimizationResult:
         del candidates, config
 
@@ -241,4 +244,67 @@ def test_infeasible_optimizer_is_explicit_in_rescue_report(
     assert (
         report.human_exception_review_required
         is True
+    )
+
+
+def test_production_pipeline_forwards_dynamic_optimizer_request_context(
+    monkeypatch: MonkeyPatch,
+) -> None:
+    captured_kwargs: dict[str, Any] = {}
+
+    real_optimizer = (
+        application_module.optimize_production_candidates
+    )
+
+    def spy_optimizer(
+        **kwargs: Any,
+    ) -> OptimizationResult:
+        captured_kwargs.update(kwargs)
+        return real_optimizer(**kwargs)
+
+    monkeypatch.setattr(
+        application_module,
+        "optimize_production_candidates",
+        spy_optimizer,
+    )
+
+    result = run_production_pipeline(
+        workbook_path=WORKBOOK_PATH,
+        runtime_config_path=RUNTIME_CONFIG_PATH,
+        analysis_at=datetime(
+            2026,
+            8,
+            5,
+            tzinfo=UTC,
+        ),
+        request_id="PRODUCTION-CONTEXT-001",
+        optimization_objective=(
+            OptimizationObjective.BALANCED
+        ),
+        max_logistics_budget=Decimal("30000"),
+        minimum_expected_rescue_ratio=(
+            Decimal("0.50")
+        ),
+    )
+
+    assert (
+        captured_kwargs["optimization_objective"]
+        is OptimizationObjective.BALANCED
+    )
+
+    assert (
+        captured_kwargs["max_logistics_budget"]
+        == Decimal("30000")
+    )
+
+    assert (
+        captured_kwargs[
+            "minimum_expected_rescue_ratio"
+        ]
+        == Decimal("0.50")
+    )
+
+    assert (
+        result.report.optimization_objective
+        is OptimizationObjective.BALANCED
     )

@@ -5,13 +5,23 @@ from __future__ import annotations
 import shutil
 import tempfile
 from datetime import UTC, datetime
+from decimal import Decimal
 from pathlib import Path
 from uuid import uuid4
 from zipfile import BadZipFile
 
-from fastapi import APIRouter, File, HTTPException, UploadFile
+from fastapi import (
+    APIRouter,
+    File,
+    Form,
+    HTTPException,
+    UploadFile,
+)
 from openpyxl.utils.exceptions import InvalidFileException
+from pydantic import ValidationError
 
+from afterlife_ai.contracts.enums import OptimizationObjective
+from afterlife_ai.contracts.request import AnalysisRequest
 from afterlife_ai.pipeline.application import (
     run_production_pipeline,
 )
@@ -31,10 +41,59 @@ RUNTIME_CONFIG_PATH = Path("configs/runtime_v1.yaml")
 )
 def analyze_inventory(
     inventory_file: UploadFile = File(...),
+    optimization_objective: OptimizationObjective = Form(
+        OptimizationObjective.MAXIMIZE_RECOVERY_VALUE
+    ),
+    max_logistics_budget: Decimal | None = Form(
+        None
+    ),
+    minimum_expected_rescue_ratio: Decimal | None = Form(
+        None
+    ),
 ) -> RescueDecisionReport:
     """Analyze one uploaded XLSX and return its Rescue Decision Report."""
 
     filename = inventory_file.filename or ""
+
+    analysis_at = datetime.now(UTC)
+    request_id = f"REQ-{uuid4().hex}"
+
+    try:
+        request_context = AnalysisRequest(
+            request_id=request_id,
+            analysis_timestamp=analysis_at,
+            inventory_file_name=filename,
+            optimization_objective=(
+                optimization_objective
+            ),
+            max_logistics_budget=(
+                max_logistics_budget
+            ),
+            rescue_deadline_at=None,
+            minimum_expected_rescue_ratio=(
+                minimum_expected_rescue_ratio
+            ),
+            objective_policy_version=(
+                "runtime-objective-v1.0"
+            ),
+        )
+    except ValidationError as exc:
+        validation_detail = [
+            {
+                "type": error["type"],
+                "loc": list(error["loc"]),
+                "msg": error["msg"],
+            }
+            for error in exc.errors(
+                include_url=False,
+                include_input=False,
+            )
+        ]
+
+        raise HTTPException(
+            status_code=422,
+            detail=validation_detail,
+        ) from exc
 
     if Path(filename).suffix.lower() != ".xlsx":
         raise HTTPException(
@@ -67,8 +126,17 @@ def analyze_inventory(
             result = run_production_pipeline(
                 workbook_path=temp_path,
                 runtime_config_path=RUNTIME_CONFIG_PATH,
-                analysis_at=datetime.now(UTC),
-                request_id=f"REQ-{uuid4().hex}",
+                analysis_at=analysis_at,
+                request_id=request_id,
+                optimization_objective=(
+                    request_context.optimization_objective
+                ),
+                max_logistics_budget=(
+                    request_context.max_logistics_budget
+                ),
+                minimum_expected_rescue_ratio=(
+                    request_context.minimum_expected_rescue_ratio
+                ),
             )
         except (BadZipFile, InvalidFileException) as exc:
             raise HTTPException(

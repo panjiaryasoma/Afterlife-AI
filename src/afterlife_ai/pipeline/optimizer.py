@@ -7,6 +7,7 @@ from decimal import Decimal
 from afterlife_ai.contracts.candidate import CandidateAction
 from afterlife_ai.contracts.enums import (
     ActionType,
+    OptimizationObjective,
     SolverStatus,
 )
 from afterlife_ai.contracts.planning import SurplusPlanningLot
@@ -120,6 +121,11 @@ def optimize_production_candidates(
     candidates: list[CandidateAction],
     planning_lots: list[SurplusPlanningLot],
     config: RuntimeConfig,
+    optimization_objective: OptimizationObjective = (
+        OptimizationObjective.MAXIMIZE_RECOVERY_VALUE
+    ),
+    max_logistics_budget: Decimal | None = None,
+    minimum_expected_rescue_ratio: Decimal | None = None,
 ) -> OptimizationResult:
     """Run CP-SAT with runtime-derived global hard constraints."""
 
@@ -145,6 +151,11 @@ def optimize_production_candidates(
         shared_action_capacities=(
             shared_action_capacities
         ),
+        max_logistics_budget=max_logistics_budget,
+        optimization_objective=optimization_objective,
+        minimum_expected_rescue_ratio=(
+            minimum_expected_rescue_ratio
+        ),
     )
 
     if cp_sat_result.solver_status in {
@@ -152,6 +163,16 @@ def optimize_production_candidates(
         SolverStatus.FEASIBLE,
         SolverStatus.INFEASIBLE,
     }:
+        return cp_sat_result
+
+    fallback_can_preserve_request_constraints = (
+        optimization_objective
+        is OptimizationObjective.MAXIMIZE_RECOVERY_VALUE
+        and max_logistics_budget is None
+        and minimum_expected_rescue_ratio is None
+    )
+
+    if not fallback_can_preserve_request_constraints:
         return cp_sat_result
 
     fallback_result = (

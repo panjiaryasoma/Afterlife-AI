@@ -250,6 +250,7 @@ def _build_report(
     planning_lots: list[SurplusPlanningLot],
     valued_candidates: list[CandidateAction],
     optimization_result: OptimizationResult,
+    optimization_objective: OptimizationObjective,
 ) -> RescueDecisionReport:
     """Adapt production outputs into the canonical report contract."""
 
@@ -421,7 +422,7 @@ def _build_report(
             "runtime-objective-v1.0"
         ),
         optimization_objective=(
-            OptimizationObjective.MAXIMIZE_RECOVERY_VALUE
+            optimization_objective
         ),
         optimization_solver_status=(
             optimization_result.solver_status
@@ -478,6 +479,11 @@ def run_production_pipeline(
     runtime_config_path: str | Path,
     analysis_at: datetime,
     request_id: str,
+    optimization_objective: OptimizationObjective = (
+        OptimizationObjective.MAXIMIZE_RECOVERY_VALUE
+    ),
+    max_logistics_budget: Decimal | None = None,
+    minimum_expected_rescue_ratio: Decimal | None = None,
 ) -> ProductionPipelineResult:
     """Run one synchronous XLSX request through the complete MVP pipeline."""
 
@@ -555,6 +561,15 @@ def run_production_pipeline(
             candidates=valued_candidates,
             planning_lots=planning_lots,
             config=config,
+            optimization_objective=(
+                optimization_objective
+            ),
+            max_logistics_budget=(
+                max_logistics_budget
+            ),
+            minimum_expected_rescue_ratio=(
+                minimum_expected_rescue_ratio
+            ),
         )
     )
 
@@ -573,6 +588,9 @@ def run_production_pipeline(
         valued_candidates=valued_candidates,
         optimization_result=(
             optimization_result
+        ),
+        optimization_objective=(
+            optimization_objective
         ),
     )
 

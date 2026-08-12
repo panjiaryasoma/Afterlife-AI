@@ -7,6 +7,7 @@ from pytest import MonkeyPatch
 
 from afterlife_ai.contracts.enums import (
     ActionType,
+    OptimizationObjective,
     SolverStatus,
 )
 from afterlife_ai.pipeline.candidates import (
@@ -343,6 +344,211 @@ def test_production_optimizer_does_not_fallback_when_cp_sat_infeasible(
     assert (
         result.solver_status
         is SolverStatus.INFEASIBLE
+    )
+
+    assert result.allocations == []
+
+    assert (
+        result.unallocated_quantities
+        == planning_quantities
+    )
+
+def test_production_optimizer_forwards_request_constraints_to_cp_sat(
+    monkeypatch: MonkeyPatch,
+) -> None:
+    analysis_at = datetime(
+        2026,
+        8,
+        5,
+        tzinfo=UTC,
+    )
+
+    config = load_runtime_config(
+        RUNTIME_CONFIG_PATH
+    )
+
+    triage = run_triage_pipeline(
+        workbook_path=WORKBOOK_PATH,
+        runtime_config_path=RUNTIME_CONFIG_PATH,
+        analysis_at=analysis_at,
+    )
+
+    planning_lots = build_production_planning_lots(
+        lots=triage.raw_inventory_lots,
+        triage_results=triage.triage_results,
+        config=config,
+    )
+
+    candidates = generate_production_candidates(
+        planning_lots=planning_lots,
+        config=config,
+    )
+
+    gated = apply_production_hard_gates(
+        candidates=candidates,
+        planning_lots=planning_lots,
+        raw_inventory_lots=triage.raw_inventory_lots,
+        config=config,
+        analysis_at=analysis_at,
+    )
+
+    scored = score_production_candidates(
+        candidates=gated,
+        planning_lots=planning_lots,
+        config=config,
+    )
+
+    valued = apply_production_expected_values(
+        candidates=scored,
+    )
+
+    captured_kwargs: dict[str, object] = {}
+
+    def fake_cp_sat(**kwargs: object) -> OptimizationResult:
+        captured_kwargs.update(kwargs)
+
+        planning_quantities = {
+            lot.planning_lot_id: lot.planning_quantity
+            for lot in planning_lots
+        }
+
+        return OptimizationResult(
+            solver_status=SolverStatus.OPTIMAL,
+            objective_value=Decimal("0"),
+            allocations=[],
+            unallocated_quantities=planning_quantities,
+        )
+
+    monkeypatch.setattr(
+        "afterlife_ai.pipeline.optimizer.optimize_with_cp_sat",
+        fake_cp_sat,
+    )
+
+    result = optimize_production_candidates(
+        candidates=valued,
+        planning_lots=planning_lots,
+        config=config,
+        optimization_objective=(
+            OptimizationObjective.BALANCED
+        ),
+        max_logistics_budget=Decimal("30000"),
+        minimum_expected_rescue_ratio=Decimal("0.50"),
+    )
+
+    assert result.solver_status is SolverStatus.OPTIMAL
+
+    assert (
+        captured_kwargs["optimization_objective"]
+        is OptimizationObjective.BALANCED
+    )
+
+    assert (
+        captured_kwargs["max_logistics_budget"]
+        == Decimal("30000")
+    )
+
+    assert (
+        captured_kwargs[
+            "minimum_expected_rescue_ratio"
+        ]
+        == Decimal("0.50")
+    )
+
+def test_production_optimizer_does_not_fallback_when_request_constraints_cannot_be_preserved(
+    monkeypatch: MonkeyPatch,
+) -> None:
+    analysis_at = datetime(
+        2026,
+        8,
+        5,
+        tzinfo=UTC,
+    )
+
+    config = load_runtime_config(
+        RUNTIME_CONFIG_PATH
+    )
+
+    triage = run_triage_pipeline(
+        workbook_path=WORKBOOK_PATH,
+        runtime_config_path=RUNTIME_CONFIG_PATH,
+        analysis_at=analysis_at,
+    )
+
+    planning_lots = build_production_planning_lots(
+        lots=triage.raw_inventory_lots,
+        triage_results=triage.triage_results,
+        config=config,
+    )
+
+    candidates = generate_production_candidates(
+        planning_lots=planning_lots,
+        config=config,
+    )
+
+    gated = apply_production_hard_gates(
+        candidates=candidates,
+        planning_lots=planning_lots,
+        raw_inventory_lots=triage.raw_inventory_lots,
+        config=config,
+        analysis_at=analysis_at,
+    )
+
+    scored = score_production_candidates(
+        candidates=gated,
+        planning_lots=planning_lots,
+        config=config,
+    )
+
+    valued = apply_production_expected_values(
+        candidates=scored,
+    )
+
+    planning_quantities = {
+        lot.planning_lot_id: lot.planning_quantity
+        for lot in planning_lots
+    }
+
+    def fake_cp_sat(**_: object) -> OptimizationResult:
+        return OptimizationResult(
+            solver_status=SolverStatus.UNKNOWN,
+            objective_value=Decimal("0"),
+            allocations=[],
+            unallocated_quantities=planning_quantities,
+        )
+
+    def forbidden_fallback(**_: object) -> object:
+        raise AssertionError(
+            "Fallback must not run when dynamic "
+            "request constraints cannot be preserved."
+        )
+
+    monkeypatch.setattr(
+        "afterlife_ai.pipeline.optimizer.optimize_with_cp_sat",
+        fake_cp_sat,
+    )
+
+    monkeypatch.setattr(
+        (
+            "afterlife_ai.pipeline.optimizer."
+            "allocate_with_deterministic_fallback"
+        ),
+        forbidden_fallback,
+    )
+
+    result = optimize_production_candidates(
+        candidates=valued,
+        planning_lots=planning_lots,
+        config=config,
+        optimization_objective=(
+            OptimizationObjective.BALANCED
+        ),
+        max_logistics_budget=Decimal("30000"),
+        minimum_expected_rescue_ratio=Decimal("0.50"),
+    )
+
+    assert (
+        result.solver_status
+        is SolverStatus.UNKNOWN
     )
 
     assert result.allocations == []
