@@ -484,6 +484,7 @@ def run_production_pipeline(
     ),
     max_logistics_budget: Decimal | None = None,
     minimum_expected_rescue_ratio: Decimal | None = None,
+    rescue_deadline_at: datetime | None = None,
 ) -> ProductionPipelineResult:
     """Run one synchronous XLSX request through the complete MVP pipeline."""
 
@@ -539,6 +540,9 @@ def run_production_pipeline(
             ),
             config=config,
             analysis_at=analysis_at,
+            rescue_deadline_at=(
+                rescue_deadline_at
+            ),
         )
     )
 

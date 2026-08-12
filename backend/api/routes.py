@@ -50,6 +50,9 @@ def analyze_inventory(
     minimum_expected_rescue_ratio: Decimal | None = Form(
         None
     ),
+    rescue_deadline_at: datetime | None = Form(
+        None
+    ),
 ) -> RescueDecisionReport:
     """Analyze one uploaded XLSX and return its Rescue Decision Report."""
 
@@ -69,7 +72,7 @@ def analyze_inventory(
             max_logistics_budget=(
                 max_logistics_budget
             ),
-            rescue_deadline_at=None,
+            rescue_deadline_at=rescue_deadline_at,
             minimum_expected_rescue_ratio=(
                 minimum_expected_rescue_ratio
             ),
@@ -136,6 +139,9 @@ def analyze_inventory(
                 ),
                 minimum_expected_rescue_ratio=(
                     request_context.minimum_expected_rescue_ratio
+                ),
+                rescue_deadline_at=(
+                    request_context.rescue_deadline_at
                 ),
             )
         except (BadZipFile, InvalidFileException) as exc:

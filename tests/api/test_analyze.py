@@ -189,3 +189,59 @@ def test_analyze_rejects_balanced_without_minimum_rescue_ratio() -> None:
         in str(error)
         for error in payload["detail"]
     )
+
+def test_analyze_applies_rescue_deadline_before_scoring() -> None:
+    with WORKBOOK_PATH.open("rb") as handle:
+        response = client.post(
+            "/api/analyze",
+            data={
+                "rescue_deadline_at": (
+                    "2020-01-01T00:00:00+00:00"
+                ),
+            },
+            files={
+                "inventory_file": (
+                    "inventory.xlsx",
+                    handle,
+                    XLSX_MIME_TYPE,
+                )
+            },
+        )
+
+    assert response.status_code == 200
+
+    payload = response.json()
+
+    assert payload["selected_allocations"] == []
+
+    assert payload["rejected_candidates"]
+
+    assert all(
+        "TIMING_INFEASIBLE"
+        in item["rejection_reason_codes"]
+        for item in payload["rejected_candidates"]
+    )
+
+def test_analyze_rejects_naive_rescue_deadline() -> None:
+    with WORKBOOK_PATH.open("rb") as handle:
+        response = client.post(
+            "/api/analyze",
+            data={
+                "rescue_deadline_at": (
+                    "2026-08-20T12:00:00"
+                ),
+            },
+            files={
+                "inventory_file": (
+                    "inventory.xlsx",
+                    handle,
+                    XLSX_MIME_TYPE,
+                )
+            },
+        )
+
+    assert response.status_code == 422
+
+    assert "timezone-aware" in str(
+        response.json()["detail"]
+    )

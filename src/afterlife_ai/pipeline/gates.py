@@ -137,22 +137,43 @@ def _timing_feasible(
     *,
     candidate: CandidateAction,
     planning_lot: SurplusPlanningLot,
+    analysis_at: datetime,
+    rescue_deadline_at: datetime | None,
 ) -> bool:
-    """Require known completion time to fit the earliest binding window."""
+    """Require completion to fit the earliest binding timing window."""
 
     completion = candidate.estimated_completion_hours
 
     if completion is None:
         return False
 
+    windows: list[Decimal] = []
+
     binding_window = _binding_window_hours(
         planning_lot
     )
 
-    if binding_window is None:
+    if binding_window is not None:
+        windows.append(binding_window)
+
+    if rescue_deadline_at is not None:
+        deadline_delta = (
+            rescue_deadline_at - analysis_at
+        )
+
+        deadline_hours = (
+            Decimal(
+                str(deadline_delta.total_seconds())
+            )
+            / Decimal("3600")
+        )
+
+        windows.append(deadline_hours)
+
+    if not windows:
         return True
 
-    return completion <= binding_window
+    return completion <= min(windows)
 
 
 def _shelf_life_feasible(
@@ -234,12 +255,21 @@ def apply_production_hard_gates(
     raw_inventory_lots: list[RawInventoryLot],
     config: RuntimeConfig,
     analysis_at: datetime,
+    rescue_deadline_at: datetime | None = None,
 ) -> list[CandidateAction]:
     """Build deterministic gate facts and evaluate every candidate."""
 
     if analysis_at.tzinfo is None:
         raise ValueError(
             "analysis_at wajib timezone-aware."
+        )
+
+    if (
+        rescue_deadline_at is not None
+        and rescue_deadline_at.tzinfo is None
+    ):
+        raise ValueError(
+            "rescue_deadline_at wajib timezone-aware."
         )
 
     planning_by_id = {
@@ -298,6 +328,8 @@ def apply_production_hard_gates(
             timing_feasible=_timing_feasible(
                 candidate=candidate,
                 planning_lot=planning_lot,
+                analysis_at=analysis_at,
+                rescue_deadline_at=rescue_deadline_at,
             ),
             action_eligible=_action_eligible(
                 candidate=candidate,

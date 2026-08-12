@@ -1,4 +1,5 @@
-﻿from decimal import Decimal
+﻿from datetime import datetime
+from decimal import Decimal
 
 import pytest
 from pydantic import ValidationError
@@ -62,4 +63,20 @@ def test_unknown_field_is_rejected() -> None:
     payload["invented_field"] = "not allowed"
 
     with pytest.raises(ValidationError):
+        AnalysisRequest.model_validate(payload)
+
+def test_naive_rescue_deadline_is_rejected() -> None:
+    payload = valid_request_payload()
+    payload["rescue_deadline_at"] = datetime(
+        2026,
+        8,
+        5,
+        12,
+        0,
+    )
+
+    with pytest.raises(
+        ValidationError,
+        match="timezone-aware",
+    ):
         AnalysisRequest.model_validate(payload)

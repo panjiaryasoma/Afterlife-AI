@@ -51,6 +51,14 @@ class AnalysisRequest(BaseModel):
                 "untuk objective BALANCED"
             )
 
+        if (
+            self.rescue_deadline_at is not None
+            and self.rescue_deadline_at.utcoffset() is None
+        ):
+            raise ValueError(
+                "rescue_deadline_at wajib timezone-aware"
+            )
+
         return self
 
 

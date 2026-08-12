@@ -308,3 +308,49 @@ def test_production_pipeline_forwards_dynamic_optimizer_request_context(
         result.report.optimization_objective
         is OptimizationObjective.BALANCED
     )
+
+def test_production_pipeline_forwards_rescue_deadline_to_hard_gates(
+    monkeypatch: MonkeyPatch,
+) -> None:
+    captured_kwargs: dict[str, Any] = {}
+
+    real_hard_gates = (
+        application_module.apply_production_hard_gates
+    )
+
+    def spy_hard_gates(
+        **kwargs: Any,
+    ) -> Any:
+        captured_kwargs.update(kwargs)
+        return real_hard_gates(**kwargs)
+
+    monkeypatch.setattr(
+        application_module,
+        "apply_production_hard_gates",
+        spy_hard_gates,
+    )
+
+    rescue_deadline_at = datetime(
+        2026,
+        8,
+        6,
+        tzinfo=UTC,
+    )
+
+    run_production_pipeline(
+        workbook_path=WORKBOOK_PATH,
+        runtime_config_path=RUNTIME_CONFIG_PATH,
+        analysis_at=datetime(
+            2026,
+            8,
+            5,
+            tzinfo=UTC,
+        ),
+        request_id="PRODUCTION-DEADLINE-001",
+        rescue_deadline_at=rescue_deadline_at,
+    )
+
+    assert (
+        captured_kwargs["rescue_deadline_at"]
+        == rescue_deadline_at
+    )
