@@ -46,6 +46,36 @@ def _local_discount_price(
 
     return calculated
 
+def _build_safe_disposal_spec(
+    *,
+    planning_lot: SurplusPlanningLot,
+    config: RuntimeConfig,
+) -> CandidateActionSpec | None:
+    """Build the deterministic safe-disposal candidate when enabled."""
+
+    if not _action_enabled(
+        config,
+        ActionType.SAFE_DISPOSAL,
+    ):
+        return None
+
+    safe_disposal_capability = (
+        config.capabilities.safe_disposal
+    )
+
+    return CandidateActionSpec(
+        action_type=ActionType.SAFE_DISPOSAL,
+        maximum_quantity=(
+            planning_lot.planning_quantity
+        ),
+        offered_or_selling_price_per_unit=ZERO,
+        estimated_completion_hours=(
+            safe_disposal_capability.estimated_completion_hours
+        ),
+        available_capacity=(
+            planning_lot.planning_quantity
+        ),
+    )
 
 def _build_action_specs(
     *,
@@ -168,32 +198,14 @@ def _build_action_specs(
             )
         )
 
-    if (
-        not specs
-        and _action_enabled(
-            config,
-            ActionType.SAFE_DISPOSAL,
-        )
-    ):
-        safe_disposal_capability = (
-            config.capabilities.safe_disposal
+    if not specs:
+        disposal_spec = _build_safe_disposal_spec(
+            planning_lot=planning_lot,
+            config=config,
         )
 
-        specs.append(
-            CandidateActionSpec(
-                action_type=ActionType.SAFE_DISPOSAL,
-                maximum_quantity=(
-                    planning_lot.planning_quantity
-                ),
-                offered_or_selling_price_per_unit=ZERO,
-                estimated_completion_hours=(
-                    safe_disposal_capability.estimated_completion_hours
-                ),
-                available_capacity=(
-                    planning_lot.planning_quantity
-                ),
-            )
-        )
+        if disposal_spec is not None:
+            specs.append(disposal_spec)
 
     return specs
 
@@ -222,5 +234,35 @@ def generate_production_candidates(
 
     return candidates
 
+def generate_safe_disposal_candidates(
+    *,
+    planning_lots: list[SurplusPlanningLot],
+    config: RuntimeConfig,
+) -> list[CandidateAction]:
+    """Generate only safe-disposal candidates for second-pass fallback."""
 
-__all__ = ["generate_production_candidates"]
+    candidates: list[CandidateAction] = []
+
+    for planning_lot in planning_lots:
+        spec = _build_safe_disposal_spec(
+            planning_lot=planning_lot,
+            config=config,
+        )
+
+        if spec is None:
+            continue
+
+        candidates.extend(
+            generate_candidates(
+                planning_lot,
+                [spec],
+            )
+        )
+
+    return candidates
+
+
+__all__ = [
+    "generate_production_candidates",
+    "generate_safe_disposal_candidates",
+]

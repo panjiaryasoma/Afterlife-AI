@@ -7,7 +7,10 @@ from pytest import MonkeyPatch
 
 import afterlife_ai.pipeline.application as application_module
 from afterlife_ai.contracts.enums import (
+    ActionType,
     ApprovalStatus,
+    FeasibilityStatus,
+    ModelScoringStatus,
     OptimizationObjective,
     SolverStatus,
 )
@@ -353,4 +356,95 @@ def test_production_pipeline_forwards_rescue_deadline_to_hard_gates(
     assert (
         captured_kwargs["rescue_deadline_at"]
         == rescue_deadline_at
+    )
+
+
+def test_production_pipeline_adds_safe_disposal_second_pass_when_rescue_is_blocked(
+    monkeypatch: MonkeyPatch,
+) -> None:
+    gate_calls: list[list[Any]] = []
+
+    real_hard_gates = (
+        application_module.apply_production_hard_gates
+    )
+
+    def controlled_hard_gates(
+        **kwargs: Any,
+    ) -> Any:
+        candidates = kwargs["candidates"]
+
+        gate_calls.append(list(candidates))
+
+        if len(gate_calls) == 1:
+            return [
+                candidate.model_copy(
+                    update={
+                        "feasibility_status": (
+                            FeasibilityStatus.INFEASIBLE
+                        ),
+                        "model_scoring_status": (
+                            ModelScoringStatus.BLOCKED
+                        ),
+                        "rejection_reason_codes": [
+                            "TEST_FORCED_BLOCK"
+                        ],
+                    }
+                )
+                for candidate in candidates
+            ]
+
+        return real_hard_gates(**kwargs)
+
+    monkeypatch.setattr(
+        application_module,
+        "apply_production_hard_gates",
+        controlled_hard_gates,
+    )
+
+    result = run_production_pipeline(
+        workbook_path=WORKBOOK_PATH,
+        runtime_config_path=RUNTIME_CONFIG_PATH,
+        analysis_at=datetime(
+            2026,
+            8,
+            5,
+            tzinfo=UTC,
+        ),
+        request_id="PRODUCTION-DISPOSAL-SECOND-PASS",
+    )
+
+    disposal_candidates = [
+        candidate
+        for candidate in result.valued_candidates
+        if candidate.action_type
+        is ActionType.SAFE_DISPOSAL
+    ]
+
+    assert disposal_candidates
+
+    assert len(gate_calls) == 2
+
+    assert all(
+        candidate.action_type
+        is ActionType.SAFE_DISPOSAL
+        for candidate in gate_calls[1]
+    )
+
+def test_production_pipeline_does_not_add_disposal_when_rescue_is_feasible() -> None:
+    result = run_production_pipeline(
+        workbook_path=WORKBOOK_PATH,
+        runtime_config_path=RUNTIME_CONFIG_PATH,
+        analysis_at=datetime(
+            2026,
+            8,
+            5,
+            tzinfo=UTC,
+        ),
+        request_id="PRODUCTION-NO-DISPOSAL-WHEN-FEASIBLE",
+    )
+
+    assert not any(
+        candidate.action_type
+        is ActionType.SAFE_DISPOSAL
+        for candidate in result.valued_candidates
     )

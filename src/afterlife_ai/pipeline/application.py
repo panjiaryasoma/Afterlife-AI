@@ -13,7 +13,9 @@ from pydantic import BaseModel, ConfigDict
 
 from afterlife_ai.contracts.candidate import CandidateAction
 from afterlife_ai.contracts.enums import (
+    ActionType,
     ApprovalStatus,
+    FeasibilityStatus,
     ModelScoringStatus,
     OptimizationObjective,
     SolverStatus,
@@ -24,6 +26,7 @@ from afterlife_ai.contracts.planning import SurplusPlanningLot
 from afterlife_ai.contracts.triage import InventoryTriageResult
 from afterlife_ai.pipeline.candidates import (
     generate_production_candidates,
+    generate_safe_disposal_candidates,
 )
 from afterlife_ai.pipeline.gates import (
     apply_production_hard_gates,
@@ -545,6 +548,64 @@ def run_production_pipeline(
             ),
         )
     )
+
+    feasible_planning_lot_ids = {
+        candidate.planning_lot_id
+        for candidate in gated_candidates
+        if (
+            candidate.feasibility_status
+            is FeasibilityStatus.FEASIBLE
+        )
+    }
+
+    existing_disposal_planning_lot_ids = {
+        candidate.planning_lot_id
+        for candidate in gated_candidates
+        if (
+            candidate.action_type
+            is ActionType.SAFE_DISPOSAL
+        )
+    }
+
+    second_pass_planning_lots = [
+        planning_lot
+        for planning_lot in planning_lots
+        if (
+            planning_lot.planning_lot_id
+            not in feasible_planning_lot_ids
+            and planning_lot.planning_lot_id
+            not in existing_disposal_planning_lot_ids
+        )
+    ]
+
+    disposal_candidates = (
+        generate_safe_disposal_candidates(
+            planning_lots=second_pass_planning_lots,
+            config=config,
+        )
+    )
+
+    if disposal_candidates:
+        gated_disposal_candidates = (
+            apply_production_hard_gates(
+                candidates=disposal_candidates,
+                planning_lots=planning_lots,
+                raw_inventory_lots=(
+                    triage.raw_inventory_lots
+                ),
+                config=config,
+                analysis_at=analysis_at,
+                rescue_deadline_at=(
+                    rescue_deadline_at
+                ),
+            )
+        )
+
+        gated_candidates = [
+            *gated_candidates,
+            *gated_disposal_candidates,
+        ]
+
 
     scored_candidates = (
         score_production_candidates(
