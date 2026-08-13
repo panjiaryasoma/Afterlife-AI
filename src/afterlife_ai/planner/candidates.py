@@ -81,6 +81,19 @@ class CandidateActionSpec(BaseModel):
         ge=Decimal("0"),
     )
 
+    category_match_status: MatchStatus = (
+        MatchStatus.NOT_APPLICABLE
+    )
+    package_size_match_status: MatchStatus = (
+        MatchStatus.NOT_APPLICABLE
+    )
+    customer_segment_match_status: MatchStatus = (
+        MatchStatus.NOT_APPLICABLE
+    )
+    storage_compatibility_status: MatchStatus = (
+        MatchStatus.NOT_APPLICABLE
+    )
+
 
 _ACTION_ORDER = {
     ActionType.INTERNAL_REPURPOSE: 10,
@@ -192,10 +205,18 @@ def generate_candidates(
             demand_coverage_ratio=spec.demand_coverage_ratio,
             demand_freshness_hours=spec.demand_freshness_hours,
             distance_km=spec.distance_km,
-            category_match_status=MatchStatus.NOT_APPLICABLE,
-            package_size_match_status=MatchStatus.NOT_APPLICABLE,
-            customer_segment_match_status=MatchStatus.NOT_APPLICABLE,
-            storage_compatibility_status=MatchStatus.NOT_APPLICABLE,
+            category_match_status=(
+                spec.category_match_status
+            ),
+            package_size_match_status=(
+                spec.package_size_match_status
+            ),
+            customer_segment_match_status=(
+                spec.customer_segment_match_status
+            ),
+            storage_compatibility_status=(
+                spec.storage_compatibility_status
+            ),
             validation_status=ValidationStatus.PARTIAL,
             coverage_status=CoverageStatus.INSUFFICIENT_FEATURE_COVERAGE,
             safety_status=SafetyStatus.UNVERIFIED,

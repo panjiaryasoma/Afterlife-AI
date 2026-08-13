@@ -54,7 +54,7 @@ capabilities:
     RETURN_TO_SUPPLIER: false
     BRANCH_TRANSFER: false
     WHOLESALE: false
-    EXTERNAL_PARTNER: false
+    EXTERNAL_PARTNER: true
     DONATION: false
     SAFE_DISPOSAL: true
 

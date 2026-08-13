@@ -33,6 +33,9 @@ router = APIRouter(
 )
 
 RUNTIME_CONFIG_PATH = Path("configs/runtime_v1.yaml")
+PARTNER_REGISTRY_PATH = Path(
+    "configs/partner_registry_demo_v1.yaml"
+)
 
 
 @router.post(
@@ -129,6 +132,7 @@ def analyze_inventory(
             result = run_production_pipeline(
                 workbook_path=temp_path,
                 runtime_config_path=RUNTIME_CONFIG_PATH,
+                partner_registry_path=PARTNER_REGISTRY_PATH,
                 analysis_at=analysis_at,
                 request_id=request_id,
                 optimization_objective=(

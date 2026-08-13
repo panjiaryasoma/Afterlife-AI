@@ -34,6 +34,9 @@ from afterlife_ai.pipeline.gates import (
 from afterlife_ai.pipeline.optimizer import (
     optimize_production_candidates,
 )
+from afterlife_ai.pipeline.partner_registry import (
+    load_partner_registry,
+)
 from afterlife_ai.pipeline.planning import (
     build_production_planning_lots,
 )
@@ -488,6 +491,7 @@ def run_production_pipeline(
     max_logistics_budget: Decimal | None = None,
     minimum_expected_rescue_ratio: Decimal | None = None,
     rescue_deadline_at: datetime | None = None,
+    partner_registry_path: str | Path | None = None,
 ) -> ProductionPipelineResult:
     """Run one synchronous XLSX request through the complete MVP pipeline."""
 
@@ -513,6 +517,13 @@ def run_production_pipeline(
         runtime_config_path
     )
 
+    partner_registry = None
+
+    if partner_registry_path is not None:
+        partner_registry = load_partner_registry(
+            partner_registry_path
+        )
+
     triage = run_triage_pipeline(
         workbook_path=workbook_path,
         runtime_config_path=runtime_config_path,
@@ -531,6 +542,8 @@ def run_production_pipeline(
         generate_production_candidates(
             planning_lots=planning_lots,
             config=config,
+            partner_registry=partner_registry,
+            analysis_at=analysis_at,
         )
     )
 

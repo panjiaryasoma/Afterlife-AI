@@ -9,6 +9,7 @@ from afterlife_ai.contracts.candidate import CandidateAction
 from afterlife_ai.contracts.enums import (
     ActionType,
     DefectSeverity,
+    MatchStatus,
     SafetyStatus,
     StorageHistoryStatus,
     StorageRequirementMode,
@@ -321,9 +322,19 @@ def apply_production_hard_gates(
                     planning_lot
                 )
             ),
-            storage_compatible=_storage_compatible(
-                planning_lot=planning_lot,
-                raw_lot=raw_lot,
+            storage_compatible=(
+                _storage_compatible(
+                    planning_lot=planning_lot,
+                    raw_lot=raw_lot,
+                )
+                and (
+                    candidate.action_type
+                    is not ActionType.EXTERNAL_PARTNER
+                    or (
+                        candidate.storage_compatibility_status
+                        is MatchStatus.MATCH
+                    )
+                )
             ),
             timing_feasible=_timing_feasible(
                 candidate=candidate,
@@ -347,6 +358,12 @@ def apply_production_hard_gates(
             partner_demand_fresh=(
                 candidate.action_type
                 is not ActionType.EXTERNAL_PARTNER
+                or (
+                    candidate.demand_freshness_hours
+                    is not None
+                    and candidate.demand_freshness_hours
+                    > Decimal("0")
+                )
             ),
             qualifying_transactions=0,
         )
