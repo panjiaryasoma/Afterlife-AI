@@ -186,6 +186,11 @@ class RescueDecisionReport(BaseModel):
     )
     ruleset_version: str
     capability_snapshot_version: str
+
+    partner_registry_snapshot_id: str | None = None
+    partner_registry_source_type: str | None = None
+    partner_registry_real_world_verified: bool | None = None
+
     objective_policy_version: str
     optimization_objective: OptimizationObjective
     optimization_solver_status: SolverStatus
@@ -302,6 +307,9 @@ def build_rescue_decision_report(
     input_snapshot_sha256: str,
     ruleset_version: str,
     capability_snapshot_version: str,
+    partner_registry_snapshot_id: str | None = None,
+    partner_registry_source_type: str | None = None,
+    partner_registry_real_world_verified: bool | None = None,
     objective_policy_version: str,
     optimization_objective: OptimizationObjective,
     optimization_solver_status: SolverStatus,
@@ -328,6 +336,15 @@ def build_rescue_decision_report(
         ruleset_version=ruleset_version,
         capability_snapshot_version=(
             capability_snapshot_version
+        ),
+        partner_registry_snapshot_id=(
+            partner_registry_snapshot_id
+        ),
+        partner_registry_source_type=(
+            partner_registry_source_type
+        ),
+        partner_registry_real_world_verified=(
+            partner_registry_real_world_verified
         ),
         objective_policy_version=objective_policy_version,
         optimization_objective=optimization_objective,

@@ -159,3 +159,46 @@ def test_production_pipeline_loads_static_partner_registry(
         "STALE_PARTNER_DEMAND"
         not in candidate.rejection_reason_codes
     )
+
+    assert (
+        result.report.partner_registry_snapshot_id
+        == "PDR-DEMO-APP-001"
+    )
+    assert (
+        result.report.partner_registry_source_type
+        == "SYNTHETIC_DEMO_FIXTURE"
+    )
+    assert (
+        result.report.partner_registry_real_world_verified
+        is False
+    )
+
+
+
+def test_production_report_has_null_partner_registry_metadata_when_registry_is_absent() -> None:
+    result = run_production_pipeline(
+        workbook_path=Path(
+            "tests/fixtures/integration_001/"
+            "RAW_INVENTORY_FIXTURE.xlsx"
+        ),
+        runtime_config_path=Path(
+            "configs/runtime_v1.yaml"
+        ),
+        analysis_at=ANALYSIS_AT,
+        request_id=(
+            "PRODUCTION-NO-PARTNER-REGISTRY"
+        ),
+    )
+
+    assert (
+        result.report.partner_registry_snapshot_id
+        is None
+    )
+    assert (
+        result.report.partner_registry_source_type
+        is None
+    )
+    assert (
+        result.report.partner_registry_real_world_verified
+        is None
+    )

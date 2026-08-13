@@ -35,6 +35,7 @@ from afterlife_ai.pipeline.optimizer import (
     optimize_production_candidates,
 )
 from afterlife_ai.pipeline.partner_registry import (
+    PartnerDemandRegistry,
     load_partner_registry,
 )
 from afterlife_ai.pipeline.planning import (
@@ -257,6 +258,7 @@ def _build_report(
     valued_candidates: list[CandidateAction],
     optimization_result: OptimizationResult,
     optimization_objective: OptimizationObjective,
+    partner_registry: PartnerDemandRegistry | None,
 ) -> RescueDecisionReport:
     """Adapt production outputs into the canonical report contract."""
 
@@ -500,6 +502,21 @@ def _build_report(
         ),
         capability_snapshot_version=(
             config.capabilities.profile_version
+        ),
+        partner_registry_snapshot_id=(
+            partner_registry.registry_snapshot_id
+            if partner_registry is not None
+            else None
+        ),
+        partner_registry_source_type=(
+            partner_registry.source_type
+            if partner_registry is not None
+            else None
+        ),
+        partner_registry_real_world_verified=(
+            partner_registry.real_world_verified
+            if partner_registry is not None
+            else None
         ),
         objective_policy_version=(
             "runtime-objective-v1.0"
@@ -747,6 +764,7 @@ def run_production_pipeline(
         optimization_objective=(
             optimization_objective
         ),
+        partner_registry=partner_registry,
     )
 
     return ProductionPipelineResult(
