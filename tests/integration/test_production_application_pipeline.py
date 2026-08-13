@@ -448,3 +448,138 @@ def test_production_pipeline_does_not_add_disposal_when_rescue_is_feasible() -> 
         is ActionType.SAFE_DISPOSAL
         for candidate in result.valued_candidates
     )
+
+
+def test_rescue_report_exposes_enriched_allocation_explainability() -> None:
+    result = run_production_pipeline(
+        workbook_path=WORKBOOK_PATH,
+        runtime_config_path=RUNTIME_CONFIG_PATH,
+        analysis_at=datetime(
+            2026,
+            8,
+            5,
+            tzinfo=UTC,
+        ),
+        request_id=(
+            "PRODUCTION-REPORT-EXPLAINABILITY"
+        ),
+    )
+
+    candidate_by_id = {
+        candidate.candidate_id: candidate
+        for candidate in result.valued_candidates
+    }
+
+    partial_allocation = next(
+        allocation
+        for allocation in result.report.selected_allocations
+        if (
+            allocation.allocated_quantity
+            < candidate_by_id[
+                allocation.candidate_id
+            ].maximum_feasible_quantity
+        )
+    )
+
+    candidate = candidate_by_id[
+        partial_allocation.candidate_id
+    ]
+
+    ratio = (
+        partial_allocation.allocated_quantity
+        / candidate.maximum_feasible_quantity
+    )
+
+    assert (
+        partial_allocation.destination_id
+        == candidate.destination_id
+    )
+    assert (
+        partial_allocation.destination_type
+        == candidate.destination_type
+    )
+
+    assert (
+        partial_allocation.offered_or_selling_price_per_unit
+        == candidate.offered_or_selling_price_per_unit
+    )
+
+    assert (
+        partial_allocation.estimated_rescue_success_score
+        == candidate.estimated_rescue_success_score
+    )
+
+    assert (
+        partial_allocation.direct_action_cost
+        == candidate.direct_action_cost * ratio
+    )
+    assert (
+        partial_allocation.logistics_cost
+        == candidate.logistics_cost * ratio
+    )
+    assert (
+        partial_allocation.handling_cost
+        == candidate.handling_cost * ratio
+    )
+
+    assert (
+        partial_allocation.estimated_completion_hours
+        == candidate.estimated_completion_hours
+    )
+    assert (
+        partial_allocation.distance_km
+        == candidate.distance_km
+    )
+
+    assert (
+        partial_allocation.expected_cash_recovery
+        == candidate.expected_cash_recovery * ratio
+    )
+    assert (
+        partial_allocation.expected_future_branch_recovery
+        == (
+            candidate.expected_future_branch_recovery
+            * ratio
+        )
+    )
+    assert (
+        partial_allocation.expected_avoided_purchase_cost
+        == (
+            candidate.expected_avoided_purchase_cost
+            * ratio
+        )
+    )
+    assert (
+        partial_allocation.expected_physical_rescue_quantity
+        == (
+            candidate.expected_physical_rescue_quantity
+            * ratio
+        )
+    )
+    assert (
+        partial_allocation.expected_waste_quantity
+        == candidate.expected_waste_quantity * ratio
+    )
+
+    optimizer_allocation = next(
+        allocation
+        for allocation
+        in result.optimization_result.allocations
+        if (
+            allocation.candidate_id
+            == partial_allocation.candidate_id
+        )
+    )
+
+    assert (
+        partial_allocation.expected_value_per_unit
+        == optimizer_allocation.expected_value_per_unit
+    )
+    assert (
+        partial_allocation.expected_net_recovery
+        == optimizer_allocation.expected_net_recovery
+    )
+    assert (
+        partial_allocation.binding_constraint_codes
+        == optimizer_allocation.binding_constraint_codes
+    )

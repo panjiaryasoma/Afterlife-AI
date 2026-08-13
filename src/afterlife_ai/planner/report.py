@@ -56,7 +56,69 @@ class ReportAllocation(BaseModel):
     source_lot_id: str
     action_type: ActionType
 
+    destination_id: str | None = None
+    destination_type: str | None = None
+
     allocated_quantity: Decimal = Field(gt=ZERO)
+
+    offered_or_selling_price_per_unit: Decimal | None = Field(
+        default=None,
+        ge=ZERO,
+    )
+    estimated_rescue_success_score: Decimal | None = Field(
+        default=None,
+        ge=ZERO,
+        le=Decimal("1"),
+    )
+
+    direct_action_cost: Decimal = Field(
+        default=ZERO,
+        ge=ZERO,
+    )
+    logistics_cost: Decimal = Field(
+        default=ZERO,
+        ge=ZERO,
+    )
+    handling_cost: Decimal = Field(
+        default=ZERO,
+        ge=ZERO,
+    )
+
+    estimated_completion_hours: Decimal | None = Field(
+        default=None,
+        ge=ZERO,
+    )
+    distance_km: Decimal | None = Field(
+        default=None,
+        ge=ZERO,
+    )
+
+    expected_value_per_unit: Decimal = ZERO
+    binding_constraint_codes: list[str] = Field(
+        default_factory=list
+    )
+
+    expected_cash_recovery: Decimal = Field(
+        default=ZERO,
+        ge=ZERO,
+    )
+    expected_future_branch_recovery: Decimal = Field(
+        default=ZERO,
+        ge=ZERO,
+    )
+    expected_avoided_purchase_cost: Decimal = Field(
+        default=ZERO,
+        ge=ZERO,
+    )
+    expected_physical_rescue_quantity: Decimal = Field(
+        default=ZERO,
+        ge=ZERO,
+    )
+    expected_waste_quantity: Decimal = Field(
+        default=ZERO,
+        ge=ZERO,
+    )
+
     expected_net_recovery: Decimal
 
 

@@ -265,26 +265,103 @@ def _build_report(
         for planning_lot in planning_lots
     }
 
-    selected_allocations = [
-        {
-            "allocation_id": allocation.allocation_id,
-            "candidate_id": allocation.candidate_id,
-            "planning_lot_id": allocation.planning_lot_id,
-            "source_lot_id": (
-                planning_by_id[
+    candidate_by_id = {
+        candidate.candidate_id: candidate
+        for candidate in valued_candidates
+    }
+
+    selected_allocations: list[dict[str, Any]] = []
+
+    for allocation in optimization_result.allocations:
+        candidate = candidate_by_id[
+            allocation.candidate_id
+        ]
+
+        allocation_ratio = (
+            allocation.allocated_quantity
+            / candidate.maximum_feasible_quantity
+        )
+
+        selected_allocations.append(
+            {
+                "allocation_id": allocation.allocation_id,
+                "candidate_id": allocation.candidate_id,
+                "planning_lot_id": (
                     allocation.planning_lot_id
-                ].source_lot_id
-            ),
-            "action_type": allocation.action_type,
-            "allocated_quantity": (
-                allocation.allocated_quantity
-            ),
-            "expected_net_recovery": (
-                allocation.expected_net_recovery
-            ),
-        }
-        for allocation in optimization_result.allocations
-    ]
+                ),
+                "source_lot_id": (
+                    planning_by_id[
+                        allocation.planning_lot_id
+                    ].source_lot_id
+                ),
+                "action_type": allocation.action_type,
+                "destination_id": (
+                    candidate.destination_id
+                ),
+                "destination_type": (
+                    candidate.destination_type
+                ),
+                "allocated_quantity": (
+                    allocation.allocated_quantity
+                ),
+                "offered_or_selling_price_per_unit": (
+                    candidate
+                    .offered_or_selling_price_per_unit
+                ),
+                "estimated_rescue_success_score": (
+                    candidate
+                    .estimated_rescue_success_score
+                ),
+                "direct_action_cost": (
+                    candidate.direct_action_cost
+                    * allocation_ratio
+                ),
+                "logistics_cost": (
+                    candidate.logistics_cost
+                    * allocation_ratio
+                ),
+                "handling_cost": (
+                    candidate.handling_cost
+                    * allocation_ratio
+                ),
+                "estimated_completion_hours": (
+                    candidate.estimated_completion_hours
+                ),
+                "distance_km": candidate.distance_km,
+                "expected_value_per_unit": (
+                    allocation.expected_value_per_unit
+                ),
+                "binding_constraint_codes": list(
+                    allocation.binding_constraint_codes
+                ),
+                "expected_cash_recovery": (
+                    candidate.expected_cash_recovery
+                    * allocation_ratio
+                ),
+                "expected_future_branch_recovery": (
+                    candidate
+                    .expected_future_branch_recovery
+                    * allocation_ratio
+                ),
+                "expected_avoided_purchase_cost": (
+                    candidate
+                    .expected_avoided_purchase_cost
+                    * allocation_ratio
+                ),
+                "expected_physical_rescue_quantity": (
+                    candidate
+                    .expected_physical_rescue_quantity
+                    * allocation_ratio
+                ),
+                "expected_waste_quantity": (
+                    candidate.expected_waste_quantity
+                    * allocation_ratio
+                ),
+                "expected_net_recovery": (
+                    allocation.expected_net_recovery
+                ),
+            }
+        )
 
     selected_candidate_ids = {
         allocation.candidate_id
