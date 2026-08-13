@@ -583,3 +583,65 @@ def test_rescue_report_exposes_enriched_allocation_explainability() -> None:
         partial_allocation.binding_constraint_codes
         == optimizer_allocation.binding_constraint_codes
     )
+
+
+
+def test_rescue_report_surfaces_batch_recovery_and_determinism_metadata() -> None:
+    result = run_production_pipeline(
+        workbook_path=WORKBOOK_PATH,
+        runtime_config_path=RUNTIME_CONFIG_PATH,
+        analysis_at=datetime(
+            2026,
+            8,
+            5,
+            tzinfo=UTC,
+        ),
+        request_id=(
+            "PRODUCTION-REPORT-DETERMINISM"
+        ),
+    )
+
+    metrics = result.report.batch_metrics
+
+    expected_rescue = (
+        result.optimization_result
+        .expected_physical_rescue_quantity
+    )
+
+    expected_waste = (
+        metrics.planning_quantity
+        - expected_rescue
+    )
+
+    expected_ratio = (
+        expected_rescue
+        / metrics.planning_quantity
+        if metrics.planning_quantity > 0
+        else Decimal("0")
+    )
+
+    assert (
+        metrics.expected_physical_rescue_quantity
+        == expected_rescue
+    )
+    assert (
+        metrics.expected_waste_quantity
+        == expected_waste
+    )
+    assert (
+        metrics.expected_rescue_ratio
+        == expected_ratio
+    )
+
+    assert (
+        result.report.deterministic_execution
+        is True
+    )
+    assert (
+        result.report.optimizer_random_seed
+        == 0
+    )
+    assert (
+        result.report.optimizer_num_search_workers
+        == 1
+    )

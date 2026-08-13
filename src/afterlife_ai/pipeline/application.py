@@ -54,6 +54,7 @@ from afterlife_ai.pipeline.triage_pipeline import (
 from afterlife_ai.pipeline.value import (
     apply_production_expected_values,
 )
+from afterlife_ai.planner import optimizer as planner_optimizer
 from afterlife_ai.planner.optimizer import OptimizationResult
 from afterlife_ai.planner.report import (
     RescueDecisionReport,
@@ -531,6 +532,14 @@ def _build_report(
         model_execution_performed=(
             model_execution_performed
         ),
+        deterministic_execution=True,
+        optimizer_random_seed=(
+            planner_optimizer.OPTIMIZER_RANDOM_SEED
+        ),
+        optimizer_num_search_workers=(
+            planner_optimizer
+            .OPTIMIZER_NUM_SEARCH_WORKERS
+        ),
         analysis_timestamp=analysis_at,
         batch_metrics={
             "input_lots": len(
@@ -550,6 +559,22 @@ def _build_report(
             ),
             "expected_total_economic_value": (
                 optimization_result.objective_value
+            ),
+            "expected_physical_rescue_quantity": (
+                optimization_result
+                .expected_physical_rescue_quantity
+            ),
+            "expected_waste_quantity": (
+                planning_quantity
+                - optimization_result
+                .expected_physical_rescue_quantity
+            ),
+            "expected_rescue_ratio": (
+                optimization_result
+                .expected_physical_rescue_quantity
+                / planning_quantity
+                if planning_quantity > ZERO
+                else ZERO
             ),
         },
         selected_allocations=selected_allocations,

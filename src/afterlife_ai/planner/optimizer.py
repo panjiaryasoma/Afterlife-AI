@@ -18,6 +18,9 @@ from afterlife_ai.contracts.enums import (
 )
 
 ZERO = Decimal("0")
+
+OPTIMIZER_NUM_SEARCH_WORKERS = 1
+OPTIMIZER_RANDOM_SEED = 0
 ONE = Decimal("1")
 
 # CP-SAT requires integer coefficients. Bound economic
@@ -866,8 +869,12 @@ def optimize_with_cp_sat(
 
     solver = cp_model.CpSolver()
 
-    solver.parameters.num_search_workers = 1
-    solver.parameters.random_seed = 0
+    solver.parameters.num_search_workers = (
+        OPTIMIZER_NUM_SEARCH_WORKERS
+    )
+    solver.parameters.random_seed = (
+        OPTIMIZER_RANDOM_SEED
+    )
 
     status = solver.solve(model)
     project_status = _solver_status(int(status))

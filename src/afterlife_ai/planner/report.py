@@ -171,6 +171,20 @@ class ReportBatchMetrics(BaseModel):
 
     expected_total_economic_value: Decimal
 
+    expected_physical_rescue_quantity: Decimal | None = Field(
+        default=None,
+        ge=ZERO,
+    )
+    expected_waste_quantity: Decimal | None = Field(
+        default=None,
+        ge=ZERO,
+    )
+    expected_rescue_ratio: Decimal | None = Field(
+        default=None,
+        ge=ZERO,
+        le=Decimal("1"),
+    )
+
 
 class RescueDecisionReport(BaseModel):
     """Single advisory user-visible rescue decision report."""
@@ -197,6 +211,13 @@ class RescueDecisionReport(BaseModel):
 
     score_provenance: ReportScoreProvenance
     model_execution_performed: bool
+
+    deterministic_execution: bool | None = None
+    optimizer_random_seed: int | None = None
+    optimizer_num_search_workers: int | None = Field(
+        default=None,
+        ge=1,
+    )
 
     batch_metrics: ReportBatchMetrics
 
@@ -315,6 +336,9 @@ def build_rescue_decision_report(
     optimization_solver_status: SolverStatus,
     score_provenance: dict[str, Any],
     model_execution_performed: bool,
+    deterministic_execution: bool | None = None,
+    optimizer_random_seed: int | None = None,
+    optimizer_num_search_workers: int | None = None,
     analysis_timestamp: datetime,
     batch_metrics: dict[str, Any],
     selected_allocations: list[dict[str, Any]],
@@ -355,6 +379,11 @@ def build_rescue_decision_report(
             **score_provenance
         ),
         model_execution_performed=model_execution_performed,
+        deterministic_execution=deterministic_execution,
+        optimizer_random_seed=optimizer_random_seed,
+        optimizer_num_search_workers=(
+            optimizer_num_search_workers
+        ),
         batch_metrics=ReportBatchMetrics(
             **batch_metrics
         ),
