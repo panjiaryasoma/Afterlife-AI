@@ -47,8 +47,11 @@ Implemented:
 - [x] Deterministic optimizer fallback for non-definitive solver outcomes
 - [x] Explicit infeasible-optimizer reporting
 - [x] Rescue Decision Report
+- [x] Static Partner Demand Registry for demo partner matching
 - [x] FastAPI HTTP interface
-- [x] Minimal Jinja2 web UI
+- [x] Competition-facing Jinja2 decision workspace
+- [x] Decision-context controls for objective, logistics budget, rescue-ratio target, and deadline
+- [x] Explainability views for allocations, alternatives, provenance, human review, and limitations
 - [x] JSON report download
 - [x] Dockerfile and Docker Compose runtime
 - [x] Full local regression suite
@@ -130,6 +133,7 @@ Satu `Rescue Decision Report` yang mencakup:
 - feature schema version;
 - ruleset version;
 - capability snapshot version;
+- partner-registry provenance;
 - optimization objective;
 - optimization solver status;
 - scoring provenance;
@@ -139,6 +143,7 @@ Satu `Rescue Decision Report` yang mencakup:
 - manual-review items;
 - allocated and unallocated planning quantity;
 - expected economic value;
+- deterministic-execution metadata;
 - fallback information;
 - known limitations;
 - final human approval status.
@@ -217,7 +222,18 @@ Domain contract mencakup action vocabulary:
 
 Technical MVP runtime menggunakan static capability configuration dan hanya menghasilkan tindakan yang diaktifkan serta feasible pada runtime configuration aktif.
 
+`capabilities.supported_actions` merepresentasikan **runtime-enabled action profile**, bukan keseluruhan domain catalog dan bukan jaminan bahwa suatu action selalu feasible. Action yang aktif tetap harus memenuhi capability-specific limits, request context, category/SKU compatibility, demand/capacity evidence, deterministic hard gates, serta shared optimization constraints yang relevan.
+
 Tidak semua domain action wajib aktif pada satu demo configuration.
+
+### Interface Design Contract
+
+Submission-facing UI menggunakan runtime FastAPI + Jinja2 yang sama dengan production pipeline. Tidak ada implementasi business logic kedua khusus untuk presentation layer.
+
+Visual identity dan interface behavior mengikuti:
+
+- [`BRAND_GUIDELINES.md`](BRAND_GUIDELINES.md)
+- [`DESIGN.md`](DESIGN.md)
 
 ---
 
@@ -230,6 +246,8 @@ User / Browser
 Web Interface
 |-- Jinja2
 |-- HTML / CSS / JavaScript
+|-- decision-context controls
+|-- explainability and provenance views
 `-- JSON Report Download
     |
     v
@@ -261,6 +279,8 @@ Deterministic Triage
     v
 Rescue Planning
 |-- planning-lot construction
+|-- runtime capability profile
+|-- static Partner Demand Registry
 `-- candidate generation
     |
     v
@@ -268,10 +288,11 @@ Deterministic Hard Gates
 |-- safety
 |-- verification
 |-- storage compatibility
-|-- timing
+|-- timing / rescue deadline
 |-- action eligibility
 |-- shelf-life
 |-- logistics
+|-- partner demand / capacity / compatibility
 `-- capability / coverage
     |
     v
@@ -287,14 +308,20 @@ Global Allocation Optimization
 |-- CP-SAT
 |-- quantity constraints
 |-- shared-capacity constraints
+|-- request-level logistics budget
+|-- objective selection
 `-- deterministic fallback for non-definitive outcomes
     |
     v
 Rescue Decision Report
-|-- allocation
-|-- unallocated quantity
+|-- selected allocations
+|-- rejected / unselected alternatives
+|-- allocated and unallocated quantity
+|-- batch rescue / waste metrics
 |-- optimization solver status
 |-- scoring provenance
+|-- partner-registry provenance
+|-- deterministic execution metadata
 |-- review flags
 |-- limitations
 `-- human approval status
@@ -305,6 +332,7 @@ Rescue Decision Report
 ```text
 Runtime Contracts & Configuration
 |-- configs/runtime_v1.yaml
+|-- configs/partner_registry_demo_v1.yaml
 |-- docs/contracts/FEATURE_SCHEMA_FINAL_v2.0.yaml
 |-- docs/evaluation_source_v1.0/domain_rules_v1.0.yaml
 |-- docs/evaluation_source_v1.0/evaluation_spec_v1.0.yaml
@@ -341,6 +369,13 @@ Frontend:
 ```text
 frontend/templates/
 frontend/static/
+```
+
+Partner registry runtime:
+
+```text
+src/afterlife_ai/pipeline/partner_registry.py
+configs/partner_registry_demo_v1.yaml
 ```
 
 ---
@@ -416,6 +451,8 @@ Afterlife-AI/
 |   |-- integration/
 |   `-- unit/
 |
+|-- BRAND_GUIDELINES.md
+|-- DESIGN.md
 |-- Dockerfile
 |-- compose.yaml
 |-- pyproject.toml
@@ -464,7 +501,9 @@ Health endpoint:
 
 ### `GET /`
 
-Renders the minimal Jinja2 inventory-analysis interface.
+Renders the submission-facing Afterlife AI rescue decision workspace built with Jinja2, HTML, CSS, and vanilla JavaScript.
+
+The interface exposes inventory upload, decision-context controls, rescue summary, selected allocations, alternatives, human-review state, provenance, known limitations, and JSON report download.
 
 ### `GET /health`
 
@@ -479,11 +518,17 @@ Expected response:
 
 ### `POST /api/analyze`
 
-Accepts multipart upload:
+Accepts multipart form input:
 
 ```text
 inventory_file=<one .xlsx workbook>
+optimization_objective=<MAXIMIZE_RECOVERY_VALUE | MINIMIZE_WASTE | BALANCED>
+max_logistics_budget=<optional non-negative decimal>
+minimum_expected_rescue_ratio=<required only for BALANCED; value 0..1>
+rescue_deadline_at=<optional timezone-aware datetime>
 ```
+
+`optimization_objective` defaults to `MAXIMIZE_RECOVERY_VALUE` when omitted.
 
 Processing is synchronous.
 
@@ -568,7 +613,7 @@ uv run pytest -q
 Latest local Technical MVP regression:
 
 ```text
-294 passed
+319 passed
 0 failed
 ```
 
@@ -593,7 +638,7 @@ uv run mypy src backend
 Latest result:
 
 ```text
-Success: no issues found in 68 source files
+Success: no issues found in 69 source files
 ```
 
 Important test coverage includes:
@@ -604,22 +649,26 @@ Important test coverage includes:
 - `INTEGRATION-001`;
 - production triage pipeline;
 - production candidate generation;
+- static Partner Demand Registry integration;
 - deterministic hard gates;
 - model scoring;
 - deterministic scoring fallback;
 - fallback hard-gate preservation;
 - expected-value calculation;
 - shared-capacity optimization;
+- request-level optimization constraints;
 - quantity conservation;
 - deterministic optimizer fallback;
 - infeasible optimizer semantics;
 - application end-to-end pipeline;
-- API happy path;
-- API invalid upload;
+- API happy path and malformed input;
+- decision-context UI contract;
 - web UI smoke test;
 - JSON report download behavior.
 
 The current locked dependency set has been re-verified from a fresh environment. The previous Starlette TestClient and NumPy/joblib model-loading deprecation warnings are no longer reproducible. A fresh locked-environment regression run also passes with `DeprecationWarning` promoted to errors.
+
+Repository-wide Ruff invocation may surface pre-existing `E501` line-length findings in evaluation notebooks. The production lint gate intentionally targets `src`, `tests`, `backend`, and `scripts`; locked evaluation notebook content is not modified merely to satisfy source-code formatting.
 
 ---
 
@@ -660,6 +709,7 @@ Therefore:
 - the model does not determine safety;
 - the model cannot bypass deterministic hard gates;
 - static runtime capability and pricing parameters are not validated real-world operating thresholds;
+- Partner Demand Registry records used by the demo are static synthetic fixtures and are not verified real-world partner commitments;
 - synthetic evaluation does not prove real-world business effectiveness;
 - final decisions require human review.
 
@@ -673,14 +723,15 @@ Technical MVP limitations:
 - real-world probability calibration has not been validated;
 - runtime capability, cost, capacity, and price parameters are static MVP defaults;
 - business adoption and willingness-to-pay remain unvalidated;
-- Partner Demand Registry is not currently wired into the production runtime; partner-demand rules and fixtures are retained as preproduction and evaluation evidence;
+- Partner Demand Registry is wired into the production runtime using a static synthetic demo fixture that is explicitly not real-world verified;
+- partner demand, availability, capacity, pricing, and compatibility data are not live marketplace or internet data;
 - no authentication or multi-user isolation;
 - no server-side history or database;
 - no automatic action execution;
 - an infeasible optimization result produces no automatic rescue allocation and requires human exception review;
 - no automatic retraining or online learning;
 - runtime is designed for one synchronous analysis request;
-- UI is functional MVP styling, not final competition polish.
+- the current UI is competition-facing polish for the Technical MVP, not a production multi-user application.
 
 These limitations are disclosed intentionally and should not be interpreted as validated real-world capabilities.
 
@@ -758,6 +809,8 @@ GET / -> 200
 clean shutdown -> PASS
 ```
 
+The clean-clone evidence above refers to the locked Technical MVP checkpoint. The current local hardening regression after Issue 7 changes is `319 passed`; a fresh-clone re-verification will be repeated during final release audit before `submission_ready` is changed.
+
 ---
 
 ## Development Workflow
@@ -808,10 +861,13 @@ Technical MVP readiness does not mean final competition submission readiness.
 Primary implementation references include:
 
 - `SIMPLE_PRD_v1.1_UPDATED.md`
+- `BRAND_GUIDELINES.md`
+- `DESIGN.md`
 - `docs/contracts/FEATURE_SCHEMA_FINAL_v2.0.yaml`
 - `docs/evaluation_source_v1.0/domain_rules_v1.0.yaml`
 - `docs/evaluation_source_v1.0/evaluation_spec_v1.0.yaml`
 - `configs/runtime_v1.yaml`
-- executable acceptance, integration, and regression tests.
+- `configs/partner_registry_demo_v1.yaml`
+- executable acceptance, integration, API, UI, and regression tests.
 
 Where documentation and executable contracts disagree, active contracts and passing tests should be treated as the implementation source of truth.

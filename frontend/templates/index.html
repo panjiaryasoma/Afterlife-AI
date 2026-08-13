@@ -2,57 +2,229 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Afterlife AI</title>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+    <meta
+        name="description"
+        content="Afterlife AI surplus inventory rescue decision workspace."
+    >
+    <title>Afterlife AI — Rescue Decision Workspace</title>
     <link rel="stylesheet" href="/static/css/app.css">
 </head>
 <body>
-    <main class="shell">
-        <section class="hero">
-            <p class="eyebrow">RESCUE INVENTORY PLANNING</p>
-            <h1>Afterlife AI</h1>
-            <p class="subtitle">
-                Turn surplus inventory into a traceable rescue plan.
-            </p>
+    <a class="skip-link" href="#main-content">
+        Skip to content
+    </a>
+
+    <header class="site-header">
+        <div class="shell site-header__inner">
+            <a class="wordmark" href="/" aria-label="Afterlife AI home">
+                AFTERLIFE AI
+            </a>
+
+            <div class="system-state" aria-label="System status">
+                <span class="system-state__dot" aria-hidden="true"></span>
+                SYSTEM READY
+            </div>
+        </div>
+    </header>
+
+    <main id="main-content" class="shell">
+        <section class="hero" aria-labelledby="hero-title">
+            <div class="hero__copy">
+                <p class="section-kicker">RESCUE INVENTORY PLANNING</p>
+                <h1 id="hero-title">
+                    Give surplus inventory
+                    <span>another useful life.</span>
+                </h1>
+            </div>
+
+            <div class="hero__aside">
+                <p>
+                    Decision support for constrained surplus rescue.
+                    Validate inventory, enforce hard gates, compare feasible
+                    actions, and produce a traceable advisory plan.
+                </p>
+
+                <dl class="hero__facts">
+                    <div>
+                        <dt>Execution</dt>
+                        <dd>Advisory only</dd>
+                    </div>
+                    <div>
+                        <dt>Approval</dt>
+                        <dd>Human required</dd>
+                    </div>
+                    <div>
+                        <dt>Runtime</dt>
+                        <dd>Deterministic gates</dd>
+                    </div>
+                </dl>
+            </div>
         </section>
 
-        <section class="panel">
-            <h2>Inventory Analysis</h2>
-            <p>
-                Upload one XLSX inventory workbook. Afterlife AI will validate,
-                triage, score feasible rescue actions, optimize allocation,
-                and return an advisory Rescue Decision Report.
-            </p>
-
-            <form id="analysis-form">
-                <label for="inventory-file">
-                    Inventory workbook
-                </label>
-
-                <input
-                    id="inventory-file"
-                    name="inventory_file"
-                    type="file"
-                    accept=".xlsx"
-                    required
-                >
-
-                <button id="analyze-button" type="submit">
-                    Analyze Inventory
-                </button>
-            </form>
-
-            <p id="status-message" class="status" aria-live="polite"></p>
-        </section>
-
-        <section id="results" class="panel hidden">
+        <section
+            class="workspace-section"
+            aria-labelledby="decision-context-title"
+        >
             <div class="section-heading">
                 <div>
-                    <p class="eyebrow">RESCUE DECISION REPORT</p>
-                    <h2>Analysis Result</h2>
+                    <p class="section-index">
+                        01 / DECISION CONTEXT
+                    </p>
+                    <h2 id="decision-context-title">
+                        Define the rescue boundary.
+                    </h2>
                 </div>
 
-                <div class="result-actions">
+                <p class="section-note">
+                    One XLSX request. Constraints are evaluated before
+                    allocation.
+                </p>
+            </div>
+
+            <form id="analysis-form" class="analysis-form">
+                <div class="field field--wide">
+                    <label for="inventory-file">
+                        Inventory workbook
+                        <span class="required-mark" aria-hidden="true">*</span>
+                    </label>
+
+                    <div class="file-control">
+                        <input
+                            id="inventory-file"
+                            name="inventory_file"
+                            type="file"
+                            accept=".xlsx"
+                            required
+                        >
+                    </div>
+
+                    <p class="field-help">
+                        Upload one valid .xlsx inventory workbook.
+                    </p>
+                </div>
+
+                <div class="field">
+                    <label for="optimization-objective">
+                        Optimization objective
+                    </label>
+
+                    <select
+                        id="optimization-objective"
+                        name="optimization_objective"
+                    >
+                        <option value="MAXIMIZE_RECOVERY_VALUE" selected>
+                            Maximize recovery value
+                        </option>
+                        <option value="MINIMIZE_WASTE">
+                            Minimize waste
+                        </option>
+                        <option value="BALANCED">
+                            Balanced
+                        </option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="max-logistics-budget">
+                        Max logistics budget
+                    </label>
+
+                    <input
+                        id="max-logistics-budget"
+                        name="max_logistics_budget"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        inputmode="decimal"
+                        placeholder="Optional"
+                    >
+
+                    <p class="field-help">
+                        Leave blank for no request-level budget cap.
+                    </p>
+                </div>
+
+                <div class="field">
+                    <label for="minimum-rescue-ratio">
+                        Minimum expected rescue ratio
+                    </label>
+
+                    <input
+                        id="minimum-rescue-ratio"
+                        name="minimum_expected_rescue_ratio"
+                        type="number"
+                        min="0"
+                        max="1"
+                        step="0.01"
+                        inputmode="decimal"
+                        placeholder="Required for Balanced"
+                        disabled
+                    >
+
+                    <p id="rescue-ratio-help" class="field-help">
+                        Enabled when the Balanced objective is selected.
+                    </p>
+                </div>
+
+                <div class="field">
+                    <label for="rescue-deadline">
+                        Rescue deadline
+                    </label>
+
+                    <input
+                        id="rescue-deadline"
+                        name="rescue_deadline_at"
+                        type="datetime-local"
+                    >
+
+                    <p class="field-help">
+                        Optional. Submitted as a timezone-aware timestamp.
+                    </p>
+                </div>
+
+                <div class="form-actions field--wide">
+                    <div>
+                        <p class="form-assurance">
+                            Hard safety and feasibility gates cannot be
+                            overridden by model scoring.
+                        </p>
+                    </div>
+
+                    <button
+                        id="analyze-button"
+                        class="primary-button"
+                        type="submit"
+                    >
+                        <span class="button-label">Analyze Inventory</span>
+                        <span class="button-arrow" aria-hidden="true">→</span>
+                    </button>
+                </div>
+            </form>
+
+            <div
+                id="status-message"
+                class="status-message"
+                role="status"
+                aria-live="polite"
+            ></div>
+        </section>
+
+        <section
+            id="results"
+            class="results hidden"
+            aria-labelledby="report-title"
+        >
+            <div class="report-heading">
+                <div>
+                    <p class="section-kicker">RESCUE DECISION REPORT</p>
+                    <h2 id="report-title">Analysis result.</h2>
+                </div>
+
+                <div class="report-heading__actions">
                     <span id="scoring-provider" class="badge"></span>
 
                     <button
@@ -65,18 +237,139 @@
                 </div>
             </div>
 
-            <div id="metrics" class="metric-grid"></div>
+            <div id="report-meta" class="report-meta"></div>
 
-            <h3>Selected Allocations</h3>
-            <div id="allocations"></div>
+            <section
+                class="workspace-section result-section"
+                aria-labelledby="rescue-summary-title"
+            >
+                <div class="section-heading">
+                    <div>
+                        <p class="section-index">02 / RESCUE SUMMARY</p>
+                        <h2 id="rescue-summary-title">
+                            What the plan preserves.
+                        </h2>
+                    </div>
 
-            <h3>Review Required</h3>
-            <div id="reviews"></div>
+                    <div id="solver-state" class="solver-state"></div>
+                </div>
 
-            <h3>Limitations</h3>
-            <ul id="limitations"></ul>
+                <div id="metrics" class="metric-grid"></div>
+            </section>
+
+            <section
+                class="workspace-section result-section"
+                aria-labelledby="selected-plan-title"
+            >
+                <div class="section-heading">
+                    <div>
+                        <p class="section-index">
+                            03 / SELECTED RESCUE PLAN
+                        </p>
+                        <h2 id="selected-plan-title">
+                            Allocations selected under current constraints.
+                        </h2>
+                    </div>
+
+                    <p class="section-note">
+                        Model outputs are estimates. Final execution requires
+                        human approval.
+                    </p>
+                </div>
+
+                <div id="allocations" class="allocation-list"></div>
+            </section>
+
+            <section
+                class="workspace-section result-section"
+                aria-labelledby="alternatives-title"
+            >
+                <div class="section-heading">
+                    <div>
+                        <p class="section-index">04 / ALTERNATIVES</p>
+                        <h2 id="alternatives-title">
+                            Candidates not carried into the final allocation.
+                        </h2>
+                    </div>
+                </div>
+
+                <div
+                    id="rejected-candidates"
+                    class="alternative-list"
+                ></div>
+            </section>
+
+            <section
+                class="workspace-section result-section"
+                aria-labelledby="human-review-title"
+            >
+                <div class="section-heading">
+                    <div>
+                        <p class="section-index">05 / HUMAN REVIEW</p>
+                        <h2 id="human-review-title">
+                            Human authority remains final.
+                        </h2>
+                    </div>
+                </div>
+
+                <div id="review-banner" class="review-banner"></div>
+                <div id="reviews" class="review-list"></div>
+            </section>
+
+            <section
+                class="workspace-section result-section"
+                aria-labelledby="evidence-title"
+            >
+                <div class="section-heading">
+                    <div>
+                        <p class="section-index">06 / EVIDENCE</p>
+                        <h2 id="evidence-title">
+                            Provenance before confidence.
+                        </h2>
+                    </div>
+
+                    <p class="section-note">
+                        Synthetic, static, and model-derived evidence is
+                        labeled explicitly.
+                    </p>
+                </div>
+
+                <div id="provenance" class="provenance-grid"></div>
+            </section>
+
+            <section
+                class="workspace-section result-section"
+                aria-labelledby="limitations-title"
+            >
+                <div class="section-heading">
+                    <div>
+                        <p class="section-index">07 / LIMITATIONS</p>
+                        <h2 id="limitations-title">
+                            What this report does not claim.
+                        </h2>
+                    </div>
+                </div>
+
+                <ul id="limitations" class="limitations-list"></ul>
+
+                <div class="advisory-note">
+                    <strong>Advisory boundary</strong>
+                    <p>
+                        Afterlife AI does not execute discounts, transfers,
+                        repurposing, partner handoffs, or disposal actions
+                        automatically.
+                    </p>
+                </div>
+            </section>
         </section>
     </main>
+
+    <footer class="site-footer">
+        <div class="shell site-footer__inner">
+            <span>Afterlife AI</span>
+            <span>Traceable surplus rescue decision support.</span>
+        </div>
+    </footer>
 
     <script src="/static/js/app.js"></script>
 </body>

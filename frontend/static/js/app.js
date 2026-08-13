@@ -1,83 +1,630 @@
 const form = document.querySelector("#analysis-form");
 const fileInput = document.querySelector("#inventory-file");
+const objectiveInput = document.querySelector("#optimization-objective");
+const budgetInput = document.querySelector("#max-logistics-budget");
+const rescueRatioInput = document.querySelector("#minimum-rescue-ratio");
+const deadlineInput = document.querySelector("#rescue-deadline");
 const button = document.querySelector("#analyze-button");
 const statusMessage = document.querySelector("#status-message");
+
 const results = document.querySelector("#results");
+const reportMeta = document.querySelector("#report-meta");
 const metrics = document.querySelector("#metrics");
+const solverState = document.querySelector("#solver-state");
 const allocations = document.querySelector("#allocations");
+const rejectedCandidates = document.querySelector("#rejected-candidates");
+const reviewBanner = document.querySelector("#review-banner");
 const reviews = document.querySelector("#reviews");
+const provenance = document.querySelector("#provenance");
 const limitations = document.querySelector("#limitations");
 const scoringProvider = document.querySelector("#scoring-provider");
 const downloadReport = document.querySelector("#download-report");
 
 let latestReport = null;
 
-function metric(label, value) {
+const numberFormatter = new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: 2,
+});
+
+const currencyFormatter = new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    maximumFractionDigits: 0,
+});
+
+function escapeHtml(value) {
+    return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+function humanizeEnum(value) {
+    if (value === null || value === undefined || value === "") {
+        return "Not provided";
+    }
+
+    return String(value)
+        .replaceAll("_", " ")
+        .toLowerCase()
+        .replace(/\b\w/g, (character) => character.toUpperCase());
+}
+
+function formatNumber(value) {
+    if (value === null || value === undefined || value === "") {
+        return "—";
+    }
+
+    const numeric = Number(value);
+
+    return Number.isFinite(numeric)
+        ? numberFormatter.format(numeric)
+        : escapeHtml(value);
+}
+
+function formatQuantity(value) {
+    return formatNumber(value);
+}
+
+function formatCurrency(value) {
+    if (value === null || value === undefined || value === "") {
+        return "—";
+    }
+
+    const numeric = Number(value);
+
+    return Number.isFinite(numeric)
+        ? currencyFormatter.format(numeric)
+        : escapeHtml(value);
+}
+
+function formatPercent(value) {
+    if (value === null || value === undefined || value === "") {
+        return "—";
+    }
+
+    const numeric = Number(value);
+
+    return Number.isFinite(numeric)
+        ? `${numberFormatter.format(numeric * 100)}%`
+        : escapeHtml(value);
+}
+
+function formatHours(value) {
+    if (value === null || value === undefined || value === "") {
+        return "—";
+    }
+
+    return `${formatNumber(value)} h`;
+}
+
+function formatDistance(value) {
+    if (value === null || value === undefined || value === "") {
+        return "—";
+    }
+
+    return `${formatNumber(value)} km`;
+}
+
+function formatBoolean(value, trueLabel, falseLabel) {
+    if (value === null || value === undefined) {
+        return "Not reported";
+    }
+
+    return value ? trueLabel : falseLabel;
+}
+
+function safeArray(value) {
+    return Array.isArray(value) ? value : [];
+}
+
+function setStatus(message, state = "neutral") {
+    statusMessage.textContent = message;
+    statusMessage.dataset.state = state;
+}
+
+function badge(label, variant = "") {
+    const className = variant
+        ? `badge badge--${variant}`
+        : "badge";
+
+    return `<span class="${className}">${escapeHtml(label)}</span>`;
+}
+
+function metric(label, value, note = "") {
     return `
         <div class="metric">
-            <span class="muted">${label}</span>
-            <strong>${value}</strong>
+            <span class="metric__label">${escapeHtml(label)}</span>
+            <strong class="metric__value">${escapeHtml(value)}</strong>
+            <span class="metric__note">${escapeHtml(note)}</span>
         </div>
     `;
 }
 
-function renderReport(report) {
-    const batch = report.batch_metrics;
+function fact(label, value) {
+    return `
+        <div class="fact">
+            <span class="fact__label">${escapeHtml(label)}</span>
+            <span class="fact__value">${escapeHtml(value)}</span>
+        </div>
+    `;
+}
+
+function codeChips(codes) {
+    const items = safeArray(codes);
+
+    if (items.length === 0) {
+        return '<span class="code-chip">NO BINDING CODE REPORTED</span>';
+    }
+
+    return items
+        .map(
+            (code) =>
+                `<span class="code-chip">${escapeHtml(code)}</span>`
+        )
+        .join("");
+}
+
+function solverBadge(status) {
+    const normalized = String(status || "").toUpperCase();
+
+    if (normalized === "OPTIMAL" || normalized === "FEASIBLE") {
+        return badge(normalized, "success");
+    }
+
+    if (normalized === "INFEASIBLE") {
+        return badge(normalized, "danger");
+    }
+
+    if (normalized) {
+        return badge(normalized, "warning");
+    }
+
+    return badge("NOT REPORTED");
+}
+
+function updateObjectiveControls() {
+    const balanced = objectiveInput.value === "BALANCED";
+
+    rescueRatioInput.disabled = !balanced;
+    rescueRatioInput.required = balanced;
+
+    if (!balanced) {
+        rescueRatioInput.value = "";
+    }
+}
+
+function renderSummary(report) {
+    const batch = report.batch_metrics || {};
 
     metrics.innerHTML = [
-        metric("Input lots", batch.input_lots),
-        metric("Input quantity", batch.input_quantity),
-        metric("Protected", batch.protected_quantity),
-        metric("Monitor", batch.monitor_quantity),
-        metric("Planning", batch.planning_quantity),
-        metric("Allocated", batch.allocated_planning_quantity),
-        metric("Unallocated", batch.unallocated_planning_quantity),
-        metric("Expected value", batch.expected_total_economic_value),
+        metric(
+            "Planning quantity",
+            formatQuantity(batch.planning_quantity),
+            "Units eligible for rescue planning"
+        ),
+        metric(
+            "Allocated",
+            formatQuantity(batch.allocated_planning_quantity),
+            "Planning quantity assigned"
+        ),
+        metric(
+            "Unallocated",
+            formatQuantity(batch.unallocated_planning_quantity),
+            "Planning quantity left unassigned"
+        ),
+        metric(
+            "Expected rescue",
+            formatQuantity(batch.expected_physical_rescue_quantity),
+            "Model/plan estimate"
+        ),
+        metric(
+            "Expected waste",
+            formatQuantity(batch.expected_waste_quantity),
+            "Model/plan estimate"
+        ),
+        metric(
+            "Expected rescue ratio",
+            formatPercent(batch.expected_rescue_ratio),
+            "Estimated, not observed"
+        ),
+        metric(
+            "Expected economic value",
+            formatCurrency(batch.expected_total_economic_value),
+            "Under current objective"
+        ),
+        metric(
+            "Review quantity",
+            formatQuantity(batch.review_quantity),
+            "Held for human review"
+        ),
     ].join("");
 
-    scoringProvider.textContent =
-        report.score_provenance.provider_name;
+    solverState.innerHTML = solverBadge(
+        report.optimization_solver_status
+    );
+}
 
-    if (report.selected_allocations.length === 0) {
-        allocations.innerHTML =
-            '<p class="muted">No rescue allocation selected.</p>';
-    } else {
-        allocations.innerHTML = report.selected_allocations
-            .map(
-                (item) => `
-                    <div class="allocation">
-                        <strong>${item.action_type}</strong><br>
-                        Lot: ${item.source_lot_id}<br>
-                        Quantity: ${item.allocated_quantity}<br>
-                        Expected recovery: ${item.expected_net_recovery}
-                    </div>
-                `
-            )
-            .join("");
+function renderAllocations(report) {
+    const selected = safeArray(report.selected_allocations);
+
+    if (selected.length === 0) {
+        allocations.innerHTML = `
+            <p class="empty-state">
+                No rescue allocation selected.
+            </p>
+        `;
+        return;
     }
 
-    if (report.review_required_lots.length === 0) {
-        reviews.innerHTML =
-            '<p class="muted">No lot requires manual review.</p>';
-    } else {
-        reviews.innerHTML = report.review_required_lots
-            .map(
-                (item) => `
-                    <div class="allocation">
-                        <strong>${item.source_lot_id}</strong><br>
-                        Review quantity: ${item.review_quantity}<br>
-                        ${item.reason_codes.join(", ")}
+    allocations.innerHTML = selected
+        .map((item, index) => {
+            const source = escapeHtml(item.source_lot_id);
+            const destination = item.destination_id
+                ? escapeHtml(item.destination_id)
+                : "No external destination";
+            const destinationType = item.destination_type
+                ? ` · ${escapeHtml(humanizeEnum(item.destination_type))}`
+                : "";
+            const score = item.estimated_rescue_success_score === null
+                || item.estimated_rescue_success_score === undefined
+                ? "Not estimated"
+                : `${formatPercent(item.estimated_rescue_success_score)} · synthetic-model estimate`;
+
+            return `
+                <article class="allocation-block">
+                    <div class="allocation-block__header">
+                        <div class="allocation-block__number">
+                            ${String(index + 1).padStart(2, "0")}
+                        </div>
+
+                        <div>
+                            <h3 class="allocation-block__title">
+                                ${escapeHtml(humanizeEnum(item.action_type))}
+                            </h3>
+                            <div class="route">
+                                ${source} → ${destination}${destinationType}
+                            </div>
+                        </div>
+
+                        <div class="allocation-block__quantity">
+                            <strong>${formatQuantity(item.allocated_quantity)}</strong>
+                            <span>allocated units</span>
+                        </div>
                     </div>
-                `
-            )
-            .join("");
+
+                    <div class="allocation-block__body">
+                        <div class="allocation-detail">
+                            <div class="fact-grid">
+                                ${fact("Estimated rescue success", score)}
+                                ${fact(
+                                    "Completion",
+                                    formatHours(item.estimated_completion_hours)
+                                )}
+                                ${fact(
+                                    "Distance",
+                                    formatDistance(item.distance_km)
+                                )}
+                                ${fact(
+                                    "Value / unit",
+                                    formatCurrency(item.expected_value_per_unit)
+                                )}
+                                ${fact(
+                                    "Expected rescued qty",
+                                    formatQuantity(
+                                        item.expected_physical_rescue_quantity
+                                    )
+                                )}
+                                ${fact(
+                                    "Expected waste qty",
+                                    formatQuantity(item.expected_waste_quantity)
+                                )}
+                                ${fact(
+                                    "Selling / offer price",
+                                    formatCurrency(
+                                        item.offered_or_selling_price_per_unit
+                                    )
+                                )}
+                                ${fact(
+                                    "Candidate ID",
+                                    item.candidate_id || "—"
+                                )}
+                            </div>
+
+                            <div class="value-breakdown">
+                                <dl>
+                                    <div>
+                                        <dt>Cash recovery</dt>
+                                        <dd>${formatCurrency(item.expected_cash_recovery)}</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Future branch recovery</dt>
+                                        <dd>${formatCurrency(item.expected_future_branch_recovery)}</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Avoided purchase cost</dt>
+                                        <dd>${formatCurrency(item.expected_avoided_purchase_cost)}</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Direct action cost</dt>
+                                        <dd>${formatCurrency(item.direct_action_cost)}</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Logistics cost</dt>
+                                        <dd>${formatCurrency(item.logistics_cost)}</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Handling cost</dt>
+                                        <dd>${formatCurrency(item.handling_cost)}</dd>
+                                    </div>
+                                </dl>
+
+                                <div class="net-recovery">
+                                    <span>Expected net recovery</span>
+                                    <strong>${formatCurrency(item.expected_net_recovery)}</strong>
+                                </div>
+                            </div>
+
+                            <div
+                                class="constraint-row"
+                                aria-label="Binding constraints"
+                            >
+                                ${codeChips(item.binding_constraint_codes)}
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            `;
+        })
+        .join("");
+}
+
+function renderAlternatives(report) {
+    const items = safeArray(report.rejected_candidates);
+
+    if (items.length === 0) {
+        rejectedCandidates.innerHTML = `
+            <p class="empty-state">
+                No alternative candidate is recorded in this report.
+            </p>
+        `;
+        return;
     }
 
-    limitations.innerHTML = report.limitations
-        .map((item) => `<li>${item}</li>`)
+    rejectedCandidates.innerHTML = items
+        .map((item) => {
+            const reasons = safeArray(item.rejection_reason_codes);
+            const optimizerNotSelected = reasons.includes(
+                "OPTIMIZER_NOT_SELECTED"
+            );
+            const stateLabel = optimizerNotSelected
+                ? "FEASIBLE — NOT SELECTED"
+                : "NOT CARRIED FORWARD";
+
+            return `
+                <article class="alternative-item">
+                    <div>
+                        <h3>${escapeHtml(humanizeEnum(item.action_type))}</h3>
+                        <p>
+                            ${escapeHtml(item.candidate_id)} ·
+                            ${escapeHtml(item.planning_lot_id)}
+                            · ${escapeHtml(stateLabel)}
+                        </p>
+                    </div>
+
+                    <div class="reason-list">
+                        ${codeChips(reasons)}
+                    </div>
+                </article>
+            `;
+        })
+        .join("");
+}
+
+function renderReviews(report) {
+    const items = safeArray(report.review_required_lots);
+    const reviewRequired = Boolean(
+        report.human_exception_review_required
+    );
+    const approval = humanizeEnum(
+        report.human_final_approval_status
+    );
+
+    if (reviewRequired || items.length > 0) {
+        reviewBanner.dataset.state = "review";
+        reviewBanner.innerHTML = `
+            <strong>Human review required.</strong>
+            <p>
+                Final approval status: ${escapeHtml(approval)}.
+                No physical action is executed automatically.
+            </p>
+        `;
+    } else {
+        reviewBanner.dataset.state = "clear";
+        reviewBanner.innerHTML = `
+            <strong>No exception review is currently required.</strong>
+            <p>
+                Final approval status remains ${escapeHtml(approval)}.
+                The report is still advisory.
+            </p>
+        `;
+    }
+
+    if (items.length === 0) {
+        reviews.innerHTML = `
+            <p class="empty-state">
+                No lot is held in the manual-review queue.
+            </p>
+        `;
+        return;
+    }
+
+    reviews.innerHTML = items
+        .map(
+            (item) => `
+                <article class="review-item">
+                    <div>
+                        <h3>${escapeHtml(item.source_lot_id)}</h3>
+                        <p>
+                            Review quantity:
+                            ${formatQuantity(item.review_quantity)}
+                        </p>
+                    </div>
+
+                    <div class="reason-list">
+                        ${codeChips(item.reason_codes)}
+                    </div>
+                </article>
+            `
+        )
+        .join("");
+}
+
+function provenanceCard(label, title, rows, badges = []) {
+    const rowMarkup = rows
+        .map(
+            ([key, value]) => `
+                <div>
+                    <dt>${escapeHtml(key)}</dt>
+                    <dd>${escapeHtml(value)}</dd>
+                </div>
+            `
+        )
         .join("");
 
+    const badgeMarkup = badges.length
+        ? `<div class="constraint-row">${badges.join("")}</div>`
+        : "";
+
+    return `
+        <article class="provenance-card">
+            <p class="provenance-card__label">${escapeHtml(label)}</p>
+            <h3>${escapeHtml(title)}</h3>
+            <dl class="provenance-list">${rowMarkup}</dl>
+            ${badgeMarkup}
+        </article>
+    `;
+}
+
+function renderProvenance(report) {
+    const score = report.score_provenance || {};
+    const registrySource = report.partner_registry_source_type;
+    const syntheticRegistry = registrySource === "SYNTHETIC_DEMO_FIXTURE";
+    const deterministic = report.deterministic_execution;
+
+    provenance.innerHTML = [
+        provenanceCard(
+            "Scoring",
+            score.provider_name || "Not reported",
+            [
+                ["Score type", humanizeEnum(score.score_type)],
+                ["Source type", humanizeEnum(score.source_type)],
+                ["Fixture version", score.fixture_version || "Not applicable"],
+                [
+                    "Model executed",
+                    formatBoolean(
+                        report.model_execution_performed,
+                        "Yes",
+                        "No"
+                    ),
+                ],
+            ],
+            score.source_type === "EVALUATION_FIXTURE"
+                ? [badge("Evaluation fixture", "synthetic")]
+                : []
+        ),
+        provenanceCard(
+            "Partner registry",
+            report.partner_registry_snapshot_id || "No registry snapshot",
+            [
+                ["Source type", humanizeEnum(registrySource)],
+                [
+                    "Real-world verified",
+                    formatBoolean(
+                        report.partner_registry_real_world_verified,
+                        "Yes",
+                        "No"
+                    ),
+                ],
+                ["Capability snapshot", report.capability_snapshot_version],
+                ["Ruleset", report.ruleset_version],
+            ],
+            [
+                syntheticRegistry
+                    ? badge("Synthetic demo fixture", "synthetic")
+                    : "",
+                report.partner_registry_real_world_verified === false
+                    ? badge("Not real-world verified", "warning")
+                    : "",
+            ].filter(Boolean)
+        ),
+        provenanceCard(
+            "Optimizer",
+            humanizeEnum(report.optimization_objective),
+            [
+                [
+                    "Solver status",
+                    humanizeEnum(report.optimization_solver_status),
+                ],
+                [
+                    "Deterministic execution",
+                    formatBoolean(deterministic, "Yes", "No"),
+                ],
+                [
+                    "Random seed",
+                    report.optimizer_random_seed ?? "Not reported",
+                ],
+                [
+                    "Search workers",
+                    report.optimizer_num_search_workers ?? "Not reported",
+                ],
+            ],
+            deterministic === true
+                ? [badge("Deterministic", "success")]
+                : []
+        ),
+    ].join("");
+}
+
+function renderLimitations(report) {
+    const items = safeArray(report.limitations);
+
+    if (items.length === 0) {
+        limitations.innerHTML = `
+            <li>No additional limitation text was reported.</li>
+        `;
+        return;
+    }
+
+    limitations.innerHTML = items
+        .map((item) => `<li>${escapeHtml(item)}</li>`)
+        .join("");
+}
+
+function renderReport(report) {
+    const timestamp = report.analysis_timestamp
+        ? new Date(report.analysis_timestamp).toLocaleString()
+        : "Not reported";
+
+    reportMeta.innerHTML = `
+        <span>Request · ${escapeHtml(report.request_id)}</span>
+        <span>Analyzed · ${escapeHtml(timestamp)}</span>
+    `;
+
+    scoringProvider.textContent =
+        report.score_provenance?.provider_name || "Score source unknown";
+
+    renderSummary(report);
+    renderAllocations(report);
+    renderAlternatives(report);
+    renderReviews(report);
+    renderProvenance(report);
+    renderLimitations(report);
+
     results.classList.remove("hidden");
+    results.classList.add("is-visible");
 }
 
 function downloadLatestReport() {
@@ -85,12 +632,7 @@ function downloadLatestReport() {
         return;
     }
 
-    const json = JSON.stringify(
-        latestReport,
-        null,
-        2
-    );
-
+    const json = JSON.stringify(latestReport, null, 2);
     const blob = new Blob(
         [json],
         {
@@ -100,13 +642,10 @@ function downloadLatestReport() {
 
     const objectUrl = URL.createObjectURL(blob);
     const link = document.createElement("a");
-
-    const requestId =
-        latestReport.request_id || "unknown";
+    const requestId = latestReport.request_id || "unknown";
 
     link.href = objectUrl;
-    link.download =
-        `rescue-decision-report-${requestId}.json`;
+    link.download = `rescue-decision-report-${requestId}.json`;
 
     document.body.appendChild(link);
     link.click();
@@ -114,6 +653,11 @@ function downloadLatestReport() {
 
     URL.revokeObjectURL(objectUrl);
 }
+
+objectiveInput.addEventListener(
+    "change",
+    updateObjectiveControls
+);
 
 downloadReport.addEventListener(
     "click",
@@ -126,22 +670,60 @@ form.addEventListener("submit", async (event) => {
     const file = fileInput.files[0];
 
     if (!file) {
-        statusMessage.textContent = "Select an XLSX file first.";
-        statusMessage.classList.add("error");
+        setStatus("Select an XLSX file first.", "error");
+        fileInput.focus();
+        return;
+    }
+
+    if (
+        objectiveInput.value === "BALANCED"
+        && rescueRatioInput.value === ""
+    ) {
+        setStatus(
+            "Balanced objective requires a minimum expected rescue ratio.",
+            "error"
+        );
+        rescueRatioInput.focus();
         return;
     }
 
     const data = new FormData();
+
     data.append("inventory_file", file);
+    data.append("optimization_objective", objectiveInput.value);
+
+    if (budgetInput.value !== "") {
+        data.append("max_logistics_budget", budgetInput.value);
+    }
+
+    if (rescueRatioInput.value !== "") {
+        data.append("minimum_expected_rescue_ratio", rescueRatioInput.value);
+    }
+
+    if (deadlineInput.value !== "") {
+        const deadline = new Date(deadlineInput.value);
+
+        if (Number.isNaN(deadline.getTime())) {
+            setStatus("Enter a valid rescue deadline.", "error");
+            deadlineInput.focus();
+            return;
+        }
+
+        data.append("rescue_deadline_at", deadline.toISOString());
+    }
 
     latestReport = null;
 
     button.disabled = true;
+    button.setAttribute("aria-busy", "true");
     downloadReport.classList.add("hidden");
     results.classList.add("hidden");
+    results.classList.remove("is-visible");
 
-    statusMessage.classList.remove("error");
-    statusMessage.textContent = "Analyzing inventory...";
+    setStatus(
+        "Analyzing inventory and resolving constrained rescue actions...",
+        "loading"
+    );
 
     try {
         const response = await fetch("/api/analyze", {
@@ -152,24 +734,52 @@ form.addEventListener("submit", async (event) => {
         const payload = await response.json();
 
         if (!response.ok) {
+            const detail = payload.detail;
+
+            if (Array.isArray(detail)) {
+                const message = detail
+                    .map((item) => item.msg || "Validation error")
+                    .join("; ");
+
+                throw new Error(message);
+            }
+
             throw new Error(
-                payload.detail || "Inventory analysis failed."
+                detail || "Inventory analysis failed."
             );
         }
 
         latestReport = payload;
-
         renderReport(payload);
 
         downloadReport.classList.remove("hidden");
-        statusMessage.textContent = "Analysis completed.";
+        setStatus(
+            "Analysis completed. Review the advisory rescue plan below.",
+            "success"
+        );
+
+        results.scrollIntoView({
+            behavior: window.matchMedia(
+                "(prefers-reduced-motion: reduce)"
+            ).matches
+                ? "auto"
+                : "smooth",
+            block: "start",
+        });
     } catch (error) {
         latestReport = null;
         downloadReport.classList.add("hidden");
 
-        statusMessage.textContent = error.message;
-        statusMessage.classList.add("error");
+        setStatus(
+            error instanceof Error
+                ? error.message
+                : "Inventory analysis failed.",
+            "error"
+        );
     } finally {
         button.disabled = false;
+        button.removeAttribute("aria-busy");
     }
 });
+
+updateObjectiveControls();
