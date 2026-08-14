@@ -94,6 +94,8 @@ def _write_registry(
     *,
     demand_valid_until: str,
     category_match_status: str = "MATCH",
+    package_size_match_status: str = "MATCH",
+    customer_segment_match_status: str = "MATCH",
 ) -> Path:
     path.write_text(
         f"""registry_snapshot_id: PDR-DEMO-TEST-001
@@ -125,8 +127,8 @@ matching_records:
     demand_valid_until: {demand_valid_until}
 
     category_match_status: {category_match_status}
-    package_size_match_status: MATCH
-    customer_segment_match_status: MATCH
+    package_size_match_status: {package_size_match_status}
+    customer_segment_match_status: {customer_segment_match_status}
     storage_compatibility_status: MATCH
 """,
         encoding="utf-8",
@@ -140,6 +142,8 @@ def _partner_candidates(
     *,
     demand_valid_until: str,
     category_match_status: str = "MATCH",
+    package_size_match_status: str = "MATCH",
+    customer_segment_match_status: str = "MATCH",
 ):
     config, triage, planning_lots = (
         _production_context()
@@ -152,6 +156,12 @@ def _partner_candidates(
         ),
         category_match_status=(
             category_match_status
+        ),
+        package_size_match_status=(
+            package_size_match_status
+        ),
+        customer_segment_match_status=(
+            customer_segment_match_status
         ),
     )
 
@@ -357,7 +367,77 @@ def test_static_partner_registry_category_mismatch_is_blocked(
         in result.rejection_reason_codes
     )
 
+@pytest.mark.parametrize(
+    (
+        "package_size_match_status",
+        "customer_segment_match_status",
+        "expected_rejection_code",
+    ),
+    [
+        (
+            "MISMATCH",
+            "MATCH",
+            "PARTNER_PACKAGE_SIZE_MISMATCH",
+        ),
+        (
+            "MATCH",
+            "MISMATCH",
+            "PARTNER_CUSTOMER_SEGMENT_MISMATCH",
+        ),
+    ],
+)
+def test_static_partner_registry_partner_compatibility_mismatch_is_blocked(
+    tmp_path: Path,
+    package_size_match_status: str,
+    customer_segment_match_status: str,
+    expected_rejection_code: str,
+) -> None:
+    (
+        config,
+        triage,
+        planning_lots,
+        partner_candidates,
+    ) = _partner_candidates(
+        tmp_path,
+        demand_valid_until=(
+            "2026-08-31T23:59:59Z"
+        ),
+        package_size_match_status=(
+            package_size_match_status
+        ),
+        customer_segment_match_status=(
+            customer_segment_match_status
+        ),
+    )
 
+    assert len(partner_candidates) == 1
+
+    gated = apply_production_hard_gates(
+        candidates=partner_candidates,
+        planning_lots=planning_lots,
+        raw_inventory_lots=(
+            triage.raw_inventory_lots
+        ),
+        config=config,
+        analysis_at=ANALYSIS_AT,
+    )
+
+    result = gated[0]
+
+    assert (
+        result.feasibility_status
+        is FeasibilityStatus.INFEASIBLE
+    )
+
+    assert (
+        result.model_scoring_status
+        is ModelScoringStatus.BLOCKED
+    )
+
+    assert (
+        expected_rejection_code
+        in result.rejection_reason_codes
+    )
 
 def test_static_partner_registry_storage_mismatch_is_blocked(
     tmp_path: Path,
