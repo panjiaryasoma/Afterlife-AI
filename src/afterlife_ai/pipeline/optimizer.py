@@ -239,6 +239,9 @@ def optimize_production_candidates(
             shared_action_capacities=(
                 shared_action_capacities
             ),
+            shared_destination_capacities=(
+                shared_destination_capacities
+            ),
         )
     )
 
