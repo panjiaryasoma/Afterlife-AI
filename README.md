@@ -613,7 +613,7 @@ uv run pytest -q
 Latest local Technical MVP regression:
 
 ```text
-319 passed
+337 passed
 0 failed
 ```
 
@@ -809,7 +809,7 @@ GET / -> 200
 clean shutdown -> PASS
 ```
 
-The clean-clone evidence above refers to the locked Technical MVP checkpoint. The current local hardening regression after Issue 7 changes is `319 passed`; a fresh-clone re-verification will be repeated during final release audit before `submission_ready` is changed.
+The clean-clone evidence above refers to the locked Technical MVP checkpoint. The current local regression after post-speedrun hardening is `337 passed`; a fresh-clone re-verification will be repeated during final release audit before `submission_ready` is changed.
 
 ---
 
