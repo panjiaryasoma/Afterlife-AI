@@ -108,7 +108,7 @@ class PartnerDemandRegistry(BaseModel):
         "EVALUATION_FIXTURE",
     ]
     real_world_verified: bool
-    runtime_internet_required: bool
+    runtime_internet_required: Literal[False]
 
     matching_records: list[PartnerDemandRecord]
 

@@ -1,6 +1,8 @@
 from datetime import UTC, datetime
 from pathlib import Path
 
+import pytest
+
 from afterlife_ai.contracts.enums import (
     ActionType,
     FeasibilityStatus,
@@ -437,3 +439,27 @@ def test_static_partner_registry_storage_mismatch_is_blocked(
         "STORAGE_INCOMPATIBLE"
         in result.rejection_reason_codes
     )
+
+def test_static_partner_registry_rejects_runtime_internet_requirement(
+    tmp_path: Path,
+) -> None:
+    registry_path = tmp_path / "partner_registry_online.yaml"
+
+    registry_path.write_text(
+        """registry_snapshot_id: PDR-INVALID-ONLINE-001
+snapshot_mode: STATIC_OFFLINE
+source_type: SYNTHETIC_DEMO_FIXTURE
+real_world_verified: false
+runtime_internet_required: true
+
+matching_records: []
+""",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(
+        ValueError,
+    ):
+        load_partner_registry(
+            registry_path
+        )

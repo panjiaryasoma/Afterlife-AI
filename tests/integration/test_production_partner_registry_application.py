@@ -327,3 +327,9 @@ def test_production_report_has_null_partner_registry_metadata_when_registry_is_a
         result.report.partner_registry_real_world_verified
         is None
     )
+
+    assert not any(
+        candidate.action_type
+        is ActionType.EXTERNAL_PARTNER
+        for candidate in result.valued_candidates
+    )
