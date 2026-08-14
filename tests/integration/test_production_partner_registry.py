@@ -1,4 +1,5 @@
 from datetime import UTC, datetime
+from decimal import Decimal
 from pathlib import Path
 
 import pytest
@@ -611,4 +612,134 @@ matching_records:
     assert (
         "STALE_PARTNER_DEMAND"
         not in fresh.rejection_reason_codes
+    )
+
+@pytest.mark.parametrize(
+    (
+        "active_demand_quantity",
+        "available_capacity",
+        "expected_maximum_quantity",
+    ),
+    [
+        (
+            "2",
+            "6",
+            Decimal("2"),
+        ),
+        (
+            "6",
+            "3",
+            Decimal("3"),
+        ),
+    ],
+)
+def test_static_partner_registry_caps_candidate_by_demand_and_capacity(
+    tmp_path: Path,
+    active_demand_quantity: str,
+    available_capacity: str,
+    expected_maximum_quantity: Decimal,
+) -> None:
+    config, triage, planning_lots = (
+        _production_context()
+    )
+
+    registry_path = _write_registry(
+        tmp_path / "partner_registry_capacity.yaml",
+        demand_valid_until=(
+            "2026-08-31T23:59:59Z"
+        ),
+    )
+
+    registry_text = registry_path.read_text(
+        encoding="utf-8"
+    )
+
+    registry_text = registry_text.replace(
+        "maximum_quantity: 6",
+        "maximum_quantity: 10",
+        1,
+    )
+
+    registry_text = registry_text.replace(
+        "active_demand_quantity: 6",
+        (
+            "active_demand_quantity: "
+            f"{active_demand_quantity}"
+        ),
+        1,
+    )
+
+    registry_text = registry_text.replace(
+        "available_capacity: 6",
+        (
+            "available_capacity: "
+            f"{available_capacity}"
+        ),
+        1,
+    )
+
+    registry_path.write_text(
+        registry_text,
+        encoding="utf-8",
+    )
+
+    registry = load_partner_registry(
+        registry_path
+    )
+
+    candidates = generate_production_candidates(
+        planning_lots=planning_lots,
+        config=config,
+        partner_registry=registry,
+        analysis_at=ANALYSIS_AT,
+    )
+
+    partner_candidates = [
+        candidate
+        for candidate in candidates
+        if (
+            candidate.action_type
+            is ActionType.EXTERNAL_PARTNER
+        )
+    ]
+
+    assert len(partner_candidates) == 1
+
+    candidate = partner_candidates[0]
+
+    assert (
+        candidate.maximum_feasible_quantity
+        == expected_maximum_quantity
+    )
+
+    gated = apply_production_hard_gates(
+        candidates=partner_candidates,
+        planning_lots=planning_lots,
+        raw_inventory_lots=(
+            triage.raw_inventory_lots
+        ),
+        config=config,
+        analysis_at=ANALYSIS_AT,
+    )
+
+    result = gated[0]
+
+    assert (
+        result.feasibility_status
+        is FeasibilityStatus.FEASIBLE
+    )
+
+    assert (
+        result.model_scoring_status
+        is ModelScoringStatus.DEFERRED
+    )
+
+    assert (
+        "INSUFFICIENT_CAPACITY"
+        not in result.rejection_reason_codes
+    )
+
+    assert (
+        "ACTIVE_DEMAND_QUANTITY_EXCEEDED"
+        not in result.rejection_reason_codes
     )
