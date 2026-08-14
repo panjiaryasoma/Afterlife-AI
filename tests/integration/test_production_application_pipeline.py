@@ -14,6 +14,7 @@ from afterlife_ai.contracts.enums import (
     OptimizationObjective,
     SolverStatus,
 )
+from afterlife_ai.contracts.request import AnalysisRequest
 from afterlife_ai.pipeline.application import (
     run_production_pipeline,
 )
@@ -639,9 +640,75 @@ def test_rescue_report_surfaces_batch_recovery_and_determinism_metadata() -> Non
     )
     assert (
         result.report.optimizer_random_seed
-        == 0
+        == 42
     )
     assert (
         result.report.optimizer_num_search_workers
         == 1
+    )
+
+def test_static_request_policy_matches_runtime_report_metadata() -> None:
+    analysis_at = datetime(
+        2026,
+        8,
+        5,
+        tzinfo=UTC,
+    )
+
+    request = AnalysisRequest(
+        request_id="PRODUCTION-REQUEST-CONTEXT-001",
+        analysis_timestamp=analysis_at,
+        inventory_file_name="inventory.xlsx",
+        optimization_objective=(
+            OptimizationObjective.MAXIMIZE_RECOVERY_VALUE
+        ),
+        objective_policy_version=(
+            "runtime-objective-v1.0"
+        ),
+    )
+
+    result = run_production_pipeline(
+        workbook_path=WORKBOOK_PATH,
+        runtime_config_path=RUNTIME_CONFIG_PATH,
+        analysis_at=analysis_at,
+        request_id=request.request_id or "",
+        optimization_objective=(
+            request.optimization_objective
+        ),
+        max_logistics_budget=(
+            request.max_logistics_budget
+        ),
+        minimum_expected_rescue_ratio=(
+            request.minimum_expected_rescue_ratio
+        ),
+        rescue_deadline_at=(
+            request.rescue_deadline_at
+        ),
+    )
+
+    report = result.report
+
+    assert (
+        report.request_id
+        == request.request_id
+    )
+
+    assert (
+        report.analysis_timestamp
+        == request.analysis_timestamp
+    )
+
+    assert (
+        report.optimization_objective
+        is request.optimization_objective
+    )
+
+    assert (
+        report.objective_policy_version
+        == request.objective_policy_version
+    )
+
+    assert (
+        report.optimizer_random_seed
+        == request.random_seed
     )

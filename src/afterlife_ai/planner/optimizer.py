@@ -20,7 +20,7 @@ from afterlife_ai.contracts.enums import (
 ZERO = Decimal("0")
 
 OPTIMIZER_NUM_SEARCH_WORKERS = 1
-OPTIMIZER_RANDOM_SEED = 0
+OPTIMIZER_RANDOM_SEED = 42
 ONE = Decimal("1")
 
 # CP-SAT requires integer coefficients. Bound economic

@@ -305,7 +305,7 @@ Record:
 
 ```yaml
 deterministic_execution: true
-optimizer_random_seed: 0
+optimizer_random_seed: 42
 optimizer_num_search_workers: 1
 ```
 
