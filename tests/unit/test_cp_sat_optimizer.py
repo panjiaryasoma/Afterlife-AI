@@ -786,6 +786,28 @@ def test_optimizer_balanced_objective_matches_eval_029() -> None:
         == Decimal("36.02")
     )
 
+def test_optimizer_balanced_is_infeasible_when_rescue_floor_cannot_be_met() -> None:
+    result = optimize_with_cp_sat(
+        candidates=build_objective_candidates(),
+        planning_quantities={
+            "PLAN-OBJECTIVE": Decimal("40"),
+        },
+        optimization_objective=(
+            OptimizationObjective.BALANCED
+        ),
+        minimum_expected_rescue_ratio=Decimal("1.00"),
+    )
+
+    assert (
+        result.solver_status
+        is SolverStatus.INFEASIBLE
+    )
+
+    assert result.allocations == []
+
+    assert result.unallocated_quantities == {
+        "PLAN-OBJECTIVE": Decimal("40"),
+    }
 
 def test_optimizer_bounds_high_precision_objective_values() -> None:
     candidate = build_candidate(
