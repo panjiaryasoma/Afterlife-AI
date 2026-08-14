@@ -814,3 +814,107 @@ def test_optimizer_bounds_high_precision_objective_values() -> None:
         result.allocations[0].allocated_quantity
         == Decimal("5")
     )
+
+def test_optimizer_minimize_waste_uses_recovery_as_tie_breaker() -> None:
+    lower_recovery = build_candidate(
+        candidate_id="CAND-A-LOW-RECOVERY",
+        planning_lot_id="PLAN-TIE-BREAK",
+        action_type=ActionType.LOCAL_DISCOUNT,
+        maximum_quantity="10",
+        expected_value_per_unit="100",
+    ).model_copy(
+        update={
+            "expected_physical_rescue_quantity": Decimal("10"),
+        }
+    )
+
+    higher_recovery = build_candidate(
+        candidate_id="CAND-Z-HIGH-RECOVERY",
+        planning_lot_id="PLAN-TIE-BREAK",
+        action_type=ActionType.BUNDLE,
+        maximum_quantity="10",
+        expected_value_per_unit="200",
+    ).model_copy(
+        update={
+            "expected_physical_rescue_quantity": Decimal("10"),
+        }
+    )
+
+    result = optimize_with_cp_sat(
+        candidates=[
+            lower_recovery,
+            higher_recovery,
+        ],
+        planning_quantities={
+            "PLAN-TIE-BREAK": Decimal("10"),
+        },
+        shared_action_minimum_quantities={
+            ActionType.LOCAL_DISCOUNT: Decimal("10"),
+            ActionType.BUNDLE: Decimal("10"),
+        },
+        optimization_objective=(
+            OptimizationObjective.MINIMIZE_WASTE
+        ),
+    )
+
+    allocations = {
+        allocation.candidate_id:
+        allocation.allocated_quantity
+        for allocation in result.allocations
+    }
+
+    assert allocations == {
+        "CAND-Z-HIGH-RECOVERY": Decimal("10"),
+    }
+
+def test_optimizer_minimize_waste_tie_breaker_is_not_candidate_id_dependent() -> None:
+    higher_recovery = build_candidate(
+        candidate_id="CAND-A-HIGH-RECOVERY",
+        planning_lot_id="PLAN-TIE-BREAK",
+        action_type=ActionType.LOCAL_DISCOUNT,
+        maximum_quantity="10",
+        expected_value_per_unit="200",
+    ).model_copy(
+        update={
+            "expected_physical_rescue_quantity": Decimal("10"),
+        }
+    )
+
+    lower_recovery = build_candidate(
+        candidate_id="CAND-Z-LOW-RECOVERY",
+        planning_lot_id="PLAN-TIE-BREAK",
+        action_type=ActionType.BUNDLE,
+        maximum_quantity="10",
+        expected_value_per_unit="100",
+    ).model_copy(
+        update={
+            "expected_physical_rescue_quantity": Decimal("10"),
+        }
+    )
+
+    result = optimize_with_cp_sat(
+        candidates=[
+            higher_recovery,
+            lower_recovery,
+        ],
+        planning_quantities={
+            "PLAN-TIE-BREAK": Decimal("10"),
+        },
+        shared_action_minimum_quantities={
+            ActionType.LOCAL_DISCOUNT: Decimal("10"),
+            ActionType.BUNDLE: Decimal("10"),
+        },
+        optimization_objective=(
+            OptimizationObjective.MINIMIZE_WASTE
+        ),
+    )
+
+    allocations = {
+        allocation.candidate_id:
+        allocation.allocated_quantity
+        for allocation in result.allocations
+    }
+
+    assert allocations == {
+        "CAND-A-HIGH-RECOVERY": Decimal("10"),
+    }

@@ -878,6 +878,54 @@ def optimize_with_cp_sat(
 
     status = solver.solve(model)
     project_status = _solver_status(int(status))
+    primary_project_status = project_status
+
+    if (
+        optimization_objective
+        is OptimizationObjective.MINIMIZE_WASTE
+        and project_status
+        in {
+            SolverStatus.OPTIMAL,
+            SolverStatus.FEASIBLE,
+        }
+        and rescue_terms
+        and recovery_terms
+    ):
+        best_rescue_objective = int(
+            solver.value(
+                sum(rescue_terms)
+            )
+        )
+
+        model.add(
+            sum(rescue_terms)
+            == best_rescue_objective
+        )
+
+        model.maximize(
+            sum(recovery_terms)
+        )
+
+        tie_break_status = solver.solve(model)
+        tie_break_project_status = _solver_status(
+            int(tie_break_status)
+        )
+
+        if tie_break_project_status in {
+            SolverStatus.OPTIMAL,
+            SolverStatus.FEASIBLE,
+        }:
+            if (
+                primary_project_status
+                is SolverStatus.OPTIMAL
+                and tie_break_project_status
+                is SolverStatus.OPTIMAL
+            ):
+                project_status = SolverStatus.OPTIMAL
+            else:
+                project_status = SolverStatus.FEASIBLE
+        else:
+            project_status = tie_break_project_status
 
     if project_status not in {
         SolverStatus.OPTIMAL,
