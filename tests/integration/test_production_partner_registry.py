@@ -463,3 +463,152 @@ matching_records: []
         load_partner_registry(
             registry_path
         )
+
+def test_stale_high_value_partner_is_blocked_while_fresh_partner_remains_eligible(
+    tmp_path: Path,
+) -> None:
+    config, triage, planning_lots = (
+        _production_context()
+    )
+
+    registry_path = (
+        tmp_path
+        / "partner_registry_freshness_competition.yaml"
+    )
+
+    registry_path.write_text(
+        """registry_snapshot_id: PDR-FRESHNESS-COMPETITION-001
+snapshot_mode: STATIC_OFFLINE
+source_type: EVALUATION_FIXTURE
+real_world_verified: false
+runtime_internet_required: false
+
+matching_records:
+  - source_lot_id: LOT-003
+    partner_id: PARTNER-STALE-HIGH
+    destination_type: EXTERNAL_PARTNER
+
+    maximum_quantity: 6
+    offered_or_selling_price_per_unit: 999999
+
+    direct_action_cost: 0
+    logistics_cost: 0
+    handling_cost: 0
+
+    estimated_completion_hours: 2
+
+    active_demand_quantity: 6
+    available_capacity: 6
+    minimum_order_quantity: 1
+
+    distance_km: 1
+
+    demand_valid_until: 2026-08-04T23:59:59Z
+
+    category_match_status: MATCH
+    package_size_match_status: MATCH
+    customer_segment_match_status: MATCH
+    storage_compatibility_status: MATCH
+
+  - source_lot_id: LOT-003
+    partner_id: PARTNER-FRESH-LOWER
+    destination_type: EXTERNAL_PARTNER
+
+    maximum_quantity: 6
+    offered_or_selling_price_per_unit: 10000
+
+    direct_action_cost: 0
+    logistics_cost: 0
+    handling_cost: 0
+
+    estimated_completion_hours: 2
+
+    active_demand_quantity: 6
+    available_capacity: 6
+    minimum_order_quantity: 1
+
+    distance_km: 1
+
+    demand_valid_until: 2026-08-31T23:59:59Z
+
+    category_match_status: MATCH
+    package_size_match_status: MATCH
+    customer_segment_match_status: MATCH
+    storage_compatibility_status: MATCH
+""",
+        encoding="utf-8",
+    )
+
+    registry = load_partner_registry(
+        registry_path
+    )
+
+    candidates = generate_production_candidates(
+        planning_lots=planning_lots,
+        config=config,
+        partner_registry=registry,
+        analysis_at=ANALYSIS_AT,
+    )
+
+    partner_candidates = [
+        candidate
+        for candidate in candidates
+        if candidate.action_type
+        is ActionType.EXTERNAL_PARTNER
+    ]
+
+    assert len(partner_candidates) == 2
+
+    gated = apply_production_hard_gates(
+        candidates=partner_candidates,
+        planning_lots=planning_lots,
+        raw_inventory_lots=(
+            triage.raw_inventory_lots
+        ),
+        config=config,
+        analysis_at=ANALYSIS_AT,
+    )
+
+    stale = next(
+        candidate
+        for candidate in gated
+        if candidate.destination_id
+        == "PARTNER-STALE-HIGH"
+    )
+
+    fresh = next(
+        candidate
+        for candidate in gated
+        if candidate.destination_id
+        == "PARTNER-FRESH-LOWER"
+    )
+
+    assert (
+        stale.feasibility_status
+        is FeasibilityStatus.INFEASIBLE
+    )
+
+    assert (
+        stale.model_scoring_status
+        is ModelScoringStatus.BLOCKED
+    )
+
+    assert (
+        "STALE_PARTNER_DEMAND"
+        in stale.rejection_reason_codes
+    )
+
+    assert (
+        fresh.feasibility_status
+        is FeasibilityStatus.FEASIBLE
+    )
+
+    assert (
+        fresh.model_scoring_status
+        is ModelScoringStatus.DEFERRED
+    )
+
+    assert (
+        "STALE_PARTNER_DEMAND"
+        not in fresh.rejection_reason_codes
+    )
