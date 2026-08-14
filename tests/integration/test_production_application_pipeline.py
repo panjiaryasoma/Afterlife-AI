@@ -431,6 +431,141 @@ def test_production_pipeline_adds_safe_disposal_second_pass_when_rescue_is_block
         for candidate in gate_calls[1]
     )
 
+def test_production_pipeline_adds_safe_disposal_only_for_blocked_planning_lot(
+    monkeypatch: MonkeyPatch,
+) -> None:
+    gate_calls: list[list[Any]] = []
+
+    real_hard_gates = (
+        application_module.apply_production_hard_gates
+    )
+
+    blocked_planning_lot_id: str | None = None
+
+    def controlled_hard_gates(
+        **kwargs: Any,
+    ) -> Any:
+        nonlocal blocked_planning_lot_id
+
+        candidates = kwargs["candidates"]
+
+        gate_calls.append(
+            list(candidates)
+        )
+
+        if len(gate_calls) != 1:
+            return real_hard_gates(
+                **kwargs
+            )
+
+        naturally_gated = real_hard_gates(
+            **kwargs
+        )
+
+        planning_lot_ids = sorted(
+            {
+                candidate.planning_lot_id
+                for candidate in naturally_gated
+            }
+        )
+
+        assert len(planning_lot_ids) >= 2
+
+        blocked_planning_lot_id = (
+            planning_lot_ids[0]
+        )
+
+        return [
+            (
+                candidate.model_copy(
+                    update={
+                        "feasibility_status": (
+                            FeasibilityStatus.INFEASIBLE
+                        ),
+                        "model_scoring_status": (
+                            ModelScoringStatus.BLOCKED
+                        ),
+                        "rejection_reason_codes": [
+                            "TEST_FORCED_BLOCK"
+                        ],
+                    }
+                )
+                if (
+                    candidate.planning_lot_id
+                    == blocked_planning_lot_id
+                )
+                else candidate
+            )
+            for candidate in naturally_gated
+        ]
+
+    monkeypatch.setattr(
+        application_module,
+        "apply_production_hard_gates",
+        controlled_hard_gates,
+    )
+
+    result = run_production_pipeline(
+        workbook_path=WORKBOOK_PATH,
+        runtime_config_path=RUNTIME_CONFIG_PATH,
+        analysis_at=datetime(
+            2026,
+            8,
+            5,
+            tzinfo=UTC,
+        ),
+        request_id=(
+            "PRODUCTION-PARTIAL-DISPOSAL-SECOND-PASS"
+        ),
+    )
+
+    assert blocked_planning_lot_id is not None
+
+    disposal_candidates = [
+        candidate
+        for candidate in result.valued_candidates
+        if candidate.action_type
+        is ActionType.SAFE_DISPOSAL
+    ]
+
+    assert disposal_candidates
+
+    assert {
+        candidate.planning_lot_id
+        for candidate in disposal_candidates
+    } == {
+        blocked_planning_lot_id
+    }
+
+    assert len(gate_calls) == 2
+
+    assert all(
+        candidate.action_type
+        is ActionType.SAFE_DISPOSAL
+        for candidate in gate_calls[1]
+    )
+
+    assert all(
+        candidate.planning_lot_id
+        == blocked_planning_lot_id
+        for candidate in gate_calls[1]
+    )
+
+    assert any(
+        candidate.feasibility_status
+        is FeasibilityStatus.FEASIBLE
+        and (
+            candidate.planning_lot_id
+            != blocked_planning_lot_id
+        )
+        and (
+            candidate.action_type
+            is not ActionType.SAFE_DISPOSAL
+        )
+        for candidate
+        in result.valued_candidates
+    )
+
 def test_production_pipeline_does_not_add_disposal_when_rescue_is_feasible() -> None:
     result = run_production_pipeline(
         workbook_path=WORKBOOK_PATH,
