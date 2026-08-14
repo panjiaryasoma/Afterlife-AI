@@ -77,6 +77,54 @@ def _shared_action_capacities(
         ] = repurpose.maximum_quantity
 
     return capacities
+def _shared_destination_capacities(
+    candidates: list[CandidateAction],
+) -> dict[str, Decimal]:
+    """Derive global partner capacity bounds from candidate facts."""
+
+    capacities: dict[str, Decimal] = {}
+
+    for candidate in candidates:
+        if (
+            candidate.action_type
+            is not ActionType.EXTERNAL_PARTNER
+            or candidate.destination_id is None
+        ):
+            continue
+
+        available_limits = [
+            quantity
+            for quantity in (
+                candidate.active_demand_quantity,
+                candidate.available_capacity,
+            )
+            if quantity is not None
+        ]
+
+        if not available_limits:
+            continue
+
+        candidate_limit = min(
+            available_limits
+        )
+
+        existing_limit = capacities.get(
+            candidate.destination_id
+        )
+
+        if existing_limit is None:
+            capacities[
+                candidate.destination_id
+            ] = candidate_limit
+        else:
+            capacities[
+                candidate.destination_id
+            ] = min(
+                existing_limit,
+                candidate_limit,
+            )
+
+    return capacities
 
 def _fallback_result_to_optimization_result(
     fallback_result: FallbackResult,
@@ -144,12 +192,21 @@ def optimize_production_candidates(
     shared_action_capacities = (
         _shared_action_capacities(config)
     )
+    
+    shared_destination_capacities = (
+        _shared_destination_capacities(
+            candidates
+        )
+    )
 
     cp_sat_result = optimize_with_cp_sat(
         candidates=candidates,
         planning_quantities=planning_quantities,
         shared_action_capacities=(
             shared_action_capacities
+        ),
+        shared_destination_capacities=(
+            shared_destination_capacities
         ),
         max_logistics_budget=max_logistics_budget,
         optimization_objective=optimization_objective,
