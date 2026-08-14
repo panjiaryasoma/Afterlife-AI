@@ -427,6 +427,15 @@ def _build_report(
         ZERO,
     )
 
+    no_feasible_candidate = (
+        planning_quantity > ZERO
+        and not any(
+            candidate.feasibility_status
+            is FeasibilityStatus.FEASIBLE
+            for candidate in valued_candidates
+        )
+    )
+
     expired_quantity = sum(
         (
             triage.expired_quantity
@@ -483,6 +492,17 @@ def _build_report(
                 "allocation for the current planning "
                 "quantities and constraints. No rescue "
                 "allocation was automatically selected."
+            ),
+        ]
+    if no_feasible_candidate:
+        limitations = [
+            *limitations,
+            (
+                "No feasible candidate remained after "
+                "deterministic safety and feasibility "
+                "gates for the current planning quantity. "
+                "No rescue allocation was automatically "
+                "selected."
             ),
         ]
 
@@ -590,6 +610,7 @@ def _build_report(
                 optimization_result.solver_status
                 is SolverStatus.INFEASIBLE
             )
+            or no_feasible_candidate
         ),
         human_final_approval_status=(
             ApprovalStatus.PENDING

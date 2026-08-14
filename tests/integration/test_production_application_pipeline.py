@@ -712,3 +712,96 @@ def test_static_request_policy_matches_runtime_report_metadata() -> None:
         report.optimizer_random_seed
         == request.random_seed
     )
+
+def test_no_feasible_candidate_is_explicit_and_requires_human_review(
+    monkeypatch: MonkeyPatch,
+) -> None:
+    def block_all_candidates(
+        **kwargs: Any,
+    ) -> list[Any]:
+        return [
+            candidate.model_copy(
+                update={
+                    "feasibility_status": (
+                        FeasibilityStatus.INFEASIBLE
+                    ),
+                    "model_scoring_status": (
+                        ModelScoringStatus.BLOCKED
+                    ),
+                    "rejection_reason_codes": [
+                        "TEST_NO_FEASIBLE_CANDIDATE"
+                    ],
+                }
+            )
+            for candidate in kwargs["candidates"]
+        ]
+
+    monkeypatch.setattr(
+        application_module,
+        "apply_production_hard_gates",
+        block_all_candidates,
+    )
+
+    monkeypatch.setattr(
+        application_module,
+        "generate_safe_disposal_candidates",
+        lambda **_: [],
+    )
+
+    result = run_production_pipeline(
+        workbook_path=WORKBOOK_PATH,
+        runtime_config_path=RUNTIME_CONFIG_PATH,
+        analysis_at=datetime(
+            2026,
+            8,
+            5,
+            tzinfo=UTC,
+        ),
+        request_id=(
+            "PRODUCTION-NO-FEASIBLE-CANDIDATE"
+        ),
+    )
+
+    report = result.report
+
+    assert not any(
+        candidate.feasibility_status
+        is FeasibilityStatus.FEASIBLE
+        for candidate in result.valued_candidates
+    )
+
+    assert report.selected_allocations == []
+
+    assert (
+        report.batch_metrics
+        .allocated_planning_quantity
+        == Decimal("0")
+    )
+
+    assert (
+        report.batch_metrics
+        .unallocated_planning_quantity
+        == report.batch_metrics.planning_quantity
+    )
+
+    assert (
+        report.human_exception_review_required
+        is True
+    )
+
+    assert (
+        report.human_final_approval_status
+        is ApprovalStatus.PENDING
+    )
+    
+    assert any(
+        "no feasible candidate"
+        in limitation.lower()
+        for limitation in report.limitations
+    )
+
+    assert all(
+        item.rejection_reason_codes
+        == ["TEST_NO_FEASIBLE_CANDIDATE"]
+        for item in report.rejected_candidates
+    )
