@@ -1,6 +1,8 @@
 from decimal import Decimal
 from pathlib import Path
 
+import pytest
+
 from afterlife_ai.contracts.enums import (
     BusinessType,
     ProductCategory,
@@ -79,3 +81,72 @@ def test_load_runtime_config_reads_capability_defaults() -> None:
         capabilities.local_discount.price_fraction_of_normal
         == Decimal("0.75")
     )
+def test_load_runtime_config_rejects_duplicate_yaml_keys(
+    tmp_path: Path,
+) -> None:
+    source = Path(
+        "configs/runtime_v1.yaml"
+    ).read_text(
+        encoding="utf-8-sig"
+    )
+
+    duplicate_source = source.replace(
+        "config_name: Afterlife AI Runtime Configuration",
+        (
+            "config_name: Afterlife AI Runtime Configuration\n"
+            "config_name: Duplicate Runtime Configuration"
+        ),
+        1,
+    )
+
+    config_path = tmp_path / "runtime_duplicate.yaml"
+
+    config_path.write_text(
+        duplicate_source,
+        encoding="utf-8",
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="Duplicate YAML key",
+    ):
+        load_runtime_config(config_path)
+
+def test_load_runtime_config_rejects_nested_duplicate_yaml_keys(
+    tmp_path: Path,
+) -> None:
+    source = Path(
+        "configs/runtime_v1.yaml"
+    ).read_text(
+        encoding="utf-8-sig"
+    )
+
+    duplicate_source = source.replace(
+        (
+            "  real_world_validated: false\n"
+            "\n"
+            "  supported_actions:"
+        ),
+        (
+            "  real_world_validated: false\n"
+            "  real_world_validated: true\n"
+            "\n"
+            "  supported_actions:"
+        ),
+        1,
+    )
+
+    config_path = (
+        tmp_path / "runtime_nested_duplicate.yaml"
+    )
+
+    config_path.write_text(
+        duplicate_source,
+        encoding="utf-8",
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="Duplicate YAML key",
+    ):
+        load_runtime_config(config_path)

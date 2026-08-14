@@ -4,16 +4,48 @@ from __future__ import annotations
 
 from decimal import Decimal
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field
+from yaml.nodes import MappingNode
 
 from afterlife_ai.contracts.enums import (
     ActionType,
     BusinessType,
     ProductCategory,
 )
+
+
+class _UniqueKeySafeLoader(yaml.SafeLoader):
+    """Safe YAML loader that rejects duplicate mapping keys."""
+
+    def construct_mapping(
+        self,
+        node: MappingNode,
+        deep: bool = False,
+    ) -> dict[Any, Any]:
+        mapping = {}
+
+        for key_node, value_node in node.value:
+            key = self.construct_object(
+                key_node,
+                deep=deep,
+            )
+
+            if key in mapping:
+                raise ValueError(
+                    f"Duplicate YAML key: {key}"
+                )
+
+            value = self.construct_object(
+                value_node,
+                deep=deep,
+            )
+
+            mapping[key] = value
+
+        return mapping
 
 
 class RuntimeSourceOfTruth(BaseModel):
@@ -225,8 +257,11 @@ def load_runtime_config(
             f"Runtime config tidak ditemukan: {path}"
         )
 
-    payload = yaml.safe_load(
-        path.read_text(encoding="utf-8")
+    payload = yaml.load(
+        path.read_text(
+            encoding="utf-8"
+        ),
+        Loader=_UniqueKeySafeLoader,
     )
 
     if not isinstance(payload, dict):
