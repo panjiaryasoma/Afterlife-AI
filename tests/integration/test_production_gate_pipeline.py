@@ -19,8 +19,14 @@ from afterlife_ai.pipeline.planning import (
 from afterlife_ai.pipeline.runtime_config import (
     load_runtime_config,
 )
+from afterlife_ai.pipeline.scoring import (
+    score_production_candidates,
+)
 from afterlife_ai.pipeline.triage_pipeline import (
     run_triage_pipeline,
+)
+from afterlife_ai.pipeline.value import (
+    apply_production_expected_values,
 )
 
 FIXTURE_DIR = (
@@ -241,4 +247,280 @@ def test_production_hard_gates_reject_all_candidates_when_request_deadline_is_ex
         "TIMING_INFEASIBLE"
         in candidate.rejection_reason_codes
         for candidate in gated
+    )
+
+def test_rescue_deadline_blocks_high_value_late_candidate_before_scoring() -> None:
+    analysis_at = datetime(
+        2026,
+        8,
+        5,
+        tzinfo=UTC,
+    )
+
+    rescue_deadline_at = (
+        analysis_at
+        + timedelta(hours=6)
+    )
+
+    config = load_runtime_config(
+        RUNTIME_CONFIG_PATH
+    )
+
+    triage = run_triage_pipeline(
+        workbook_path=WORKBOOK_PATH,
+        runtime_config_path=RUNTIME_CONFIG_PATH,
+        analysis_at=analysis_at,
+    )
+
+    planning_lots = build_production_planning_lots(
+        lots=triage.raw_inventory_lots,
+        triage_results=triage.triage_results,
+        config=config,
+    )
+
+    candidates = generate_production_candidates(
+        planning_lots=planning_lots,
+        config=config,
+    )
+
+    assert len(candidates) >= 2
+
+    late_candidate = candidates[0].model_copy(
+        update={
+            "estimated_completion_hours": Decimal("10"),
+            "offered_or_selling_price_per_unit": (
+                Decimal("999999")
+            ),
+        }
+    )
+
+    candidates = [
+        late_candidate,
+        *candidates[1:],
+    ]
+
+    gated = apply_production_hard_gates(
+        candidates=candidates,
+        planning_lots=planning_lots,
+        raw_inventory_lots=triage.raw_inventory_lots,
+        config=config,
+        analysis_at=analysis_at,
+        rescue_deadline_at=rescue_deadline_at,
+    )
+
+    assert len(gated) == len(candidates)
+
+    gated_late = next(
+        candidate
+        for candidate in gated
+        if candidate.candidate_id
+        == late_candidate.candidate_id
+    )
+
+    assert (
+        gated_late.feasibility_status
+        is FeasibilityStatus.INFEASIBLE
+    )
+
+    assert (
+        gated_late.model_scoring_status
+        is ModelScoringStatus.BLOCKED
+    )
+
+    assert (
+        "TIMING_INFEASIBLE"
+        in gated_late.rejection_reason_codes
+    )
+
+    scored = score_production_candidates(
+        candidates=gated,
+        planning_lots=planning_lots,
+        config=config,
+    )
+
+    scored_late = next(
+        candidate
+        for candidate in scored
+        if candidate.candidate_id
+        == late_candidate.candidate_id
+    )
+
+    assert (
+        scored_late.model_scoring_status
+        is ModelScoringStatus.BLOCKED
+    )
+
+    assert (
+        scored_late.estimated_rescue_success_score
+        is None
+    )
+
+    assert scored_late.model_version is None
+
+    assert any(
+        candidate.model_scoring_status
+        is ModelScoringStatus.ALLOWED
+        for candidate in scored
+        if candidate.candidate_id
+        != late_candidate.candidate_id
+    )
+
+
+def test_high_value_late_candidate_remains_blocked_through_scoring_and_value() -> None:
+    analysis_at = datetime(
+        2026,
+        8,
+        5,
+        tzinfo=UTC,
+    )
+
+    rescue_deadline_at = (
+        analysis_at
+        + timedelta(hours=6)
+    )
+
+    config = load_runtime_config(
+        RUNTIME_CONFIG_PATH
+    )
+
+    triage = run_triage_pipeline(
+        workbook_path=WORKBOOK_PATH,
+        runtime_config_path=RUNTIME_CONFIG_PATH,
+        analysis_at=analysis_at,
+    )
+
+    planning_lots = build_production_planning_lots(
+        lots=triage.raw_inventory_lots,
+        triage_results=triage.triage_results,
+        config=config,
+    )
+
+    candidates = generate_production_candidates(
+        planning_lots=planning_lots,
+        config=config,
+    )
+
+    assert len(candidates) >= 2
+
+    late_candidate = candidates[0].model_copy(
+        update={
+            "estimated_completion_hours": Decimal("10"),
+            "offered_or_selling_price_per_unit": (
+                Decimal("999999")
+            ),
+        }
+    )
+
+    candidates = [
+        late_candidate,
+        *candidates[1:],
+    ]
+
+    gated = apply_production_hard_gates(
+        candidates=candidates,
+        planning_lots=planning_lots,
+        raw_inventory_lots=triage.raw_inventory_lots,
+        config=config,
+        analysis_at=analysis_at,
+        rescue_deadline_at=rescue_deadline_at,
+    )
+
+    assert len(gated) == len(candidates)
+
+    gated_late = next(
+        candidate
+        for candidate in gated
+        if candidate.candidate_id
+        == late_candidate.candidate_id
+    )
+
+    assert (
+        gated_late.feasibility_status
+        is FeasibilityStatus.INFEASIBLE
+    )
+
+    assert (
+        gated_late.model_scoring_status
+        is ModelScoringStatus.BLOCKED
+    )
+
+    assert (
+        "TIMING_INFEASIBLE"
+        in gated_late.rejection_reason_codes
+    )
+
+    scored = score_production_candidates(
+        candidates=gated,
+        planning_lots=planning_lots,
+        config=config,
+    )
+
+    scored_late = next(
+        candidate
+        for candidate in scored
+        if candidate.candidate_id
+        == late_candidate.candidate_id
+    )
+
+    assert (
+        scored_late.model_scoring_status
+        is ModelScoringStatus.BLOCKED
+    )
+
+    assert (
+        scored_late.estimated_rescue_success_score
+        is None
+    )
+
+    assert scored_late.model_version is None
+
+    assert any(
+        candidate.model_scoring_status
+        is ModelScoringStatus.ALLOWED
+        for candidate in scored
+        if candidate.candidate_id
+        != late_candidate.candidate_id
+    )
+
+    valued = apply_production_expected_values(
+        candidates=scored,
+    )
+
+    valued_late = next(
+        candidate
+        for candidate in valued
+        if candidate.candidate_id
+        == late_candidate.candidate_id
+    )
+
+    assert (
+        valued_late.model_scoring_status
+        is ModelScoringStatus.BLOCKED
+    )
+
+    assert (
+        valued_late.estimated_rescue_success_score
+        is None
+    )
+
+    assert valued_late.model_version is None
+
+    assert (
+        valued_late.expected_net_recovery
+        == scored_late.expected_net_recovery
+    )
+
+    assert (
+        valued_late.expected_cash_recovery
+        == scored_late.expected_cash_recovery
+    )
+
+    assert (
+        valued_late.expected_physical_rescue_quantity
+        == scored_late.expected_physical_rescue_quantity
+    )
+
+    assert (
+        valued_late.expected_waste_quantity
+        == scored_late.expected_waste_quantity
     )
