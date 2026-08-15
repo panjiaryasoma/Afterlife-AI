@@ -940,3 +940,39 @@ def test_optimizer_minimize_waste_tie_breaker_is_not_candidate_id_dependent() ->
     assert allocations == {
         "CAND-A-HIGH-RECOVERY": Decimal("10"),
     }
+
+def test_cp_sat_solver_uses_bounded_runtime(
+    monkeypatch,
+) -> None:
+    from afterlife_ai.planner import optimizer
+
+    real_cp_solver = optimizer.cp_model.CpSolver
+    captured_solvers = []
+
+    def tracking_solver():
+        solver = real_cp_solver()
+        captured_solvers.append(solver)
+        return solver
+
+    monkeypatch.setattr(
+        optimizer.cp_model,
+        "CpSolver",
+        tracking_solver,
+    )
+
+    optimizer.optimize_with_cp_sat(
+        candidates=[],
+        planning_quantities={},
+    )
+
+    assert captured_solvers
+    assert (
+        captured_solvers[0]
+        .parameters
+        .max_time_in_seconds
+        == optimizer.OPTIMIZER_MAX_TIME_SECONDS
+    )
+    assert (
+        optimizer.OPTIMIZER_MAX_TIME_SECONDS
+        == 5.0
+    )

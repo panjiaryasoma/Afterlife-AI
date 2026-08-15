@@ -21,6 +21,7 @@ ZERO = Decimal("0")
 
 OPTIMIZER_NUM_SEARCH_WORKERS = 1
 OPTIMIZER_RANDOM_SEED = 42
+OPTIMIZER_MAX_TIME_SECONDS = 5.0
 ONE = Decimal("1")
 
 # CP-SAT requires integer coefficients. Bound economic
@@ -872,8 +873,13 @@ def optimize_with_cp_sat(
     solver.parameters.num_search_workers = (
         OPTIMIZER_NUM_SEARCH_WORKERS
     )
+
     solver.parameters.random_seed = (
         OPTIMIZER_RANDOM_SEED
+    )
+
+    solver.parameters.max_time_in_seconds = (
+        OPTIMIZER_MAX_TIME_SECONDS
     )
 
     status = solver.solve(model)
