@@ -61,6 +61,9 @@ from afterlife_ai.planner.value import (
     ExpectedValueInput,
     calculate_expected_value,
 )
+from afterlife_ai.scoring.model_provider import (
+    load_frozen_model_identity,
+)
 from afterlife_ai.triage.engine import (
     triage_inventory_lot,
 )
@@ -1071,6 +1074,15 @@ def run_integration_001(
         workbook_path.read_bytes()
     ).hexdigest()
 
+    model_version, model_sha256 = (
+        load_frozen_model_identity(
+            Path(
+                "reports/evidence/modeling/"
+                "SELECTED_MODEL_MANIFEST_v1.json"
+            )
+        )
+    )
+
     report = (
         build_rescue_decision_report(
             request_id="INTEGRATION-001",
@@ -1078,6 +1090,8 @@ def run_integration_001(
             input_snapshot_sha256=(
                 input_hash
             ),
+            model_version=model_version,
+            model_sha256=model_sha256,
             ruleset_version=(
                 "integration-001-fixture-rules-v1.0"
             ),

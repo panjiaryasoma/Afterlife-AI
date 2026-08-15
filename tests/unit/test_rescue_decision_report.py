@@ -13,6 +13,11 @@ from afterlife_ai.planner.report import (
     build_rescue_decision_report,
 )
 
+MODEL_VERSION = "HGB_E_v1"
+MODEL_SHA256 = (
+    "a318a2550d97ea0861b85fd7af5f9b2"
+    "be0291eb29f57b07a00b32ab5ea5295d9"
+)
 
 def build_report():
     return build_rescue_decision_report(
@@ -24,6 +29,8 @@ def build_report():
             "0123456789abcdef"
             "0123456789abcdef"
         ),
+        model_version=MODEL_VERSION,
+        model_sha256=MODEL_SHA256,
         ruleset_version="domain_rules_v1.0",
         capability_snapshot_version="INTEGRATION-001-fixture-v1",
         objective_policy_version="BALANCED_FIXTURE_v1",
@@ -229,6 +236,8 @@ def test_report_rejects_broken_quantity_reconciliation() -> None:
                 "0123456789abcdef"
                 "0123456789abcdef"
             ),
+            model_version=MODEL_VERSION,
+            model_sha256=MODEL_SHA256,
             ruleset_version="domain_rules_v1.0",
             capability_snapshot_version="INTEGRATION-001-fixture-v1",
             objective_policy_version="BALANCED_FIXTURE_v1",
@@ -333,6 +342,8 @@ def test_report_requires_valid_sha256_snapshot_hash() -> None:
             request_id="REQ-BAD-HASH",
             feature_schema_version="2.0.0",
             input_snapshot_sha256="not-a-sha256",
+            model_version=MODEL_VERSION,
+            model_sha256=MODEL_SHA256,
             ruleset_version="domain_rules_v1.0",
             capability_snapshot_version="fixture-v1",
             objective_policy_version="BALANCED_FIXTURE_v1",
@@ -388,3 +399,9 @@ def test_fixture_provenance_cannot_claim_trained_model() -> None:
         report.__class__.model_validate(
             report.model_dump()
         )
+
+def test_report_contains_model_artifact_provenance() -> None:
+    report = build_report()
+
+    assert report.model_version == MODEL_VERSION
+    assert report.model_sha256 == MODEL_SHA256

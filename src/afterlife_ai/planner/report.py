@@ -198,6 +198,10 @@ class RescueDecisionReport(BaseModel):
     input_snapshot_sha256: str = Field(
         pattern=r"^[0-9a-fA-F]{64}$"
     )
+    model_version: str
+    model_sha256: str = Field(
+        pattern=r"^[0-9a-fA-F]{64}$"
+    )
     ruleset_version: str
     capability_snapshot_version: str
 
@@ -326,6 +330,8 @@ def build_rescue_decision_report(
     request_id: str,
     feature_schema_version: str,
     input_snapshot_sha256: str,
+    model_version: str,
+    model_sha256: str,
     ruleset_version: str,
     capability_snapshot_version: str,
     partner_registry_snapshot_id: str | None = None,
@@ -357,6 +363,8 @@ def build_rescue_decision_report(
         analysis_timestamp=analysis_timestamp,
         feature_schema_version=feature_schema_version,
         input_snapshot_sha256=input_snapshot_sha256,
+        model_version=model_version,
+        model_sha256=model_sha256,
         ruleset_version=ruleset_version,
         capability_snapshot_version=(
             capability_snapshot_version

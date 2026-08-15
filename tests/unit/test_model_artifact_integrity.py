@@ -9,6 +9,7 @@ from afterlife_ai.pipeline.runtime_config import (
 from afterlife_ai.pipeline.scoring import _load_provider
 from afterlife_ai.scoring.model_provider import (
     ModelIntegrityError,
+    load_frozen_model_identity,
     verify_frozen_model_integrity,
 )
 
@@ -136,3 +137,16 @@ def test_pipeline_does_not_downgrade_integrity_failure_to_fallback(
         match="Model artifact SHA-256",
     ):
         _load_provider(config)
+
+def test_frozen_model_identity_matches_selected_manifest() -> None:
+    model_version, model_sha256 = (
+        load_frozen_model_identity(
+            MANIFEST_PATH
+        )
+    )
+
+    assert model_version == "HGB_E_v1"
+    assert model_sha256 == (
+        "a318a2550d97ea0861b85fd7af5f9b2"
+        "be0291eb29f57b07a00b32ab5ea5295d9"
+    )

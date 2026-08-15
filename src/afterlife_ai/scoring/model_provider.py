@@ -65,6 +65,58 @@ def _require_sha256(
 
     return text
 
+def load_frozen_model_identity(
+    manifest_path: Path,
+) -> tuple[str, str]:
+    """Read frozen model version and artifact SHA-256."""
+
+    if not manifest_path.is_file():
+        raise ModelIntegrityError(
+            f"Model manifest tidak ditemukan: {manifest_path}"
+        )
+
+    try:
+        payload = json.loads(
+            manifest_path.read_text(
+                encoding="utf-8",
+            )
+        )
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ModelIntegrityError(
+            f"Model manifest tidak valid: {manifest_path}"
+        ) from exc
+
+    if not isinstance(payload, dict):
+        raise ModelIntegrityError(
+            "Model manifest harus berupa JSON object."
+        )
+
+    artifact = payload.get("artifact")
+
+    if not isinstance(artifact, dict):
+        raise ModelIntegrityError(
+            "Model manifest tidak memiliki artifact contract."
+        )
+
+    artifact_path = artifact.get("path")
+
+    if (
+        not isinstance(artifact_path, str)
+        or not artifact_path.strip()
+    ):
+        raise ModelIntegrityError(
+            "Model manifest tidak memiliki artifact path."
+        )
+
+    model_sha256 = _require_sha256(
+        artifact.get("sha256"),
+        field_name="artifact.sha256",
+    )
+
+    return (
+        Path(artifact_path).stem,
+        model_sha256,
+    )
 
 def verify_frozen_model_integrity(
     *,
@@ -282,5 +334,6 @@ class ModelScoreProvider:
 __all__ = [
     "ModelIntegrityError",
     "ModelScoreProvider",
+    "load_frozen_model_identity",
     "verify_frozen_model_integrity",
 ]

@@ -60,6 +60,9 @@ from afterlife_ai.planner.report import (
     RescueDecisionReport,
     build_rescue_decision_report,
 )
+from afterlife_ai.scoring.model_provider import (
+    load_frozen_model_identity,
+)
 
 ZERO = Decimal("0")
 FALLBACK_MODEL_VERSION = "DETERMINISTIC_FALLBACK_V1"
@@ -510,6 +513,12 @@ def _build_report(
         workbook_path.read_bytes()
     ).hexdigest()
 
+    model_version, model_sha256 = (
+        load_frozen_model_identity(
+            config.model.manifest_path
+        )
+    )
+
     return build_rescue_decision_report(
         request_id=request_id,
         feature_schema_version=(
@@ -518,6 +527,8 @@ def _build_report(
             )
         ),
         input_snapshot_sha256=input_hash,
+        model_version=model_version,
+        model_sha256=model_sha256,
         ruleset_version=(
             config.triage.policy_version
         ),
