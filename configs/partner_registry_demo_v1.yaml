@@ -1,4 +1,5 @@
 ﻿registry_snapshot_id: PDR-DEMO-V1
+registry_snapshot_timestamp: 2026-08-05T00:00:00Z
 snapshot_mode: STATIC_OFFLINE
 source_type: SYNTHETIC_DEMO_FIXTURE
 real_world_verified: false

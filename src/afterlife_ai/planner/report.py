@@ -206,6 +206,7 @@ class RescueDecisionReport(BaseModel):
     capability_snapshot_version: str
 
     partner_registry_snapshot_id: str | None = None
+    partner_registry_snapshot_timestamp: datetime | None = None
     partner_registry_source_type: str | None = None
     partner_registry_real_world_verified: bool | None = None
 
@@ -335,6 +336,7 @@ def build_rescue_decision_report(
     ruleset_version: str,
     capability_snapshot_version: str,
     partner_registry_snapshot_id: str | None = None,
+    partner_registry_snapshot_timestamp: datetime | None = None,
     partner_registry_source_type: str | None = None,
     partner_registry_real_world_verified: bool | None = None,
     objective_policy_version: str,
@@ -371,6 +373,9 @@ def build_rescue_decision_report(
         ),
         partner_registry_snapshot_id=(
             partner_registry_snapshot_id
+        ),
+        partner_registry_snapshot_timestamp=(
+            partner_registry_snapshot_timestamp
         ),
         partner_registry_source_type=(
             partner_registry_source_type

@@ -540,6 +540,11 @@ def _build_report(
             if partner_registry is not None
             else None
         ),
+        partner_registry_snapshot_timestamp=(
+            partner_registry.registry_snapshot_timestamp
+            if partner_registry is not None
+            else None
+        ),
         partner_registry_source_type=(
             partner_registry.source_type
             if partner_registry is not None
