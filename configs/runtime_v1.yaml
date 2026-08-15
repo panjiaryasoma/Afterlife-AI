@@ -16,6 +16,7 @@ claim_boundary: >
 model:
   artifact_path: models/HGB_E_v1.joblib
   feature_schema_path: docs/contracts/FEATURE_SCHEMA_FINAL_v2.0.yaml
+  manifest_path: reports/evidence/modeling/SELECTED_MODEL_MANIFEST_v1.json
 
 business:
   business_type: SMALL_RETAIL

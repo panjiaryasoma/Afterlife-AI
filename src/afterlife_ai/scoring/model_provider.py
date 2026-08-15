@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import json
 from collections.abc import Mapping
 from dataclasses import dataclass
 from decimal import Decimal
+from hashlib import sha256
 from pathlib import Path
 from typing import Any
 
@@ -16,6 +18,145 @@ from afterlife_ai.synthetic.schema_contract import (
     ModelFeatureContract,
     load_model_feature_contract,
 )
+
+
+class ModelIntegrityError(RuntimeError):
+    """Raised when runtime model identity differs from the frozen manifest."""
+
+
+def _sha256_file(path: Path) -> str:
+    digest = sha256()
+
+    with path.open("rb") as handle:
+        for chunk in iter(
+            lambda: handle.read(1024 * 1024),
+            b"",
+        ):
+            digest.update(chunk)
+
+    return digest.hexdigest()
+
+def _sha256_canonical_text_file(path: Path) -> str:
+    data = path.read_bytes().replace(
+        b"\r\n",
+        b"\n",
+    )
+
+    return sha256(data).hexdigest()
+
+def _require_sha256(
+    value: Any,
+    *,
+    field_name: str,
+) -> str:
+    text = str(value).lower()
+
+    if len(text) != 64:
+        raise ModelIntegrityError(
+            f"{field_name} bukan SHA-256 yang valid."
+        )
+
+    try:
+        int(text, 16)
+    except ValueError as exc:
+        raise ModelIntegrityError(
+            f"{field_name} bukan SHA-256 yang valid."
+        ) from exc
+
+    return text
+
+
+def verify_frozen_model_integrity(
+    *,
+    artifact_path: Path,
+    schema_path: Path,
+    manifest_path: Path,
+) -> None:
+    """Verify selected artifact and feature schema before deserialization."""
+
+    if not manifest_path.is_file():
+        raise ModelIntegrityError(
+            f"Model manifest tidak ditemukan: {manifest_path}"
+        )
+
+    try:
+        payload = json.loads(
+            manifest_path.read_text(
+                encoding="utf-8",
+            )
+        )
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ModelIntegrityError(
+            f"Model manifest tidak valid: {manifest_path}"
+        ) from exc
+
+    if not isinstance(payload, dict):
+        raise ModelIntegrityError(
+            "Model manifest harus berupa JSON object."
+        )
+
+    artifact = payload.get("artifact")
+    inputs = payload.get("inputs")
+
+    if (
+        not isinstance(artifact, dict)
+        or not isinstance(inputs, dict)
+    ):
+        raise ModelIntegrityError(
+            "Model manifest tidak memiliki artifact/inputs contract."
+        )
+
+    feature_schema = inputs.get("feature_schema")
+
+    if not isinstance(feature_schema, dict):
+        raise ModelIntegrityError(
+            "Model manifest tidak memiliki feature_schema contract."
+        )
+
+    expected_artifact_path = Path(
+        str(artifact.get("path", ""))
+    )
+    expected_schema_path = Path(
+        str(feature_schema.get("path", ""))
+    )
+
+    if (
+        artifact_path.resolve()
+        != expected_artifact_path.resolve()
+    ):
+        raise ModelIntegrityError(
+            "Model artifact path tidak cocok dengan frozen manifest."
+        )
+
+    if (
+        schema_path.resolve()
+        != expected_schema_path.resolve()
+    ):
+        raise ModelIntegrityError(
+            "Feature schema path tidak cocok dengan frozen manifest."
+        )
+
+    expected_artifact_sha = _require_sha256(
+        artifact.get("sha256"),
+        field_name="artifact.sha256",
+    )
+    expected_schema_sha = _require_sha256(
+        feature_schema.get("sha256"),
+        field_name="inputs.feature_schema.sha256",
+    )
+
+    if _sha256_file(artifact_path) != expected_artifact_sha:
+        raise ModelIntegrityError(
+            "Model artifact SHA-256 tidak cocok dengan frozen manifest."
+        )
+
+    if (
+        _sha256_canonical_text_file(schema_path)
+        != expected_schema_sha
+    ):
+        raise ModelIntegrityError(
+            "Feature schema SHA-256 tidak cocok dengan frozen manifest."
+        )
 
 
 @dataclass(frozen=True)
@@ -35,8 +176,11 @@ class ModelScoreProvider:
         schema_path: Path = Path(
             "docs/contracts/FEATURE_SCHEMA_FINAL_v2.0.yaml"
         ),
+        manifest_path: Path = Path(
+            "reports/evidence/modeling/SELECTED_MODEL_MANIFEST_v1.json"
+        ),
     ) -> ModelScoreProvider:
-        """Load the frozen model artifact and its feature contract."""
+        """Load the frozen model only after integrity verification."""
 
         if not artifact_path.is_file():
             raise FileNotFoundError(
@@ -47,6 +191,12 @@ class ModelScoreProvider:
             raise FileNotFoundError(
                 f"Feature schema tidak ditemukan: {schema_path}"
             )
+
+        verify_frozen_model_integrity(
+            artifact_path=artifact_path,
+            schema_path=schema_path,
+            manifest_path=manifest_path,
+        )
 
         try:
             loaded_model = joblib.load(artifact_path)
@@ -129,4 +279,8 @@ class ModelScoreProvider:
         return Decimal(str(probability))
 
 
-__all__ = ["ModelScoreProvider"]
+__all__ = [
+    "ModelIntegrityError",
+    "ModelScoreProvider",
+    "verify_frozen_model_integrity",
+]

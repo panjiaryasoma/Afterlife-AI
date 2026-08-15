@@ -24,6 +24,7 @@ def _load_provider(
         return ModelScoreProvider.from_artifact(
             artifact_path=config.model.artifact_path,
             schema_path=config.model.feature_schema_path,
+            manifest_path=config.model.manifest_path,
         )
     except (FileNotFoundError, ValueError, OSError):
         return None

@@ -49,6 +49,9 @@ def test_load_runtime_config_reads_static_mvp_defaults() -> None:
     assert config.model.artifact_path == Path(
         "models/HGB_E_v1.joblib"
     )
+    assert config.model.manifest_path == Path(
+        "reports/evidence/modeling/SELECTED_MODEL_MANIFEST_v1.json"
+    )
 
 def test_load_runtime_config_reads_capability_defaults() -> None:
     config = load_runtime_config(

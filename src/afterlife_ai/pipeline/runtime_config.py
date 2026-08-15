@@ -70,6 +70,7 @@ class RuntimeModelConfig(BaseModel):
 
     artifact_path: Path
     feature_schema_path: Path
+    manifest_path: Path
 
 
 class RuntimeBusinessConfig(BaseModel):
