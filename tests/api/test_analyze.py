@@ -2,6 +2,7 @@ from decimal import Decimal
 from io import BytesIO
 from pathlib import Path
 
+from backend.api import routes
 from backend.main import app
 from fastapi.testclient import TestClient
 
@@ -243,5 +244,30 @@ def test_analyze_rejects_naive_rescue_deadline() -> None:
     assert response.status_code == 422
 
     assert "timezone-aware" in str(
+        response.json()["detail"]
+    )
+
+def test_analyze_rejects_upload_above_size_limit(
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(
+        routes,
+        "MAX_UPLOAD_SIZE_BYTES",
+        8,
+    )
+
+    response = client.post(
+        "/api/analyze",
+        files={
+            "inventory_file": (
+                "inventory.xlsx",
+                BytesIO(b"123456789"),
+                XLSX_MIME_TYPE,
+            )
+        },
+    )
+
+    assert response.status_code == 413
+    assert "melebihi batas upload" in (
         response.json()["detail"]
     )

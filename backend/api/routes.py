@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import shutil
 import tempfile
 from datetime import UTC, datetime
 from decimal import Decimal
@@ -36,7 +35,8 @@ RUNTIME_CONFIG_PATH = Path("configs/runtime_v1.yaml")
 PARTNER_REGISTRY_PATH = Path(
     "configs/partner_registry_demo_v1.yaml"
 )
-
+MAX_UPLOAD_SIZE_BYTES = 10 * 1024 * 1024
+UPLOAD_CHUNK_SIZE_BYTES = 1024 * 1024
 
 @router.post(
     "/analyze",
@@ -114,13 +114,32 @@ def analyze_inventory(
             suffix=".xlsx",
             delete=False,
         ) as temp_file:
-            shutil.copyfileobj(
-                inventory_file.file,
-                temp_file,
-            )
             temp_path = Path(
                 temp_file.name
             )
+
+            total_bytes = 0
+
+            while True:
+                chunk = inventory_file.file.read(
+                    UPLOAD_CHUNK_SIZE_BYTES
+                )
+
+                if not chunk:
+                    break
+
+                total_bytes += len(chunk)
+
+                if total_bytes > MAX_UPLOAD_SIZE_BYTES:
+                    raise HTTPException(
+                        status_code=413,
+                        detail=(
+                            "inventory_file melebihi batas upload "
+                            f"{MAX_UPLOAD_SIZE_BYTES} bytes."
+                        ),
+                    )
+
+                temp_file.write(chunk)
 
         if temp_path.stat().st_size == 0:
             raise HTTPException(
