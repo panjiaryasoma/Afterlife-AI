@@ -25,6 +25,7 @@ dependencies = [
     "joblib",
     "ortools",
     "matplotlib",
+    "streamlit>=1.61.1",
 ]
 
 

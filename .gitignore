@@ -134,3 +134,6 @@ uploads/
 .local/
 .cache/
 !models/HGB_E_v1.joblib
+
+# Streamlit local agent skills
+.agents/
