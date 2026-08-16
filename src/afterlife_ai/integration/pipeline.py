@@ -25,6 +25,7 @@ from afterlife_ai.contracts.enums import (
     OptimizationObjective,
     SafetyStatus,
     StorageRequirementMode,
+    ValidationStatus,
 )
 from afterlife_ai.contracts.inventory import RawInventoryLot
 from afterlife_ai.contracts.planning import SurplusPlanningLot
@@ -1109,6 +1110,22 @@ def run_integration_001(
             optimization_solver_status=(
                 optimization_result.solver_status
             ),
+            validation_summary={
+                "status": ValidationStatus.PASSED,
+                "input_lots": len(
+                    raw_inventory_lots
+                ),
+                "canonical_records": len(
+                    canonical_inventory_records
+                ),
+            },
+            triage_summary={
+                "protected_quantity": protected_quantity,
+                "monitor_quantity": monitor_quantity,
+                "planning_quantity": planning_quantity,
+                "expired_quantity": expired_quantity,
+                "review_quantity": review_quantity,
+            },
             score_provenance={
                 "provider_name": (
                     "FixtureScoreProvider"

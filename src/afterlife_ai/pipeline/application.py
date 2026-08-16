@@ -20,6 +20,7 @@ from afterlife_ai.contracts.enums import (
     OptimizationObjective,
     SolverStatus,
     SourceType,
+    ValidationStatus,
 )
 from afterlife_ai.contracts.inventory import RawInventoryLot
 from afterlife_ai.contracts.planning import SurplusPlanningLot
@@ -257,6 +258,7 @@ def _build_report(
     analysis_at: datetime,
     config: RuntimeConfig,
     raw_inventory_lots: list[RawInventoryLot],
+    canonical_inventory_records: list[dict[str, Any]],
     triage_results: list[InventoryTriageResult],
     planning_lots: list[SurplusPlanningLot],
     valued_candidates: list[CandidateAction],
@@ -564,6 +566,20 @@ def _build_report(
         optimization_solver_status=(
             optimization_result.solver_status
         ),
+        validation_summary={
+            "status": ValidationStatus.PASSED,
+            "input_lots": len(raw_inventory_lots),
+            "canonical_records": len(
+                canonical_inventory_records
+            ),
+        },
+        triage_summary={
+            "protected_quantity": protected_quantity,
+            "monitor_quantity": monitor_quantity,
+            "planning_quantity": planning_quantity,
+            "expired_quantity": expired_quantity,
+            "review_quantity": review_quantity,
+        },
         score_provenance=score_provenance,
         model_execution_performed=(
             model_execution_performed
@@ -827,6 +843,9 @@ def run_production_pipeline(
             optimization_objective
         ),
         partner_registry=partner_registry,
+        canonical_inventory_records=(
+            triage.canonical_inventory_records
+        ),
     )
 
     return ProductionPipelineResult(

@@ -17,10 +17,31 @@ from afterlife_ai.contracts.enums import (
     OptimizationObjective,
     SolverStatus,
     SourceType,
+    ValidationStatus,
 )
 
 ZERO = Decimal("0")
 
+class ReportValidationSummary(BaseModel):
+    """Summary of successful intake and canonical validation."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    status: ValidationStatus
+    input_lots: int = Field(ge=0)
+    canonical_records: int = Field(ge=0)
+
+
+class ReportTriageSummary(BaseModel):
+    """Quantity summary produced by deterministic inventory triage."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    protected_quantity: Decimal = Field(ge=ZERO)
+    monitor_quantity: Decimal = Field(ge=ZERO)
+    planning_quantity: Decimal = Field(ge=ZERO)
+    expired_quantity: Decimal = Field(ge=ZERO)
+    review_quantity: Decimal = Field(ge=ZERO)
 
 class ReportScoreProvenance(BaseModel):
     """Traceable provenance for the score source used in a report."""
@@ -214,6 +235,9 @@ class RescueDecisionReport(BaseModel):
     optimization_objective: OptimizationObjective
     optimization_solver_status: SolverStatus
 
+    validation_summary: ReportValidationSummary
+    triage_summary: ReportTriageSummary
+
     score_provenance: ReportScoreProvenance
     model_execution_performed: bool
 
@@ -342,6 +366,8 @@ def build_rescue_decision_report(
     objective_policy_version: str,
     optimization_objective: OptimizationObjective,
     optimization_solver_status: SolverStatus,
+    validation_summary: dict[str, Any],
+    triage_summary: dict[str, Any],
     score_provenance: dict[str, Any],
     model_execution_performed: bool,
     deterministic_execution: bool | None = None,
@@ -387,6 +413,12 @@ def build_rescue_decision_report(
         optimization_objective=optimization_objective,
         optimization_solver_status=(
             optimization_solver_status
+        ),
+        validation_summary=ReportValidationSummary(
+            **validation_summary
+        ),
+        triage_summary=ReportTriageSummary(
+            **triage_summary
         ),
         score_provenance=ReportScoreProvenance(
             **score_provenance
@@ -436,4 +468,6 @@ __all__ = [
     "ReportBatchMetrics",
     "RescueDecisionReport",
     "build_rescue_decision_report",
+    "ReportValidationSummary",
+    "ReportTriageSummary",
 ]

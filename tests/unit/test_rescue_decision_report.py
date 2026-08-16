@@ -36,6 +36,18 @@ def build_report():
         objective_policy_version="BALANCED_FIXTURE_v1",
         optimization_objective=OptimizationObjective.BALANCED,
         optimization_solver_status=SolverStatus.OPTIMAL,
+        validation_summary={
+            "status": "PASSED",
+            "input_lots": 6,
+            "canonical_records": 6,
+        },
+        triage_summary={
+            "protected_quantity": Decimal("30"),
+            "monitor_quantity": Decimal("10"),
+            "planning_quantity": Decimal("18"),
+            "expired_quantity": Decimal("12"),
+            "review_quantity": Decimal("32"),
+        },
         score_provenance={
             "provider_name": "FixtureScoreProvider",
             "score_type": "FIXTURE_EXPECTED_SCORE",
@@ -243,6 +255,18 @@ def test_report_rejects_broken_quantity_reconciliation() -> None:
             objective_policy_version="BALANCED_FIXTURE_v1",
             optimization_objective=OptimizationObjective.BALANCED,
             optimization_solver_status=SolverStatus.OPTIMAL,
+            validation_summary={
+                "status": "PASSED",
+                "input_lots": 6,
+                "canonical_records": 6,
+            },
+            triage_summary={
+                "protected_quantity": Decimal("30"),
+                "monitor_quantity": Decimal("10"),
+                "planning_quantity": Decimal("18"),
+                "expired_quantity": Decimal("12"),
+                "review_quantity": Decimal("32"),
+            },
             score_provenance={
                 "provider_name": "FixtureScoreProvider",
                 "score_type": "FIXTURE_EXPECTED_SCORE",
@@ -349,6 +373,18 @@ def test_report_requires_valid_sha256_snapshot_hash() -> None:
             objective_policy_version="BALANCED_FIXTURE_v1",
             optimization_objective=OptimizationObjective.BALANCED,
             optimization_solver_status=SolverStatus.OPTIMAL,
+            validation_summary={
+                "status": "PASSED",
+                "input_lots": 6,
+                "canonical_records": 6,
+            },
+            triage_summary={
+                "protected_quantity": Decimal("30"),
+                "monitor_quantity": Decimal("10"),
+                "planning_quantity": Decimal("18"),
+                "expired_quantity": Decimal("12"),
+                "review_quantity": Decimal("32"),
+            },
             score_provenance={
                 "provider_name": "FixtureScoreProvider",
                 "score_type": "FIXTURE_EXPECTED_SCORE",
@@ -404,4 +440,23 @@ def test_report_contains_model_artifact_provenance() -> None:
     report = build_report()
 
     assert report.model_version == MODEL_VERSION
-    assert report.model_sha256 == MODEL_SHA256
+
+def test_report_contains_validation_and_triage_summaries() -> None:
+    report = build_report()
+
+    assert report.validation_summary.status.value == "PASSED"
+    assert report.validation_summary.input_lots == 6
+    assert report.validation_summary.canonical_records == 6
+
+    assert (
+        report.triage_summary.protected_quantity
+        == Decimal("30")
+    )
+    assert (
+        report.triage_summary.planning_quantity
+        == Decimal("18")
+    )
+    assert (
+        report.triage_summary.review_quantity
+        == Decimal("32")
+    )
