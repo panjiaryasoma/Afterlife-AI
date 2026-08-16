@@ -102,7 +102,7 @@ class PartnerDemandRegistry(BaseModel):
     )
 
     registry_snapshot_id: str
-    registry_snapshot_timestamp: datetime | None = None
+    registry_snapshot_timestamp: datetime
     snapshot_mode: Literal["STATIC_OFFLINE"]
     source_type: Literal[
         "SYNTHETIC_DEMO_FIXTURE",
@@ -119,10 +119,7 @@ class PartnerDemandRegistry(BaseModel):
     ) -> PartnerDemandRegistry:
         """Require timezone-aware snapshot timestamp when supplied."""
 
-        if (
-            self.registry_snapshot_timestamp is not None
-            and self.registry_snapshot_timestamp.tzinfo is None
-        ):
+        if self.registry_snapshot_timestamp.tzinfo is None:
             raise ValueError(
                 "registry_snapshot_timestamp wajib timezone-aware."
             )

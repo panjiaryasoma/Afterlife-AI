@@ -114,6 +114,7 @@ def _shared_capacity_partner_registry(
 
     target.write_text(
         """registry_snapshot_id: PDR-SHARED-CAPACITY-001
+registry_snapshot_timestamp: 2026-08-05T00:00:00Z
 snapshot_mode: STATIC_OFFLINE
 source_type: SYNTHETIC_DEMO_FIXTURE
 real_world_verified: false
@@ -312,7 +313,7 @@ def test_production_pipeline_loads_static_partner_registry(
 
 
 
-def test_production_report_has_null_partner_registry_metadata_when_registry_is_absent() -> None:
+def test_production_report_has_empty_snapshot_partner_registry_metadata_when_no_partners() -> None:
     result = run_production_pipeline(
         workbook_path=Path(
             "tests/fixtures/integration_001/"
@@ -323,30 +324,36 @@ def test_production_report_has_null_partner_registry_metadata_when_registry_is_a
         ),
         analysis_at=ANALYSIS_AT,
         request_id=(
-            "PRODUCTION-NO-PARTNER-REGISTRY"
+            "PRODUCTION-EMPTY-PARTNER-REGISTRY"
         ),
     )
 
     assert (
         result.report.partner_registry_snapshot_id
-        is None
+        == "PDR-EMPTY-V1"
+    )
+    assert (
+        result.report.partner_registry_snapshot_timestamp
+        == datetime(
+            2026,
+            8,
+            5,
+            0,
+            0,
+            tzinfo=UTC,
+        )
     )
     assert (
         result.report.partner_registry_source_type
-        is None
+        == "EVALUATION_FIXTURE"
     )
     assert (
         result.report.partner_registry_real_world_verified
-        is None
+        is False
     )
 
     assert not any(
         candidate.action_type
         is ActionType.EXTERNAL_PARTNER
         for candidate in result.valued_candidates
-    )
-
-    assert (
-        result.report.partner_registry_snapshot_timestamp
-        is None
     )

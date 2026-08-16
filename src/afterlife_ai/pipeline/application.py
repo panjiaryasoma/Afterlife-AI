@@ -1,4 +1,4 @@
-﻿"""Single production entry point from XLSX intake to Rescue Decision Report."""
+"""Single production entry point from XLSX intake to Rescue Decision Report."""
 
 from __future__ import annotations
 
@@ -67,7 +67,9 @@ from afterlife_ai.scoring.model_provider import (
 
 ZERO = Decimal("0")
 FALLBACK_MODEL_VERSION = "DETERMINISTIC_FALLBACK_V1"
-
+DEFAULT_PARTNER_REGISTRY_PATH = Path(
+    "configs/partner_registry_empty_v1.yaml"
+)
 
 class ProductionPipelineResult(BaseModel):
     """Observable outputs from the complete production analysis pipeline."""
@@ -264,7 +266,7 @@ def _build_report(
     valued_candidates: list[CandidateAction],
     optimization_result: OptimizationResult,
     optimization_objective: OptimizationObjective,
-    partner_registry: PartnerDemandRegistry | None,
+    partner_registry: PartnerDemandRegistry,
 ) -> RescueDecisionReport:
     """Adapt production outputs into the canonical report contract."""
 
@@ -539,23 +541,15 @@ def _build_report(
         ),
         partner_registry_snapshot_id=(
             partner_registry.registry_snapshot_id
-            if partner_registry is not None
-            else None
         ),
         partner_registry_snapshot_timestamp=(
             partner_registry.registry_snapshot_timestamp
-            if partner_registry is not None
-            else None
         ),
         partner_registry_source_type=(
             partner_registry.source_type
-            if partner_registry is not None
-            else None
         ),
         partner_registry_real_world_verified=(
             partner_registry.real_world_verified
-            if partner_registry is not None
-            else None
         ),
         objective_policy_version=(
             "runtime-objective-v1.0"
@@ -720,7 +714,9 @@ def run_production_pipeline(
     max_logistics_budget: Decimal | None = None,
     minimum_expected_rescue_ratio: Decimal | None = None,
     rescue_deadline_at: datetime | None = None,
-    partner_registry_path: str | Path | None = None,
+    partner_registry_path: str | Path = (
+        DEFAULT_PARTNER_REGISTRY_PATH
+    ),
 ) -> ProductionPipelineResult:
     """Run one synchronous XLSX request through the complete MVP pipeline."""
 
@@ -746,12 +742,11 @@ def run_production_pipeline(
         runtime_config_path
     )
 
-    partner_registry = None
-
-    if partner_registry_path is not None:
-        partner_registry = load_partner_registry(
+    partner_registry = (
+        load_partner_registry(
             partner_registry_path
         )
+    )
 
     triage = run_triage_pipeline(
         workbook_path=workbook_path,

@@ -36,6 +36,9 @@ from afterlife_ai.intake.canonical import (
 from afterlife_ai.intake.xlsx_reader import (
     read_inventory_workbook,
 )
+from afterlife_ai.pipeline.partner_registry import (
+    load_partner_registry,
+)
 from afterlife_ai.planner.candidates import (
     CandidateActionSpec,
     generate_candidates,
@@ -1084,6 +1087,14 @@ def run_integration_001(
         )
     )
 
+    partner_demand_registry = (
+        load_partner_registry(
+            Path(
+                "configs/partner_registry_empty_v1.yaml"
+            )
+        )
+    )
+
     report = (
         build_rescue_decision_report(
             request_id="INTEGRATION-001",
@@ -1100,6 +1111,18 @@ def run_integration_001(
                 capability[
                     "business_profile_id"
                 ]
+            ),
+            partner_registry_snapshot_id=(
+                partner_demand_registry.registry_snapshot_id
+            ),
+            partner_registry_snapshot_timestamp=(
+                partner_demand_registry.registry_snapshot_timestamp
+            ),
+            partner_registry_source_type=(
+                partner_demand_registry.source_type
+            ),
+            partner_registry_real_world_verified=(
+                partner_demand_registry.real_world_verified
             ),
             objective_policy_version=(
                 "STATIC_FIXTURE_NO_RANDOMNESS"

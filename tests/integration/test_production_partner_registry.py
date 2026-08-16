@@ -3,6 +3,7 @@ from decimal import Decimal
 from pathlib import Path
 
 import pytest
+from pydantic import ValidationError
 
 from afterlife_ai.contracts.enums import (
     ActionType,
@@ -99,6 +100,7 @@ def _write_registry(
 ) -> Path:
     path.write_text(
         f"""registry_snapshot_id: PDR-DEMO-TEST-001
+registry_snapshot_timestamp: 2026-08-05T00:00:00Z
 snapshot_mode: STATIC_OFFLINE
 source_type: SYNTHETIC_DEMO_FIXTURE
 real_world_verified: false
@@ -528,6 +530,7 @@ def test_static_partner_registry_rejects_runtime_internet_requirement(
 
     registry_path.write_text(
         """registry_snapshot_id: PDR-INVALID-ONLINE-001
+registry_snapshot_timestamp: 2026-08-05T00:00:00Z
 snapshot_mode: STATIC_OFFLINE
 source_type: SYNTHETIC_DEMO_FIXTURE
 real_world_verified: false
@@ -559,6 +562,7 @@ def test_stale_high_value_partner_is_blocked_while_fresh_partner_remains_eligibl
 
     registry_path.write_text(
         """registry_snapshot_id: PDR-FRESHNESS-COMPETITION-001
+registry_snapshot_timestamp: 2026-08-05T00:00:00Z
 snapshot_mode: STATIC_OFFLINE
 source_type: EVALUATION_FIXTURE
 real_world_verified: false
@@ -823,3 +827,32 @@ def test_static_partner_registry_caps_candidate_by_demand_and_capacity(
         "ACTIVE_DEMAND_QUANTITY_EXCEEDED"
         not in result.rejection_reason_codes
     )
+
+def test_partner_registry_requires_snapshot_timestamp(
+    tmp_path: Path,
+) -> None:
+    registry_path = (
+        tmp_path
+        / "registry_missing_timestamp.yaml"
+    )
+
+    registry_path.write_text(
+        """
+registry_snapshot_id: PDR-MISSING-TIMESTAMP
+snapshot_mode: STATIC_OFFLINE
+source_type: EVALUATION_FIXTURE
+real_world_verified: false
+runtime_internet_required: false
+
+matching_records: []
+""".strip(),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(
+        ValidationError,
+        match="registry_snapshot_timestamp",
+    ):
+        load_partner_registry(
+            registry_path
+        )

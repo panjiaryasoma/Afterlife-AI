@@ -1,0 +1,11 @@
+# Deterministic evaluation fixture.
+# This snapshot does not claim real-world partner demand.
+
+registry_snapshot_id: PDR-EMPTY-V1
+registry_snapshot_timestamp: 2026-08-05T00:00:00Z
+snapshot_mode: STATIC_OFFLINE
+source_type: EVALUATION_FIXTURE
+real_world_verified: false
+runtime_internet_required: false
+
+matching_records: []

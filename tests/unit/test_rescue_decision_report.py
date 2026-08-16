@@ -18,6 +18,14 @@ MODEL_SHA256 = (
     "a318a2550d97ea0861b85fd7af5f9b2"
     "be0291eb29f57b07a00b32ab5ea5295d9"
 )
+PARTNER_REGISTRY_SNAPSHOT_TIMESTAMP = datetime(
+    2026,
+    8,
+    5,
+    0,
+    0,
+    tzinfo=UTC,
+)
 
 def build_report():
     return build_rescue_decision_report(
@@ -33,6 +41,9 @@ def build_report():
         model_sha256=MODEL_SHA256,
         ruleset_version="domain_rules_v1.0",
         capability_snapshot_version="INTEGRATION-001-fixture-v1",
+        partner_registry_snapshot_timestamp=(
+            PARTNER_REGISTRY_SNAPSHOT_TIMESTAMP
+        ),
         objective_policy_version="BALANCED_FIXTURE_v1",
         optimization_objective=OptimizationObjective.BALANCED,
         optimization_solver_status=SolverStatus.OPTIMAL,
@@ -289,6 +300,9 @@ def test_report_rejects_broken_quantity_reconciliation() -> None:
             model_sha256=MODEL_SHA256,
             ruleset_version="domain_rules_v1.0",
             capability_snapshot_version="INTEGRATION-001-fixture-v1",
+            partner_registry_snapshot_timestamp=(
+                PARTNER_REGISTRY_SNAPSHOT_TIMESTAMP
+            ),
             objective_policy_version="BALANCED_FIXTURE_v1",
             optimization_objective=OptimizationObjective.BALANCED,
             optimization_solver_status=SolverStatus.OPTIMAL,
@@ -417,6 +431,9 @@ def test_report_requires_valid_sha256_snapshot_hash() -> None:
             model_sha256=MODEL_SHA256,
             ruleset_version="domain_rules_v1.0",
             capability_snapshot_version="fixture-v1",
+            partner_registry_snapshot_timestamp=(
+                PARTNER_REGISTRY_SNAPSHOT_TIMESTAMP
+            ),
             objective_policy_version="BALANCED_FIXTURE_v1",
             optimization_objective=OptimizationObjective.BALANCED,
             optimization_solver_status=SolverStatus.OPTIMAL,
