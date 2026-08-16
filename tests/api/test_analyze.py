@@ -1,10 +1,15 @@
+from datetime import UTC, datetime
 from decimal import Decimal
 from io import BytesIO
 from pathlib import Path
 
+import pytest
 from backend.api import routes
 from backend.main import app
 from fastapi.testclient import TestClient
+
+from afterlife_ai.contracts.enums import OptimizationObjective
+from afterlife_ai.pipeline.application import run_production_pipeline
 
 client = TestClient(app)
 
@@ -67,6 +72,70 @@ def test_analyze_accepts_one_xlsx_and_returns_report() -> None:
         "M1_HIST_GRADIENT_BOOSTING",
         "DETERMINISTIC_FALLBACK_V1",
     }
+def test_analyze_matches_canonical_pipeline_report(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fixed_analysis_at = datetime(
+        2026,
+        8,
+        17,
+        2,
+        30,
+        tzinfo=UTC,
+    )
+    fixed_request_id = "REQ-API-PARITY-001"
+
+    class FixedDateTime:
+        @staticmethod
+        def now(_tz: object = None) -> datetime:
+            return fixed_analysis_at
+
+    class FixedUUID:
+        hex = "API-PARITY-001"
+
+    monkeypatch.setattr(
+        routes,
+        "datetime",
+        FixedDateTime,
+    )
+    monkeypatch.setattr(
+        routes,
+        "uuid4",
+        lambda: FixedUUID(),
+    )
+
+    with WORKBOOK_PATH.open("rb") as handle:
+        response = client.post(
+            "/api/analyze",
+            files={
+                "inventory_file": (
+                    "inventory.xlsx",
+                    handle,
+                    XLSX_MIME_TYPE,
+                )
+            },
+        )
+
+    assert response.status_code == 200
+
+    canonical_result = run_production_pipeline(
+        workbook_path=WORKBOOK_PATH,
+        runtime_config_path=routes.RUNTIME_CONFIG_PATH,
+        partner_registry_path=routes.PARTNER_REGISTRY_PATH,
+        analysis_at=fixed_analysis_at,
+        request_id=fixed_request_id,
+        optimization_objective=(
+            OptimizationObjective.MAXIMIZE_RECOVERY_VALUE
+        ),
+        max_logistics_budget=None,
+        minimum_expected_rescue_ratio=None,
+        rescue_deadline_at=None,
+    )
+
+    assert (
+        response.json()
+        == canonical_result.report.model_dump(mode="json")
+    )
 
 def test_analyze_rejects_missing_inventory_file() -> None:
     response = client.post(
@@ -248,7 +317,7 @@ def test_analyze_rejects_naive_rescue_deadline() -> None:
     )
 
 def test_analyze_rejects_upload_above_size_limit(
-    monkeypatch,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setattr(
         routes,
