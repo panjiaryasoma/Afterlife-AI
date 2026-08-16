@@ -248,7 +248,7 @@ class RescueDecisionReport(BaseModel):
     capability_snapshot_version: str
 
     partner_registry_snapshot_id: str | None = None
-    partner_registry_snapshot_timestamp: datetime | None = None
+    partner_registry_snapshot_timestamp: datetime
     partner_registry_source_type: str | None = None
     partner_registry_real_world_verified: bool | None = None
 
