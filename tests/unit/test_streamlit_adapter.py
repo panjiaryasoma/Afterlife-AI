@@ -165,3 +165,67 @@ def test_streamlit_adapter_rejects_empty_upload() -> None:
             minimum_expected_rescue_ratio=None,
             rescue_deadline_at=None,
         )
+
+def test_streamlit_adapter_cleanup_does_not_mask_pipeline_error(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from frontend.streamlit import adapter
+
+    pipeline_mock = Mock(
+        side_effect=ValueError(
+            "canonical inventory validation failed"
+        )
+    )
+
+    monkeypatch.setattr(
+        adapter,
+        "run_production_pipeline",
+        pipeline_mock,
+    )
+
+    original_unlink = Path.unlink
+
+    def locked_unlink(
+        path: Path,
+        missing_ok: bool = False,
+    ) -> None:
+        if path.suffix == ".xlsx":
+            raise PermissionError(
+                32,
+                "file is being used by another process",
+            )
+
+        original_unlink(
+            path,
+            missing_ok=missing_ok,
+        )
+
+    monkeypatch.setattr(
+        Path,
+        "unlink",
+        locked_unlink,
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="canonical inventory validation failed",
+    ):
+        adapter.run_streamlit_analysis(
+            workbook_bytes=b"fake-xlsx-content",
+            inventory_file_name="inventory.xlsx",
+            analysis_at=datetime(
+                2026,
+                8,
+                16,
+                12,
+                0,
+                tzinfo=UTC,
+            ),
+            request_id="REQ-CLEANUP-ERROR",
+            optimization_objective=(
+                OptimizationObjective.MAXIMIZE_RECOVERY_VALUE
+            ),
+            max_logistics_budget=None,
+            minimum_expected_rescue_ratio=None,
+            rescue_deadline_at=None,
+        )

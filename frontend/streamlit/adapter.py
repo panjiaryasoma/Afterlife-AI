@@ -119,4 +119,7 @@ def run_streamlit_analysis(
             temp_path is not None
             and temp_path.exists()
         ):
-            temp_path.unlink()
+            try:
+                temp_path.unlink()
+            except PermissionError:
+                pass
