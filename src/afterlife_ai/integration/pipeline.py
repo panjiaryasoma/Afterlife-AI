@@ -1126,6 +1126,63 @@ def run_integration_001(
                 "expired_quantity": expired_quantity,
                 "review_quantity": review_quantity,
             },
+            healthy_stock=[
+                {
+                    "source_lot_id": triage.source_lot_id,
+                    "routed_quantity": (
+                        triage.protected_normal_stock_quantity
+                    ),
+                    "triage_reason_codes": (
+                        triage.triage_reason_codes
+                    ),
+                    "urgency_level": triage.urgency_level,
+                }
+                for triage in triage_results
+                if (
+                    triage.protected_normal_stock_quantity
+                    > ZERO
+                )
+            ],
+            monitor_only=[
+                {
+                    "source_lot_id": triage.source_lot_id,
+                    "routed_quantity": (
+                        triage.monitor_quantity
+                    ),
+                    "triage_reason_codes": (
+                        triage.triage_reason_codes
+                    ),
+                    "urgency_level": triage.urgency_level,
+                }
+                for triage in triage_results
+                if triage.monitor_quantity > ZERO
+            ],
+            surplus_planning_lots=[
+                {
+                    "planning_lot_id": (
+                        lot.planning_lot_id
+                    ),
+                    "source_lot_id": lot.source_lot_id,
+                    "planning_quantity": (
+                        lot.planning_quantity
+                    ),
+                }
+                for lot in planning_lots
+            ],
+            expired_routes=[
+                {
+                    "source_lot_id": triage.source_lot_id,
+                    "routed_quantity": (
+                        triage.expired_quantity
+                    ),
+                    "triage_reason_codes": (
+                        triage.triage_reason_codes
+                    ),
+                    "urgency_level": triage.urgency_level,
+                }
+                for triage in triage_results
+                if triage.expired_quantity > ZERO
+            ],
             score_provenance={
                 "provider_name": (
                     "FixtureScoreProvider"

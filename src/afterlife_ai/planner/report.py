@@ -17,6 +17,7 @@ from afterlife_ai.contracts.enums import (
     OptimizationObjective,
     SolverStatus,
     SourceType,
+    UrgencyLevel,
     ValidationStatus,
 )
 
@@ -42,6 +43,26 @@ class ReportTriageSummary(BaseModel):
     planning_quantity: Decimal = Field(ge=ZERO)
     expired_quantity: Decimal = Field(ge=ZERO)
     review_quantity: Decimal = Field(ge=ZERO)
+
+class ReportInventoryRouteItem(BaseModel):
+    """Traceable quantity routed outside rescue planning."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    source_lot_id: str
+    routed_quantity: Decimal = Field(gt=ZERO)
+    triage_reason_codes: list[str]
+    urgency_level: UrgencyLevel
+
+
+class ReportSurplusPlanningLotItem(BaseModel):
+    """Traceable surplus quantity admitted to rescue planning."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    planning_lot_id: str
+    source_lot_id: str
+    planning_quantity: Decimal = Field(gt=ZERO)
 
 class ReportScoreProvenance(BaseModel):
     """Traceable provenance for the score source used in a report."""
@@ -238,6 +259,13 @@ class RescueDecisionReport(BaseModel):
     validation_summary: ReportValidationSummary
     triage_summary: ReportTriageSummary
 
+    healthy_stock: list[ReportInventoryRouteItem]
+    monitor_only: list[ReportInventoryRouteItem]
+    surplus_planning_lots: list[
+        ReportSurplusPlanningLotItem
+    ]
+    expired_routes: list[ReportInventoryRouteItem]
+
     score_provenance: ReportScoreProvenance
     model_execution_performed: bool
 
@@ -324,6 +352,63 @@ class RescueDecisionReport(BaseModel):
             + metrics.review_quantity
         )
 
+        healthy_total = sum(
+            (
+                item.routed_quantity
+                for item in self.healthy_stock
+            ),
+            ZERO,
+        )
+
+        if healthy_total != metrics.protected_quantity:
+            raise ValueError(
+                "quantity reconciliation failed: "
+                "healthy_stock must equal protected quantity."
+            )
+
+        monitor_total = sum(
+            (
+                item.routed_quantity
+                for item in self.monitor_only
+            ),
+            ZERO,
+        )
+
+        if monitor_total != metrics.monitor_quantity:
+            raise ValueError(
+                "quantity reconciliation failed: "
+                "monitor_only must equal monitor quantity."
+            )
+
+        planning_lot_total = sum(
+            (
+                item.planning_quantity
+                for item in self.surplus_planning_lots
+            ),
+            ZERO,
+        )
+
+        if planning_lot_total != metrics.planning_quantity:
+            raise ValueError(
+                "quantity reconciliation failed: "
+                "surplus_planning_lots must equal "
+                "planning quantity."
+            )
+
+        expired_total = sum(
+            (
+                item.routed_quantity
+                for item in self.expired_routes
+            ),
+            ZERO,
+        )
+
+        if expired_total != metrics.expired_quantity:
+            raise ValueError(
+                "quantity reconciliation failed: "
+                "expired_routes must equal expired quantity."
+            )
+
         if routed_total != metrics.input_quantity:
             raise ValueError(
                 "quantity reconciliation failed: "
@@ -368,6 +453,10 @@ def build_rescue_decision_report(
     optimization_solver_status: SolverStatus,
     validation_summary: dict[str, Any],
     triage_summary: dict[str, Any],
+    healthy_stock: list[dict[str, Any]],
+    monitor_only: list[dict[str, Any]],
+    surplus_planning_lots: list[dict[str, Any]],
+    expired_routes: list[dict[str, Any]],
     score_provenance: dict[str, Any],
     model_execution_performed: bool,
     deterministic_execution: bool | None = None,
@@ -420,6 +509,22 @@ def build_rescue_decision_report(
         triage_summary=ReportTriageSummary(
             **triage_summary
         ),
+        healthy_stock=[
+            ReportInventoryRouteItem(**item)
+            for item in healthy_stock
+        ],
+        monitor_only=[
+            ReportInventoryRouteItem(**item)
+            for item in monitor_only
+        ],
+        surplus_planning_lots=[
+            ReportSurplusPlanningLotItem(**item)
+            for item in surplus_planning_lots
+        ],
+        expired_routes=[
+            ReportInventoryRouteItem(**item)
+            for item in expired_routes
+        ],
         score_provenance=ReportScoreProvenance(
             **score_provenance
         ),
@@ -470,4 +575,6 @@ __all__ = [
     "build_rescue_decision_report",
     "ReportValidationSummary",
     "ReportTriageSummary",
+    "ReportInventoryRouteItem",
+    "ReportSurplusPlanningLotItem",
 ]

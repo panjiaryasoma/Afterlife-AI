@@ -48,6 +48,43 @@ def build_report():
             "expired_quantity": Decimal("12"),
             "review_quantity": Decimal("32"),
         },
+        healthy_stock=[
+            {
+                "source_lot_id": "LOT-001",
+                "routed_quantity": Decimal("30"),
+                "triage_reason_codes": [
+                    "NORMAL_STOCK_PROTECTED"
+                ],
+                "urgency_level": "LOW",
+            }
+        ],
+        monitor_only=[
+            {
+                "source_lot_id": "LOT-002",
+                "routed_quantity": Decimal("10"),
+                "triage_reason_codes": [
+                    "MONITOR_WINDOW"
+                ],
+                "urgency_level": "MEDIUM",
+            }
+        ],
+        surplus_planning_lots=[
+            {
+                "planning_lot_id": "PLAN-LOT-003",
+                "source_lot_id": "LOT-003",
+                "planning_quantity": Decimal("18"),
+            }
+        ],
+        expired_routes=[
+            {
+                "source_lot_id": "LOT-004",
+                "routed_quantity": Decimal("12"),
+                "triage_reason_codes": [
+                    "EXPIRED"
+                ],
+                "urgency_level": "CRITICAL",
+            }
+        ],
         score_provenance={
             "provider_name": "FixtureScoreProvider",
             "score_type": "FIXTURE_EXPECTED_SCORE",
@@ -267,6 +304,16 @@ def test_report_rejects_broken_quantity_reconciliation() -> None:
                 "expired_quantity": Decimal("12"),
                 "review_quantity": Decimal("32"),
             },
+            healthy_stock=[],
+            monitor_only=[],
+            surplus_planning_lots=[
+                {
+                    "planning_lot_id": "PLAN-LOT-001",
+                    "source_lot_id": "LOT-001",
+                    "planning_quantity": Decimal("10"),
+                }
+            ],
+            expired_routes=[],
             score_provenance={
                 "provider_name": "FixtureScoreProvider",
                 "score_type": "FIXTURE_EXPECTED_SCORE",
@@ -385,6 +432,10 @@ def test_report_requires_valid_sha256_snapshot_hash() -> None:
                 "expired_quantity": Decimal("12"),
                 "review_quantity": Decimal("32"),
             },
+            healthy_stock=[],
+            monitor_only=[],
+            surplus_planning_lots=[],
+            expired_routes=[],
             score_provenance={
                 "provider_name": "FixtureScoreProvider",
                 "score_type": "FIXTURE_EXPECTED_SCORE",
@@ -460,3 +511,26 @@ def test_report_contains_validation_and_triage_summaries() -> None:
         report.triage_summary.review_quantity
         == Decimal("32")
     )
+
+def test_report_contains_canonical_triage_routes() -> None:
+    report = build_report()
+
+    assert sum(
+        item.routed_quantity
+        for item in report.healthy_stock
+    ) == Decimal("30")
+
+    assert sum(
+        item.routed_quantity
+        for item in report.monitor_only
+    ) == Decimal("10")
+
+    assert sum(
+        item.planning_quantity
+        for item in report.surplus_planning_lots
+    ) == Decimal("18")
+
+    assert sum(
+        item.routed_quantity
+        for item in report.expired_routes
+    ) == Decimal("12")
