@@ -271,6 +271,18 @@ a {
     border-top: 1px solid var(--border);
 }
 
+.analysis-form[data-state="loading"] {
+    opacity: 0.82;
+}
+
+.analysis-form[data-state="loading"] .field {
+    transition: opacity var(--duration-fast) var(--ease-out);
+}
+
+.analysis-form[data-state="loading"] .field:not(.form-actions) {
+    opacity: 0.72;
+}
+
 .field {
     min-width: 0;
     padding: var(--space-6) 0;
@@ -430,6 +442,14 @@ a:focus-visible {
     font-size: 13px;
 }
 
+.status-message:not(:empty) {
+    padding: var(--space-4) var(--space-5);
+    border: 1px solid var(--border);
+    border-left-width: 3px;
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+}
+
 .status-message[data-state="loading"]::before {
     content: "";
     display: inline-block;
@@ -442,15 +462,30 @@ a:focus-visible {
     animation: status-pulse 1.1s ease-in-out infinite;
 }
 
+.status-message[data-state="loading"] {
+    border-left-color: var(--interactive);
+}
+
 .status-message[data-state="error"] {
-    color: var(--danger);
+    border-left-color: var(--danger);
+    background:
+        color-mix(in srgb,
+            var(--danger) 7%,
+            var(--surface));
+    color: var(--text-primary);
 }
 
 .status-message[data-state="success"] {
-    color: var(--success);
+    border-left-color: var(--success);
+    background:
+        color-mix(in srgb,
+            var(--success) 7%,
+            var(--surface));
+    color: var(--text-primary);
 }
 
 @keyframes status-pulse {
+
     0%,
     100% {
         opacity: 0.35;

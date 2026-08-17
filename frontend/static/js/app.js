@@ -5,8 +5,12 @@ const budgetInput = document.querySelector("#max-logistics-budget");
 const rescueRatioInput = document.querySelector("#minimum-rescue-ratio");
 const deadlineInput = document.querySelector("#rescue-deadline");
 const button = document.querySelector("#analyze-button");
+const buttonLabel = button.querySelector(".button-label");
+const buttonArrow = button.querySelector(".button-arrow");
 const statusMessage = document.querySelector("#status-message");
-
+const reportAttention = document.querySelector(
+    "#report-attention"
+);
 const results = document.querySelector("#results");
 const reportMeta = document.querySelector("#report-meta");
 const metrics = document.querySelector("#metrics");
@@ -187,6 +191,23 @@ function setStatus(message, state = "neutral") {
     statusMessage.dataset.state = state;
 }
 
+function setAnalysisBusy(isBusy) {
+    button.disabled = isBusy;
+
+    if (isBusy) {
+        button.setAttribute("aria-busy", "true");
+        buttonLabel.textContent = "Analyzing Inventory";
+        buttonArrow.textContent = "…";
+        form.dataset.state = "loading";
+        return;
+    }
+
+    button.removeAttribute("aria-busy");
+    buttonLabel.textContent = "Analyze Inventory";
+    buttonArrow.textContent = "→";
+    form.dataset.state = "ready";
+}
+
 function badge(label, variant = "") {
     const className = variant
         ? `badge badge--${variant}`
@@ -227,6 +248,37 @@ function codeChips(codes) {
                 `<span class="code-chip">${escapeHtml(code)}</span>`
         )
         .join("");
+}
+
+function renderReportAttention(report) {
+    const batch = report.batch_metrics || {};
+    const unallocated = Number(
+        batch.unallocated_planning_quantity || 0
+    );
+
+    if (
+        report.human_exception_review_required
+        || unallocated > 0
+    ) {
+        const messages = [];
+
+        if (unallocated > 0) {
+            messages.push(
+                `${formatQuantity(unallocated)} unallocated`
+            );
+        }
+
+        if (report.human_exception_review_required) {
+            messages.push("Human review required");
+        }
+
+        reportAttention.textContent = messages.join(" · ");
+        reportAttention.className = "badge badge--warning";
+        return;
+    }
+
+    reportAttention.textContent = "";
+    reportAttention.className = "badge hidden";
 }
 
 function solverBadge(status) {
@@ -679,6 +731,7 @@ function renderReport(report) {
         report.score_provenance?.provider_name || "Score source unknown";
 
     renderSummary(report);
+    renderReportAttention(report);
     renderAllocations(report);
     renderAlternatives(report);
     renderReviews(report);
@@ -776,8 +829,7 @@ form.addEventListener("submit", async (event) => {
 
     latestReport = null;
 
-    button.disabled = true;
-    button.setAttribute("aria-busy", "true");
+    setAnalysisBusy(true);
     downloadReport.classList.add("hidden");
     results.classList.add("hidden");
     results.classList.remove("is-visible");
@@ -845,9 +897,9 @@ form.addEventListener("submit", async (event) => {
             "error"
         );
     } finally {
-        button.disabled = false;
-        button.removeAttribute("aria-busy");
+        setAnalysisBusy(false);
     }
 });
 
 updateObjectiveControls();
+setAnalysisBusy(false);
