@@ -235,17 +235,36 @@ function fact(label, value) {
     `;
 }
 
-function codeChips(codes) {
+const CODE_LABELS = Object.freeze({
+    OPTIMIZER_NOT_SELECTED: "Not selected by optimizer",
+    UNKNOWN_STORAGE_HISTORY: "Storage history unknown",
+    VALID_PARTIAL_USER_DECLARED_SURPLUS: "Partial surplus declared by user",
+    CANDIDATE_CAPACITY: "Candidate capacity limit",
+    SHARED_DESTINATION_CAPACITY: "Shared destination capacity limit",
+    SHARED_ACTION_CAPACITY: "Shared action capacity limit",
+});
+
+function codeLabel(code) {
+    const raw = String(code ?? "").trim();
+
+    if (!raw) {
+        return "Not provided";
+    }
+
+    return CODE_LABELS[raw] || humanizeEnum(raw);
+}
+
+function codeChips(codes, emptyLabel = "No code reported") {
     const items = safeArray(codes);
 
     if (items.length === 0) {
-        return '<span class="code-chip">NO BINDING CODE REPORTED</span>';
+        return `<span class="code-chip">${escapeHtml(emptyLabel)}</span>`;
     }
 
     return items
         .map(
             (code) =>
-                `<span class="code-chip">${escapeHtml(code)}</span>`
+                `<span class="code-chip">${escapeHtml(codeLabel(code))}</span>`
         )
         .join("");
 }
@@ -414,37 +433,37 @@ function renderAllocations(report) {
                             <div class="fact-grid">
                                 ${fact("Estimated rescue success", score)}
                                 ${fact(
-                                    "Completion",
-                                    formatHours(item.estimated_completion_hours)
-                                )}
+                "Completion",
+                formatHours(item.estimated_completion_hours)
+            )}
                                 ${fact(
-                                    "Distance",
-                                    formatDistance(item.distance_km)
-                                )}
+                "Distance",
+                formatDistance(item.distance_km)
+            )}
                                 ${fact(
-                                    "Value / unit",
-                                    formatCurrency(item.expected_value_per_unit)
-                                )}
+                "Value / unit",
+                formatCurrency(item.expected_value_per_unit)
+            )}
                                 ${fact(
-                                    "Expected rescued qty",
-                                    formatQuantity(
-                                        item.expected_physical_rescue_quantity
-                                    )
-                                )}
+                "Expected rescued qty",
+                formatQuantity(
+                    item.expected_physical_rescue_quantity
+                )
+            )}
                                 ${fact(
-                                    "Expected waste qty",
-                                    formatQuantity(item.expected_waste_quantity)
-                                )}
+                "Expected waste qty",
+                formatQuantity(item.expected_waste_quantity)
+            )}
                                 ${fact(
-                                    "Selling / offer price",
-                                    formatCurrency(
-                                        item.offered_or_selling_price_per_unit
-                                    )
-                                )}
+                "Selling / offer price",
+                formatCurrency(
+                    item.offered_or_selling_price_per_unit
+                )
+            )}
                                 ${fact(
-                                    "Candidate ID",
-                                    item.candidate_id || "—"
-                                )}
+                "Candidate ID",
+                item.candidate_id || "—"
+            )}
                             </div>
 
                             <div class="value-breakdown">
@@ -485,7 +504,10 @@ function renderAllocations(report) {
                                 class="constraint-row"
                                 aria-label="Binding constraints"
                             >
-                                ${codeChips(item.binding_constraint_codes)}
+                                ${codeChips(
+                                    item.binding_constraint_codes,
+                                    "No binding constraint"
+                                )}
                             </div>
                         </div>
                     </div>
@@ -529,7 +551,10 @@ function renderAlternatives(report) {
                     </div>
 
                     <div class="reason-list">
-                        ${codeChips(reasons)}
+                        ${codeChips(
+                            reasons,
+                            "No rejection reason reported"
+                        )}
                     </div>
                 </article>
             `;
@@ -588,7 +613,10 @@ function renderReviews(report) {
                     </div>
 
                     <div class="reason-list">
-                        ${codeChips(item.reason_codes)}
+                        ${codeChips(
+                            item.reason_codes,
+                            "No review reason reported"
+                        )}
                     </div>
                 </article>
             `
