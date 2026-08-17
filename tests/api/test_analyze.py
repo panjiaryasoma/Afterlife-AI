@@ -7,6 +7,7 @@ import pytest
 from backend.api import routes
 from backend.main import app
 from fastapi.testclient import TestClient
+from openpyxl import load_workbook
 
 from afterlife_ai.contracts.enums import OptimizationObjective
 from afterlife_ai.pipeline.application import run_production_pipeline
@@ -339,4 +340,120 @@ def test_analyze_rejects_upload_above_size_limit(
     assert response.status_code == 413
     assert "melebihi batas upload" in (
         response.json()["detail"]
+    )
+
+def test_analyze_returns_canonical_error_for_invalid_schema(
+    tmp_path: Path,
+) -> None:
+    invalid_workbook_path = (
+        tmp_path / "invalid_schema.xlsx"
+    )
+
+    workbook = load_workbook(
+        WORKBOOK_PATH
+    )
+
+    try:
+        worksheet = workbook[
+            "inventory_lots"
+        ]
+
+        headers = [
+            cell.value
+            for cell in worksheet[1]
+        ]
+
+        lot_id_column = (
+            headers.index("lot_id") + 1
+        )
+
+        worksheet.delete_cols(
+            lot_id_column
+        )
+
+        workbook.save(
+            invalid_workbook_path
+        )
+
+    finally:
+        workbook.close()
+
+    with invalid_workbook_path.open(
+        "rb"
+    ) as handle:
+        response = client.post(
+            "/api/analyze",
+            files={
+                "inventory_file": (
+                    "invalid_schema.xlsx",
+                    handle,
+                    XLSX_MIME_TYPE,
+                )
+            },
+        )
+
+    assert response.status_code == 422
+
+    assert response.headers[
+        "content-type"
+    ].startswith(
+        "application/json"
+    )
+
+    detail = response.json()["detail"]
+
+    assert "lot_id" in detail
+
+def test_analyze_cleanup_does_not_mask_validation_error(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    original_unlink = Path.unlink
+
+    def locked_unlink(
+        path: Path,
+        missing_ok: bool = False,
+    ) -> None:
+        if path.suffix == ".xlsx":
+            raise PermissionError(
+                32,
+                "file is being used by another process",
+            )
+
+        original_unlink(
+            path,
+            missing_ok=missing_ok,
+        )
+
+    monkeypatch.setattr(
+        Path,
+        "unlink",
+        locked_unlink,
+    )
+
+    monkeypatch.setattr(
+        routes,
+        "run_production_pipeline",
+        lambda **_: (_ for _ in ()).throw(
+            ValueError(
+                "Kolom wajib tidak ditemukan: lot_id"
+            )
+        ),
+    )
+
+    with WORKBOOK_PATH.open("rb") as handle:
+        response = client.post(
+            "/api/analyze",
+            files={
+                "inventory_file": (
+                    "inventory.xlsx",
+                    handle,
+                    XLSX_MIME_TYPE,
+                )
+            },
+        )
+
+    assert response.status_code == 422
+    assert response.json()["detail"] == (
+        "XLSX tidak valid: "
+        "Kolom wajib tidak ditemukan: lot_id"
     )

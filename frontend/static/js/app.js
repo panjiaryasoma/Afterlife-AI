@@ -120,6 +120,68 @@ function safeArray(value) {
     return Array.isArray(value) ? value : [];
 }
 
+async function readResponsePayload(response) {
+    const contentType = (
+        response.headers.get("content-type") || ""
+    ).toLowerCase();
+
+    if (contentType.includes("json")) {
+        try {
+            return {
+                kind: "json",
+                value: await response.json(),
+            };
+        } catch {
+            return {
+                kind: "invalid-json",
+                value: null,
+            };
+        }
+    }
+
+    return {
+        kind: "text",
+        value: (await response.text()).trim(),
+    };
+}
+
+function responseErrorMessage(response, parsed) {
+    if (
+        parsed.kind === "json"
+        && parsed.value
+        && typeof parsed.value === "object"
+    ) {
+        const detail = parsed.value.detail;
+
+        if (Array.isArray(detail)) {
+            return detail
+                .map(
+                    (item) =>
+                        item?.msg || "Validation error"
+                )
+                .join("; ");
+        }
+
+        if (
+            typeof detail === "string"
+            && detail.trim() !== ""
+        ) {
+            return detail;
+        }
+    }
+
+    if (
+        parsed.kind === "text"
+        && typeof parsed.value === "string"
+        && parsed.value !== ""
+        && response.status < 500
+    ) {
+        return parsed.value;
+    }
+
+    return `Inventory analysis failed (HTTP ${response.status}).`;
+}
+
 function setStatus(message, state = "neutral") {
     statusMessage.textContent = message;
     statusMessage.dataset.state = state;
@@ -731,23 +793,29 @@ form.addEventListener("submit", async (event) => {
             body: data,
         });
 
-        const payload = await response.json();
+        const parsed = await readResponsePayload(
+            response
+        );
 
         if (!response.ok) {
-            const detail = payload.detail;
-
-            if (Array.isArray(detail)) {
-                const message = detail
-                    .map((item) => item.msg || "Validation error")
-                    .join("; ");
-
-                throw new Error(message);
-            }
-
             throw new Error(
-                detail || "Inventory analysis failed."
+                responseErrorMessage(
+                    response,
+                    parsed
+                )
             );
         }
+
+        if (
+            parsed.kind !== "json"
+            || !parsed.value
+            || typeof parsed.value !== "object"
+        ) {
+            throw new Error(
+                "Analysis completed with an unexpected response format."
+            );
+        }
+        const payload = parsed.value;
 
         latestReport = payload;
         renderReport(payload);
