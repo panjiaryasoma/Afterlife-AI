@@ -1123,3 +1123,160 @@ a:focus-visible {
         transition-duration: 0.01ms !important;
     }
 }
+
+/* Pre-submission visual identity pass:
+   flatten summary metrics on wider screens. */
+@media (min-width: 901px) {
+    #triage-metrics {
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+    }
+
+    #metrics {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+
+    #triage-metrics,
+    #metrics {
+        border-left: 0;
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+    }
+
+    #triage-metrics .metric,
+    #metrics .metric {
+        min-height: 0;
+        gap: var(--space-3);
+        padding: var(--space-5) var(--space-4);
+        border-right: 0;
+        border-bottom: 0;
+        border-left: 1px solid var(--border);
+    }
+
+    #triage-metrics .metric:first-child,
+    #metrics .metric:first-child {
+        padding-left: 0;
+        border-left: 0;
+    }
+
+    #triage-metrics .metric:last-child,
+    #metrics .metric:last-child {
+        padding-right: 0;
+    }
+
+    #triage-metrics .metric__value,
+    #metrics .metric__value {
+        font-size: clamp(24px, 2.4vw, 32px);
+    }
+}
+
+
+/* V2 — make the selected rescue plan the primary decision artifact. */
+@media (min-width: 901px) {
+    section[aria-labelledby="selected-plan-title"]>.section-heading {
+        grid-template-columns: minmax(0, 1fr) minmax(240px, 0.34fr);
+        padding-left: var(--space-6);
+        border-left: 3px solid var(--interactive);
+    }
+
+    #selected-plan-title {
+        max-width: 900px;
+        font-size: clamp(38px, 4vw, 54px);
+    }
+
+    section[aria-labelledby="selected-plan-title"] .section-note {
+        padding-bottom: var(--space-1);
+    }
+
+    #allocations {
+        border-top: 1px solid var(--interactive);
+    }
+
+    #allocations .allocation-block {
+        padding-top: var(--space-10);
+        padding-bottom: var(--space-10);
+    }
+
+    #allocations .allocation-block__title {
+        font-size: clamp(26px, 3.1vw, 36px);
+    }
+}
+
+/* V3 — reserve report-header badges for actionable status. */
+#scoring-provider {
+    display: none;
+}
+
+/* V4 — present provenance as an evidence ledger, not dashboard cards. */
+@media (min-width: 901px) {
+    #provenance {
+        border-left: 0;
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+    }
+
+    #provenance .provenance-card {
+        padding: var(--space-6) var(--space-8);
+        border-right: 0;
+        border-bottom: 0;
+        border-left: 1px solid var(--border);
+    }
+
+    #provenance .provenance-card:first-child {
+        padding-left: 0;
+        border-left: 0;
+    }
+
+    #provenance .provenance-card:last-child {
+        padding-right: 0;
+    }
+
+    #provenance .provenance-card__label {
+        margin-bottom: var(--space-3);
+    }
+
+    #provenance .provenance-card h3 {
+        margin-bottom: var(--space-4);
+        font-size: 20px;
+    }
+
+    #provenance .badge {
+        min-height: 0;
+        padding: 0 0 3px;
+        border: 0;
+        border-bottom: 1px solid currentColor;
+        border-radius: 0;
+        background: transparent;
+    }
+}
+
+/* V5 — signature Afterlife AI rescue-routing motif. */
+.rescue-route {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-5) 0;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-tertiary);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.rescue-route span:nth-child(even) {
+    color: var(--interactive);
+    font-size: 13px;
+    letter-spacing: 0;
+}
+
+.rescue-route span:last-child {
+    color: var(--text-primary);
+}
+
+@media (max-width: 600px) {
+    .rescue-route {
+        gap: var(--space-2);
+        font-size: 9px;
+        letter-spacing: 0.08em;
+    }
+}
