@@ -8,11 +8,10 @@ const button = document.querySelector("#analyze-button");
 const buttonLabel = button.querySelector(".button-label");
 const buttonArrow = button.querySelector(".button-arrow");
 const statusMessage = document.querySelector("#status-message");
-const reportAttention = document.querySelector(
-    "#report-attention"
-);
+const reportAttention = document.querySelector("#report-attention");
 const results = document.querySelector("#results");
 const reportMeta = document.querySelector("#report-meta");
+const triageMetrics = document.querySelector("#triage-metrics");
 const metrics = document.querySelector("#metrics");
 const solverState = document.querySelector("#solver-state");
 const allocations = document.querySelector("#allocations");
@@ -332,12 +331,45 @@ function updateObjectiveControls() {
 function renderSummary(report) {
     const batch = report.batch_metrics || {};
 
-    metrics.innerHTML = [
+    triageMetrics.innerHTML = [
         metric(
-            "Planning quantity",
-            formatQuantity(batch.planning_quantity),
-            "Units eligible for rescue planning"
+            "Input lots",
+            formatNumber(batch.input_lots),
+            "Lots received in this analysis"
         ),
+        metric(
+            "Input quantity",
+            formatQuantity(batch.input_quantity),
+            "Total inventory quantity"
+        ),
+        metric(
+            "Protected",
+            formatQuantity(batch.protected_quantity),
+            "Kept outside rescue planning"
+        ),
+        metric(
+            "Monitor",
+            formatQuantity(batch.monitor_quantity),
+            "Held for inventory monitoring"
+        ),
+        metric(
+            "Rescue planning",
+            formatQuantity(batch.planning_quantity),
+            "Eligible for rescue planning"
+        ),
+        metric(
+            "Expired",
+            formatQuantity(batch.expired_quantity),
+            "Routed outside rescue planning"
+        ),
+        metric(
+            "Human review",
+            formatQuantity(batch.review_quantity),
+            "Held for manual review"
+        ),
+    ].join("");
+
+    metrics.innerHTML = [
         metric(
             "Allocated",
             formatQuantity(batch.allocated_planning_quantity),
@@ -367,11 +399,6 @@ function renderSummary(report) {
             "Expected economic value",
             formatCurrency(batch.expected_total_economic_value),
             "Under current objective"
-        ),
-        metric(
-            "Review quantity",
-            formatQuantity(batch.review_quantity),
-            "Held for human review"
         ),
     ].join("");
 
@@ -505,9 +532,9 @@ function renderAllocations(report) {
                                 aria-label="Binding constraints"
                             >
                                 ${codeChips(
-                                    item.binding_constraint_codes,
-                                    "No binding constraint"
-                                )}
+                item.binding_constraint_codes,
+                "No binding constraint"
+            )}
                             </div>
                         </div>
                     </div>
@@ -552,9 +579,9 @@ function renderAlternatives(report) {
 
                     <div class="reason-list">
                         ${codeChips(
-                            reasons,
-                            "No rejection reason reported"
-                        )}
+                reasons,
+                "No rejection reason reported"
+            )}
                     </div>
                 </article>
             `;
@@ -614,9 +641,9 @@ function renderReviews(report) {
 
                     <div class="reason-list">
                         ${codeChips(
-                            item.reason_codes,
-                            "No review reason reported"
-                        )}
+                item.reason_codes,
+                "No review reason reported"
+            )}
                     </div>
                 </article>
             `
@@ -664,6 +691,10 @@ function renderProvenance(report) {
                 ["Score type", humanizeEnum(score.score_type)],
                 ["Source type", humanizeEnum(score.source_type)],
                 ["Fixture version", score.fixture_version || "Not applicable"],
+                [
+                    "Feature schema",
+                    report.feature_schema_version || "Not reported",
+                ],
                 [
                     "Model executed",
                     formatBoolean(

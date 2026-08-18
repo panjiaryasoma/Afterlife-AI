@@ -205,7 +205,7 @@ a {
     padding-bottom: var(--space-2);
 }
 
-.hero__aside > p {
+.hero__aside>p {
     margin: 0;
     max-width: 38ch;
     color: var(--text-secondary);
@@ -215,7 +215,7 @@ a {
     margin: var(--space-8) 0 0;
 }
 
-.hero__facts > div {
+.hero__facts>div {
     display: grid;
     grid-template-columns: 1fr auto;
     gap: var(--space-4);
@@ -592,6 +592,10 @@ a:focus-visible {
     justify-content: flex-end;
 }
 
+.summary-group+.summary-group {
+    margin-top: var(--space-8);
+}
+
 .metric-grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -745,8 +749,8 @@ a:focus-visible {
     margin: 0;
 }
 
-.value-breakdown dl > div,
-.provenance-list > div {
+.value-breakdown dl>div,
+.provenance-list>div {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     gap: var(--space-4);

@@ -7,7 +7,7 @@ decision: RETAIN_FASTAPI_JINJA2
 primary_presentation_layer: FASTAPI_JINJA2
 technical_mvp_rc: FASTAPI_JINJA2
 streamlit_status: CHALLENGER_EVALUATED_NOT_SELECTED_AS_PRIMARY
-decision_status: ACCEPTED_WITH_ONE_PRESENTATION_FIX_REQUIRED
+decision_status: ACCEPTED
 ```
 
 FastAPI + Jinja2 tetap menjadi primary presentation layer dan Technical MVP RC.
@@ -26,37 +26,53 @@ Karena canonical output sudah parity, mengganti primary UI ke Streamlit sekarang
 
 ---
 
-## Required Fix Before Demo Freeze
+## Resolved Presentation Fix
 
-### MUST_FIX: invalid-schema error presentation on FastAPI + Jinja2
+### RESOLVED: invalid-schema error presentation on FastAPI + Jinja2
 
-Observed manual failure:
+Frontend selection review sebelumnya menemukan satu presentation blocker:
 
 ```text
 Unexpected token 'I', "Internal S"... is not valid JSON
 ```
 
-Expected behavior:
+Blocker tersebut telah diselesaikan.
+
+Verified behavior:
 
 - invalid workbook/schema menghasilkan controlled 4xx response;
+- valid XLSX dengan missing required schema column menghasilkan HTTP 422;
 - frontend menampilkan validation message dari API;
-- tidak ada raw JSON parse error;
-- tidak ada raw Internal Server Error yang bocor ke operator.
+- raw JSON parse error tidak lagi ditampilkan kepada operator;
+- non-JSON error response ditangani secara aman;
+- raw Internal Server Error tidak dibocorkan sebagai presentation message;
+- temporary-file cleanup tidak menutupi original validation exception;
+- canonical pipeline behavior tetap tidak berubah.
 
-### Required regression coverage
+Implementation checkpoint:
 
-Tambahkan/pertahankan test yang membuktikan:
+```text
+5dd0853 fix: harden FastAPI invalid input handling
+```
 
-1. `/api/analyze` dengan valid XLSX tetapi missing required column mengembalikan 422 JSON.
-2. Jinja frontend error handler tetap menampilkan useful message ketika response bukan JSON.
-3. Temp-file cleanup tidak boleh menutupi original validation exception.
-4. Existing canonical parity tetap PASS.
+Required regression behavior telah diverifikasi tanpa mengubah domain logic.
 
 ---
 
-## No Changes Allowed for This Fix
+## Preserved Invariants
 
-Fix tidak boleh mengubah triage rules, safety/feasibility gates, candidate generation, scoring, optimizer, model artifact, atau fixture hanya agar test menjadi hijau.
+Presentation fix tidak mengubah:
+
+- triage rules;
+- safety dan feasibility gates;
+- candidate generation;
+- scoring behavior;
+- optimizer behavior;
+- model artifact;
+- evaluation fixture;
+- canonical report semantics.
+
+Model tetap berada setelah deterministic hard gates dan frontend tetap hanya menjadi presentation layer.
 
 ---
 
@@ -115,6 +131,6 @@ frontend_comparison: COMPLETE
 winner: FASTAPI_JINJA2
 streamlit_challenger: VALID_BUT_NOT_SELECTED
 canonical_pipeline: UNCHANGED
-remaining_blocker_before_demo_freeze:
-  - FASTAPI_JINJA2_INVALID_SCHEMA_ERROR_PRESENTATION
+invalid_schema_presentation_fix: RESOLVED
+remaining_blockers_before_demo_freeze: NONE
 ```
