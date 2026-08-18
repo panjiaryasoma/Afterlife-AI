@@ -92,14 +92,44 @@
                         <span class="required-mark" aria-hidden="true">*</span>
                     </label>
 
-                    <div class="file-control">
+                    <div
+                        id="file-dropzone"
+                        class="file-dropzone"
+                    >
                         <input
                             id="inventory-file"
+                            class="file-input-native"
                             name="inventory_file"
                             type="file"
                             accept=".xlsx"
                             required
                         >
+
+                        <label
+                            class="file-dropzone__surface"
+                            for="inventory-file"
+                        >
+                            <span
+                                id="file-dropzone-title"
+                                class="file-dropzone__title"
+                            >
+                                Choose workbook
+                            </span>
+
+                            <span
+                                id="file-dropzone-prompt"
+                                class="file-dropzone__prompt"
+                            >
+                                or drag .xlsx here
+                            </span>
+
+                            <span
+                                id="file-name"
+                                class="file-dropzone__file"
+                            >
+                                No workbook selected
+                            </span>
+                        </label>
                     </div>
 
                     <p class="field-help">
@@ -130,7 +160,7 @@
 
                 <div class="field">
                     <label for="max-logistics-budget">
-                        Max logistics budget
+                        Max logistics budget (IDR)
                     </label>
 
                     <input
@@ -144,7 +174,7 @@
                     >
 
                     <p class="field-help">
-                        Leave blank for no request-level budget cap.
+                        Optional request-level budget cap.
                     </p>
                 </div>
 
@@ -182,7 +212,7 @@
                     >
 
                     <p class="field-help">
-                        Optional. Submitted as a timezone-aware timestamp.
+                        Optional rescue deadline.
                     </p>
                 </div>
 

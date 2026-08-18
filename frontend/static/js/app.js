@@ -1,5 +1,9 @@
 const form = document.querySelector("#analysis-form");
 const fileInput = document.querySelector("#inventory-file");
+const fileDropzone = document.querySelector("#file-dropzone");
+const fileDropzoneTitle = document.querySelector("#file-dropzone-title");
+const fileDropzonePrompt = document.querySelector("#file-dropzone-prompt");
+const fileName = document.querySelector("#file-name");
 const objectiveInput = document.querySelector("#optimization-objective");
 const budgetInput = document.querySelector("#max-logistics-budget");
 const rescueRatioInput = document.querySelector("#minimum-rescue-ratio");
@@ -838,6 +842,69 @@ downloadReport.addEventListener(
     downloadLatestReport
 );
 
+function renderSelectedWorkbook() {
+    const selectedFile = fileInput.files?.[0];
+
+    if (!selectedFile) {
+        fileDropzone.dataset.state = "empty";
+        fileDropzoneTitle.textContent = "Choose workbook";
+        fileDropzonePrompt.textContent = "or drag .xlsx here";
+        fileName.textContent = "No workbook selected";
+        return;
+    }
+
+    fileDropzone.dataset.state = "selected";
+    fileDropzoneTitle.textContent = "Workbook selected";
+    fileDropzonePrompt.textContent = "Click or drop another file to replace";
+    fileName.textContent = selectedFile.name;
+}
+
+fileInput.addEventListener("change", renderSelectedWorkbook);
+
+fileDropzone.addEventListener("dragenter", (event) => {
+    event.preventDefault();
+    fileDropzone.dataset.state = "dragover";
+    fileDropzoneTitle.textContent = "Release to upload workbook";
+    fileDropzonePrompt.textContent = ".xlsx inventory workbook";
+});
+
+fileDropzone.addEventListener("dragover", (event) => {
+    event.preventDefault();
+});
+
+fileDropzone.addEventListener("dragleave", (event) => {
+    if (!fileDropzone.contains(event.relatedTarget)) {
+        renderSelectedWorkbook();
+    }
+});
+
+fileDropzone.addEventListener("drop", (event) => {
+    event.preventDefault();
+
+    const droppedFile = event.dataTransfer?.files?.[0];
+
+    if (!droppedFile) {
+        renderSelectedWorkbook();
+        return;
+    }
+
+    const transfer = new DataTransfer();
+    transfer.items.add(droppedFile);
+    fileInput.files = transfer.files;
+
+    fileInput.dispatchEvent(
+        new Event("change", {
+            bubbles: true,
+        })
+    );
+});
+
+deadlineInput.addEventListener("click", () => {
+    if (typeof deadlineInput.showPicker === "function") {
+        deadlineInput.showPicker();
+    }
+});
+
 form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
@@ -933,7 +1000,7 @@ form.addEventListener("submit", async (event) => {
 
         downloadReport.classList.remove("hidden");
         setStatus(
-            "Analysis completed. Review the advisory rescue plan below.",
+            "Analysis complete · report generated below.",
             "success"
         );
 
