@@ -323,6 +323,11 @@ ARCH-02 simplified system overview
 
 ```text
 README.md
+docs/architecture/ARCHITECTURE_OVERVIEW.md
+docs/architecture/ARCH-01.mmd
+docs/architecture/ARCH-01.png
+docs/architecture/ARCH-02.mmd
+docs/architecture/ARCH-02.png
 backend/
 frontend/
 src/afterlife_ai/

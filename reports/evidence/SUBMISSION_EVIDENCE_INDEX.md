@@ -364,23 +364,42 @@ They should not override later frozen / final evidence when the values differ.
 
 ## 5. Claim-to-Evidence Map
 
-| Submission claim | Canonical evidence | Status |
-|---|---|---|
-| System processes one XLSX into one advisory Rescue Decision Report | `TECHNICAL_MVP_RC_VERIFICATION.md` + example report | Supported |
-| Deterministic triage protects non-surplus inventory before rescue planning | RC verification + TRIAGE acceptance tests | Supported |
-| Model scoring occurs after hard safety / feasibility gates | production pipeline + RC verification | Supported |
-| HGB-E was frozen before final-test access | model-selection decision + `selected_model_v1.yaml` | Supported |
-| HGB-E provides measurable value over B1 on the synthetic benchmark | AI Value Gate + final locked test | Supported |
-| Final synthetic test HGB-E PR-AUC ≈ 0.874 | `FINAL_LOCKED_TEST_v1.json` | Supported |
-| Group leakage between train / validation / test is zero | `SPLIT_MANIFEST_v2.json` | Supported |
-| Global planner preserves quantity constraints | planner evidence + final locked test + RC verification | Supported |
-| Hard-constraint violations are zero in locked evaluation evidence | final locked test / planner evidence | Supported |
-| Partner Demand Registry is part of runtime partner matching | current runtime implementation | Supported, static demo fixture only |
-| Partner registry represents verified live partner commitments | none | **Do not claim** |
-| Rescue-success score is a validated real-world probability | none | **Do not claim** |
-| Optimizer empirically outperforms greedy / another optimizer | no completed benchmark | **Do not claim** |
-| System automatically executes rescue actions | explicitly prohibited by report contract | **Do not claim** |
-| Final competition submission is already release-approved | final release audit not yet completed | Pending |
+Evidence classes:
+
+* `PROVEN_BY_REPO` — directly supported by implemented runtime behavior, committed contracts, tests, or reproducibility evidence.
+* `SUPPORTED_BY_SYNTHETIC_EVAL` — supported by the frozen synthetic benchmark or evaluation protocol, not by real-world field validation.
+* `DESIGN_INTENT_ONLY` — describes the intended mechanism or potential outcome but is not established as observed real-world impact.
+* `DO_NOT_CLAIM` — unsupported or explicitly contradicted by the current implementation/evidence boundary.
+* `PENDING_G10` — may only be promoted after the final release audit is executed on the exact frozen submission commit.
+
+| Submission claim | Canonical evidence | Evidence class | Boundary |
+| --- | --- | --- | --- |
+| System processes one XLSX into one advisory Rescue Decision Report | `TECHNICAL_MVP_RC_VERIFICATION.md` + example report + current production pipeline | `PROVEN_BY_REPO` | Supported |
+| Deterministic triage protects non-surplus inventory before rescue planning | RC verification + TRIAGE acceptance tests + production triage pipeline | `PROVEN_BY_REPO` | Supported |
+| Only planning quantity enters rescue planning | triage contract + production pipeline + planner integration evidence | `PROVEN_BY_REPO` | Supported |
+| Deterministic hard gates execute before model scoring | production pipeline + hard-gate implementation + regression tests | `PROVEN_BY_REPO` | Supported |
+| HGB-E is the selected production rescue-success model | `configs/selected_model_v1.yaml` + selected-model manifest + runtime scoring configuration | `PROVEN_BY_REPO` | Supported |
+| HGB-E was frozen before locked final-test access | model-selection decision + selected-model manifest | `SUPPORTED_BY_SYNTHETIC_EVAL` | Supported |
+| HGB-E provides measurable value over B1 on the frozen benchmark | AI Value Gate + robustness evidence + final locked test | `SUPPORTED_BY_SYNTHETIC_EVAL` | Supported only for synthetic benchmark |
+| Final locked synthetic-test HGB-E PR-AUC is approximately 0.874 | `FINAL_LOCKED_TEST_v1.json` | `SUPPORTED_BY_SYNTHETIC_EVAL` | Supported only for synthetic benchmark |
+| Group leakage between train, validation, and test is zero in the registered split | `SPLIT_MANIFEST_v2.json` | `SUPPORTED_BY_SYNTHETIC_EVAL` | Supported |
+| Global planner preserves planning-quantity and applicable hard constraints in recorded evaluation evidence | planner evidence + integration evidence + final locked test | `PROVEN_BY_REPO` | Supported for recorded repository evidence |
+| Hard-constraint violations are zero in the locked synthetic evaluation evidence | `FINAL_LOCKED_TEST_v1.json` + planner evidence | `SUPPORTED_BY_SYNTHETIC_EVAL` | Supported for recorded evaluation |
+| Partner Demand Registry is integrated into runtime external-partner matching | current runtime implementation + `partner_registry_demo_v1.yaml` | `PROVEN_BY_REPO` | Static synthetic demo fixture only |
+| Partner Demand Registry represents verified live partner commitments | none | `DO_NOT_CLAIM` | Unsupported |
+| Rescue-success score is a field-validated real-world probability | none | `DO_NOT_CLAIM` | Unsupported |
+| Optimizer empirically outperforms greedy or another optimizer | no completed optimizer-comparison benchmark | `DO_NOT_CLAIM` | Unsupported |
+| System automatically executes physical rescue actions | report contract explicitly prohibits automatic execution | `DO_NOT_CLAIM` | Contradicted by current governance boundary |
+| Afterlife AI is designed to reduce avoidable waste by improving rescue decisions | problem brief + PRD + implemented decision mechanism | `DESIGN_INTENT_ONLY` | Intended outcome; real-world reduction not validated |
+| Afterlife AI may create business or environmental value through rescued inventory | problem brief + PRD + decision mechanism | `DESIGN_INTENT_ONLY` | Potential impact only |
+| Real-world merchant adoption, willingness-to-pay, or operational savings are established | none | `DO_NOT_CLAIM` | Not validated |
+| Final submission reproducibility is verified on the frozen final commit | final release audit evidence | `PENDING_G10` | Not yet established |
+| Hard-gate bypass prevention is enforced | production pipeline + hard-gate regression tests + fallback semantics | `PROVEN_BY_REPO` | Model and fallback paths cannot revive candidates blocked by deterministic hard gates |
+| Deterministic scoring and optimizer fallback are implemented | fallback implementation + regression tests + architecture/runtime evidence | `PROVEN_BY_REPO` | Fallback preserves applicable deterministic constraints |
+| Local and Docker reproducibility have historical repository evidence | Technical MVP RC clean-clone + Docker verification evidence | `PROVEN_BY_REPO` | Historical RC checkpoint; final frozen-commit verification remains `PENDING_G10` |
+| Training and evaluation evidence uses synthetic data | synthetic dataset manifest + benchmark freeze + final locked test | `SUPPORTED_BY_SYNTHETIC_EVAL` | Must not be presented as real merchant transaction or field-validation evidence |
+| Human review and approval remain outside automatic execution | report contract + runtime behavior + UI/report evidence | `PROVEN_BY_REPO` | Advisory decision-support only |
+
 
 ---
 

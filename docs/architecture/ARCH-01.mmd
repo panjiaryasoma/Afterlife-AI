@@ -1,0 +1,155 @@
+flowchart TD
+
+    subgraph INPUT["1. Request and Validation"]
+        U["Business Operator"]
+        UI["FastAPI + Jinja2 Web Interface"]
+        API["POST /api/analyze"]
+
+        CTX["Decision Context<br/>objective · budget · rescue ratio · deadline"]
+        CTXVAL["AnalysisRequest Validation"]
+
+        XLSX["Inventory XLSX"]
+        FILEVAL["XLSX / Schema / Row Validation"]
+
+        INVALID["Validation Error<br/>HTTP 400 / 422"]
+
+        U --> UI
+        UI --> API
+
+        API --> CTX
+        CTX --> CTXVAL
+
+        API --> XLSX
+        XLSX --> FILEVAL
+
+        CTXVAL -- Invalid --> INVALID
+        FILEVAL -- Invalid --> INVALID
+    end
+
+
+    subgraph TRIAGE["2. Deterministic Inventory Triage"]
+        RAW["Validated Inventory Lots"]
+        TRIAGE_ENGINE["Deterministic Triage"]
+
+        HEALTHY["HEALTHY_STOCK<br/>Protected"]
+        MONITOR["MONITOR"]
+        REVIEW["NEEDS_REVIEW"]
+        EXPIRED["EXPIRED<br/>Hard Reject"]
+        SURPLUS["SURPLUS_CANDIDATE"]
+        LOT["Surplus Planning Lot<br/>planning_quantity only"]
+
+        FILEVAL -- Valid --> RAW
+        RAW --> TRIAGE_ENGINE
+
+        TRIAGE_ENGINE --> HEALTHY
+        TRIAGE_ENGINE --> MONITOR
+        TRIAGE_ENGINE --> REVIEW
+        TRIAGE_ENGINE --> EXPIRED
+        TRIAGE_ENGINE --> SURPLUS
+
+        SURPLUS --> LOT
+    end
+
+
+    subgraph CANDIDATES["3. Candidate Generation and Hard Gates"]
+        PRIMARY["Primary Candidate Generation<br/>Internal Actions + External Partner"]
+        GATE1["Deterministic Hard Gates"]
+
+        PERLOT{"Feasible Candidate<br/>for Planning Lot?"}
+
+        DISPOSAL["Safe Disposal<br/>Second-Pass Candidate"]
+        GATE2["Deterministic Hard Gates"]
+
+        ELIGIBLE["Gate-Eligible Candidates"]
+        UNALLOC["No Feasible Rescue Candidate<br/>Remain Unallocated / Reported"]
+
+        LOT --> PRIMARY
+        PRIMARY --> GATE1
+        GATE1 --> PERLOT
+
+        PERLOT -- Yes --> ELIGIBLE
+        PERLOT -- No --> DISPOSAL
+        DISPOSAL --> GATE2
+
+        GATE2 -- Feasible --> ELIGIBLE
+        GATE2 -- Infeasible --> UNALLOC
+    end
+
+
+    subgraph DECISION["4. Scoring and Global Allocation"]
+        SCORE["HGB-E Rescue-Success Scoring<br/>Gate-Eligible Candidates Only"]
+        SCORE_FALLBACK["Deterministic Scoring Fallback<br/>0.50 if model unavailable"]
+
+        VALUE["Expected Value Calculation"]
+
+        OPT["Global CP-SAT Allocation Optimizer<br/>Quantity · Shared Capacity<br/>Objective · Budget · Rescue Ratio"]
+
+        OPT_FALLBACK["Deterministic Optimizer Fallback<br/>Only when request constraints can be preserved"]
+
+        OPT_UNALLOC["Infeasible Global Allocation<br/>Remain Unallocated / Reported"]
+
+        ELIGIBLE --> SCORE
+        SCORE -. model unavailable .-> SCORE_FALLBACK
+
+        SCORE --> VALUE
+        SCORE_FALLBACK --> VALUE
+
+        VALUE --> OPT
+
+        OPT -. non-definitive outcome .-> OPT_FALLBACK
+        OPT -- infeasible --> OPT_UNALLOC
+    end
+
+
+    subgraph REPORTING["5. Advisory Reporting"]
+        REPORT["Rescue Decision Report<br/>Selected Allocations<br/>Unselected / Rejected Alternatives<br/>Rescue & Waste Metrics<br/>Provenance · Limitations"]
+
+        HUMAN["Human Review Outside Automatic Execution<br/>Approval Status = PENDING"]
+
+        OPT --> REPORT
+        OPT_FALLBACK --> REPORT
+        OPT_UNALLOC --> REPORT
+
+        HEALTHY --> REPORT
+        MONITOR --> REPORT
+        REVIEW --> REPORT
+        EXPIRED --> REPORT
+        UNALLOC --> REPORT
+
+        REPORT --> UI
+        REPORT -. advisory only .-> HUMAN
+    end
+
+
+    subgraph RUNTIME["Runtime Inputs"]
+        TRIAGE_POLICY[("Runtime Triage Policies<br/>configs/runtime_v1.yaml")]
+
+        CAPABILITY[("Runtime Capability Profile<br/>Enabled Actions + Shared Capacity")]
+
+        PDR[("Partner Demand Registry<br/>Static Synthetic Demo Fixture")]
+
+        MODEL[("HGB-E Model Artifact")]
+
+        DEADLINE[("Rescue Deadline")]
+
+        OPTCTX[("Objective · Logistics Budget<br/>Minimum Rescue Ratio")]
+    end
+
+
+    TRIAGE_POLICY --> TRIAGE_ENGINE
+
+    CAPABILITY --> PRIMARY
+    CAPABILITY --> GATE1
+    CAPABILITY --> GATE2
+    CAPABILITY --> OPT
+
+    PDR --> PRIMARY
+    PDR --> GATE1
+    PDR --> GATE2
+
+    MODEL --> SCORE
+
+    DEADLINE --> GATE1
+    DEADLINE --> GATE2
+
+    OPTCTX --> OPT

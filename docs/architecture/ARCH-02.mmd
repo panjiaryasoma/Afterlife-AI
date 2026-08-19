@@ -1,0 +1,56 @@
+flowchart TD
+
+    INPUT["Inventory XLSX<br/>+ Decision Context"]
+
+    VALIDATE["Validate Input<br/>File · Schema · Request"]
+
+    TRIAGE["Deterministic Inventory Triage<br/>Protect Healthy Stock · Identify Surplus"]
+
+    OPTIONS["Generate Rescue Options<br/>Internal · External Partner · Safe Disposal"]
+
+    GATES["Deterministic Hard Gates<br/>Safety · Feasibility · Timing · Compatibility"]
+
+    SCORE["HGB-E Rescue-Success Scoring<br/>Eligible Candidates Only"]
+
+    VALUE["Expected Value Calculation"]
+
+    OPT["Global Constrained Optimizer<br/>CP-SAT"]
+
+    REPORT["Rescue Decision Report<br/>Plan · Alternatives · Metrics · Provenance"]
+
+    HUMAN["Human Review<br/>Advisory Only · No Automatic Execution"]
+
+
+    INPUT --> VALIDATE
+    VALIDATE --> TRIAGE
+    TRIAGE --> OPTIONS
+    OPTIONS --> GATES
+    GATES --> SCORE
+    SCORE --> VALUE
+    VALUE --> OPT
+    OPT --> REPORT
+    REPORT --> HUMAN
+
+
+    CAPABILITY[("Runtime Capability Profile")]
+
+    PDR[("Partner Demand Registry<br/>Static Synthetic Demo Fixture")]
+
+    MODEL[("HGB-E Model Artifact")]
+
+    DEADLINE[("Rescue Deadline")]
+
+    OPTCTX[("Objective · Budget<br/>Rescue Ratio")]
+
+
+    CAPABILITY --> OPTIONS
+    CAPABILITY --> GATES
+    CAPABILITY --> OPT
+
+    PDR --> OPTIONS
+    PDR --> GATES
+
+    MODEL --> SCORE
+
+    DEADLINE --> GATES
+    OPTCTX --> OPT

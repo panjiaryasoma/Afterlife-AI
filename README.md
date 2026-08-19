@@ -56,7 +56,7 @@ Implemented:
 - [x] Dockerfile and Docker Compose runtime
 - [x] Full local regression suite
 - [x] Container end-to-end verification
-- [x] Final clean-clone verification
+- [x] Technical MVP RC clean-clone verification
 - [x] Technical MVP Release Candidate evidence package
 
 ---
@@ -610,10 +610,10 @@ Run the complete suite:
 uv run pytest -q
 ```
 
-Latest local Technical MVP regression:
+Latest local post-speedrun regression:
 
 ```text
-337 passed
+361 passed
 0 failed
 ```
 
@@ -809,7 +809,7 @@ GET / -> 200
 clean shutdown -> PASS
 ```
 
-The clean-clone evidence above refers to the locked Technical MVP checkpoint. The current local regression after post-speedrun hardening is `337 passed`; a fresh-clone re-verification will be repeated during final release audit before `submission_ready` is changed.
+The clean-clone evidence above refers to the locked Technical MVP checkpoint. The current local post-speedrun regression at the documented repository state is `361 passed`; fresh-clone verification will be repeated during the final release audit before `submission_ready` is changed.
 
 ---
 
