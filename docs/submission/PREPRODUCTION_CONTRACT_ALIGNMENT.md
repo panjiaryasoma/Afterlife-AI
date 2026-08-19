@@ -1,7 +1,7 @@
 # Afterlife AI — Preproduction Contract Alignment
 
 **Baseline:** Afterlife AI preproduction final package
-**Runtime checkpoint:** `GAP-01 hardening checkpoint (post-27bad53)`
+**Runtime checkpoint:** `GAP-02 hardening checkpoint (post-87aceb3)`
 **Status:** `PARTIALLY_ALIGNED_WITH_EXPLICIT_DEBT`
 
 ## Purpose
@@ -33,7 +33,7 @@ automatic_execution_boundary: PASS
 synthetic_claim_boundary: PASS
 
 global_resource_capacity_wiring: PASS
-report_value_separation: PARTIAL
+report_value_separation: PASS
 infeasible_fallback_semantics: INTENTIONAL_DEVIATION
 
 submission_ready: false
@@ -173,9 +173,14 @@ waste
 expired inventory loss
 ```
 
+It additionally requires visibility for applicable request and optimizer
+observability such as logistics-budget use, capacity utilization, and the
+BALANCED rescue-floor status.
+
 ### Current implementation
 
-Selected allocations currently expose:
+Selected allocations continue to expose the existing allocation-level
+components:
 
 ```text
 expected_cash_recovery
@@ -186,44 +191,100 @@ expected_waste_quantity
 expected_net_recovery
 ```
 
-Batch metrics currently expose:
+Batch metrics now explicitly expose:
 
 ```text
 expected_total_economic_value
+expected_cash_recovery
+expected_future_branch_recovery
+expected_avoided_purchase_cost
+expected_inventory_loss
+expired_inventory_loss
+social_allocation_quantity
 expected_physical_rescue_quantity
 expected_waste_quantity
 expected_rescue_ratio
+logistics_budget_used
+capacity_utilization
+minimum_expected_rescue_ratio
+balanced_rescue_floor_status
 ```
 
-The current report therefore preserves several expected-value components,
-but does not yet provide explicit batch-level separation for every value
-category named by the locked invariant.
+The production report aggregates cash recovery, future branch recovery,
+avoided purchase cost, physical rescue, and waste from the selected
+allocation-level values.
 
-Notably absent as explicit report-level categories are:
+`expected_inventory_loss` represents expected planning-stage waste valued
+using the source lot unit cost.
+
+`expired_inventory_loss` is reported separately from planning-stage expected
+inventory loss and is derived from deterministic expired routing and source
+lot unit cost.
+
+`social_allocation_quantity` represents selected donation quantity. It is a
+physical allocation quantity and is not converted into an invented monetary
+social-value claim.
+
+`logistics_budget_used` is sourced from the optimizer result rather than
+recomputed independently by the report layer.
+
+`capacity_utilization` reports optimizer-recorded shared-resource usage
+relative to configured runtime resource capacities.
+
+For the `BALANCED` objective, the report exposes the requested minimum rescue
+ratio together with a `MET` or `NOT_MET` status derived from the resulting
+expected rescue ratio. Other objectives report `NOT_APPLICABLE`.
+
+Quantity reconciliation remains unchanged.
+
+The report remains advisory:
 
 ```text
-inventory loss
-social allocation
-expired inventory loss
+execution_performed: false
+human_final_approval_status: PENDING
 ```
 
 ### Status
 
 ```yaml
-contract_status: PARTIAL
-allocation_level_value_components: PRESENT
-complete_locked_report_separation: NOT_YET_IMPLEMENTED
+contract_status: PASS
+allocation_level_value_components: PRESERVED
+batch_value_separation: PRESENT
+inventory_loss_separation: PRESENT
+expired_inventory_loss_separation: PRESENT
+social_allocation_visibility: PRESENT
+logistics_budget_visibility: PRESENT
+capacity_utilization_visibility: PRESENT
+balanced_rescue_floor_visibility: PRESENT
+quantity_reconciliation: PRESERVED
+advisory_boundary: PRESERVED
+regression_status: PASS
 ```
 
 ### Claim boundary
 
-Do not claim full implementation of every locked Rescue Decision Report
-value category until those categories are represented explicitly.
+The production runtime may claim explicit report separation for the
+implemented expected-value, physical-quantity, loss, resource-utilization,
+and request-floor fields.
 
-### Required follow-up
+These values are decision-support outputs derived from current runtime inputs,
+configured capacities, deterministic routing, candidate economics, and
+optimizer results.
 
-Production hardening should extend report aggregation and presentation while
-preserving the existing advisory report contract and quantity invariants.
+They are not evidence of realized merchant cash recovery, realized social
+impact, field-validated loss reduction, or real-world capacity utilization.
+
+### Verification
+
+```text
+targeted GAP-02 report suite: 27 passed
+full regression: 363 passed
+ruff: PASS
+mypy: PASS
+frontend JavaScript syntax: PASS
+```
+
+GAP-02 is closed without modifying the locked preproduction contract.
 
 ---
 
@@ -329,18 +390,19 @@ blocking_safety_contradiction: false
 
 resolved_findings:
   - GAP-01 global resource capacity wiring
+  - GAP-02 Rescue Decision Report value separation
 
 production_follow_up_required:
-  - complete locked report-value separation
   - formally record INFEASIBLE fallback semantic refinement
 
 preproduction_contracts_modified: false
 submission_ready: false
 ```
 
-GAP-01 is now supported by production implementation and regression evidence.
+GAP-01 and GAP-02 are now supported by production implementation and
+regression evidence.
 
-The remaining report-contract gap and INFEASIBLE semantic refinement must not
-be silently relabeled as resolved evidence.
+The remaining INFEASIBLE semantic refinement must not be silently relabeled
+as resolved evidence until its governance record is completed.
 
 The locked preproduction artifacts remain unchanged.

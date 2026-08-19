@@ -266,6 +266,7 @@ def _build_report(
     valued_candidates: list[CandidateAction],
     optimization_result: OptimizationResult,
     optimization_objective: OptimizationObjective,
+    minimum_expected_rescue_ratio: Decimal | None,
     partner_registry: PartnerDemandRegistry,
 ) -> RescueDecisionReport:
     """Adapt production outputs into the canonical report contract."""
@@ -372,6 +373,70 @@ def _build_report(
                 ),
             }
         )
+
+    expected_cash_recovery = sum(
+        (
+            item["expected_cash_recovery"]
+            for item in selected_allocations
+        ),
+        ZERO,
+    )
+
+    expected_future_branch_recovery = sum(
+        (
+            item["expected_future_branch_recovery"]
+            for item in selected_allocations
+        ),
+        ZERO,
+    )
+
+    expected_avoided_purchase_cost = sum(
+        (
+            item["expected_avoided_purchase_cost"]
+            for item in selected_allocations
+        ),
+        ZERO,
+    )
+    raw_lot_by_id = {
+        lot.lot_id: lot
+        for lot in raw_inventory_lots
+    }
+
+    # Planning-stage expected loss only.
+    # Deterministic expired inventory is reported separately.
+    expected_inventory_loss = sum(
+        (
+            item["expected_waste_quantity"]
+            * raw_lot_by_id[
+                item["source_lot_id"]
+            ].unit_cost
+            for item in selected_allocations
+        ),
+        ZERO,
+    )
+
+    expired_inventory_loss = sum(
+        (
+            triage.expired_quantity
+            * raw_lot_by_id[
+                triage.source_lot_id
+            ].unit_cost
+            for triage in triage_results
+        ),
+        ZERO,
+    )
+
+    social_allocation_quantity = sum(
+        (
+            item["allocated_quantity"]
+            for item in selected_allocations
+            if (
+                item["action_type"]
+                is ActionType.DONATION
+            )
+        ),
+        ZERO,
+    )
 
     selected_candidate_ids = {
         allocation.candidate_id
@@ -522,7 +587,54 @@ def _build_report(
             config.model.manifest_path
         )
     )
+    expected_rescue_ratio = (
+        optimization_result.expected_physical_rescue_quantity
+        / planning_quantity
+        if planning_quantity > ZERO
+        else ZERO
+    )
+    capacity_utilization: dict[
+        str,
+        Decimal | None,
+    ] = {}
 
+    for resource_id, capacity in (
+        config.capabilities.resource_capacities.items()
+    ):
+        usage = (
+            optimization_result.shared_resource_usage.get(
+                resource_id,
+                ZERO,
+            )
+        )
+
+        capacity_utilization[resource_id] = (
+            usage / capacity
+            if capacity > ZERO
+            else None
+        )
+    if (
+        optimization_objective
+        is OptimizationObjective.BALANCED
+    ):
+        if minimum_expected_rescue_ratio is None:
+            raise RuntimeError(
+                "BALANCED report membutuhkan "
+                "minimum_expected_rescue_ratio."
+            )
+
+        balanced_rescue_floor_status = (
+            "MET"
+            if (
+                expected_rescue_ratio
+                >= minimum_expected_rescue_ratio
+            )
+            else "NOT_MET"
+        )
+    else:
+        balanced_rescue_floor_status = (
+            "NOT_APPLICABLE"
+        )
     return build_rescue_decision_report(
         request_id=request_id,
         feature_schema_version=(
@@ -663,6 +775,24 @@ def _build_report(
             "expected_total_economic_value": (
                 optimization_result.objective_value
             ),
+            "expected_cash_recovery": (
+                expected_cash_recovery
+            ),
+            "expected_future_branch_recovery": (
+                expected_future_branch_recovery
+            ),
+            "expected_avoided_purchase_cost": (
+                expected_avoided_purchase_cost
+            ),
+            "expected_inventory_loss": (
+                expected_inventory_loss
+            ),
+            "expired_inventory_loss": (
+                expired_inventory_loss
+            ),
+            "social_allocation_quantity": (
+                social_allocation_quantity
+            ),
             "expected_physical_rescue_quantity": (
                 optimization_result
                 .expected_physical_rescue_quantity
@@ -673,11 +803,19 @@ def _build_report(
                 .expected_physical_rescue_quantity
             ),
             "expected_rescue_ratio": (
-                optimization_result
-                .expected_physical_rescue_quantity
-                / planning_quantity
-                if planning_quantity > ZERO
-                else ZERO
+                expected_rescue_ratio
+            ),
+            "logistics_budget_used": (
+                optimization_result.total_logistics_cost
+            ),
+            "capacity_utilization": (
+                capacity_utilization
+            ),
+            "minimum_expected_rescue_ratio": (
+                minimum_expected_rescue_ratio
+            ),
+            "balanced_rescue_floor_status": (
+                balanced_rescue_floor_status
             ),
         },
         selected_allocations=selected_allocations,
@@ -890,6 +1028,9 @@ def run_production_pipeline(
         valued_candidates=valued_candidates,
         optimization_result=(
             optimization_result
+        ),
+        minimum_expected_rescue_ratio=(
+            minimum_expected_rescue_ratio
         ),
         optimization_objective=(
             optimization_objective

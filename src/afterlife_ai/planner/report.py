@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from decimal import Decimal
-from typing import Any, Self
+from typing import Any, Literal, Self
 
 from pydantic import (
     BaseModel,
@@ -213,6 +213,31 @@ class ReportBatchMetrics(BaseModel):
 
     expected_total_economic_value: Decimal
 
+    expected_cash_recovery: Decimal = Field(
+        default=ZERO,
+        ge=ZERO,
+    )
+    expected_future_branch_recovery: Decimal = Field(
+        default=ZERO,
+        ge=ZERO,
+    )
+    expected_avoided_purchase_cost: Decimal = Field(
+        default=ZERO,
+        ge=ZERO,
+    )
+    expected_inventory_loss: Decimal = Field(
+        default=ZERO,
+        ge=ZERO,
+    )
+    expired_inventory_loss: Decimal = Field(
+        default=ZERO,
+        ge=ZERO,
+    )
+    social_allocation_quantity: Decimal = Field(
+        default=ZERO,
+        ge=ZERO,
+    )
+
     expected_physical_rescue_quantity: Decimal | None = Field(
         default=None,
         ge=ZERO,
@@ -226,7 +251,29 @@ class ReportBatchMetrics(BaseModel):
         ge=ZERO,
         le=Decimal("1"),
     )
+    logistics_budget_used: Decimal = Field(
+        default=ZERO,
+        ge=ZERO,
+    )
 
+    capacity_utilization: dict[
+        str,
+        Decimal | None,
+    ] = Field(
+        default_factory=dict
+    )
+
+    minimum_expected_rescue_ratio: Decimal | None = Field(
+        default=None,
+        ge=ZERO,
+        le=Decimal("1"),
+    )
+
+    balanced_rescue_floor_status: Literal[
+        "MET",
+        "NOT_MET",
+        "NOT_APPLICABLE",
+    ] = "NOT_APPLICABLE"
 
 class RescueDecisionReport(BaseModel):
     """Single advisory user-visible rescue decision report."""

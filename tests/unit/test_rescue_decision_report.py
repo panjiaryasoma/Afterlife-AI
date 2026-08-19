@@ -262,6 +262,53 @@ def test_report_batch_metrics_match_integration_fixture() -> None:
         report.batch_metrics.expected_total_economic_value
         == Decimal("26624")
     )
+    assert (
+        report.batch_metrics.expected_cash_recovery
+        == Decimal("0")
+    )
+    assert (
+        report.batch_metrics.expected_future_branch_recovery
+        == Decimal("0")
+    )
+    assert (
+        report.batch_metrics.expected_avoided_purchase_cost
+        == Decimal("0")
+    )
+
+    assert (
+        report.batch_metrics.expected_inventory_loss
+        == Decimal("0")
+    )
+
+    assert (
+        report.batch_metrics.expired_inventory_loss
+        == Decimal("0")
+    )
+
+    assert (
+        report.batch_metrics.social_allocation_quantity
+        == Decimal("0")
+    )
+
+    assert (
+        report.batch_metrics.logistics_budget_used
+        == Decimal("0")
+    )
+
+    assert (
+        report.batch_metrics.capacity_utilization
+        == {}
+    )
+
+    assert (
+        report.batch_metrics.minimum_expected_rescue_ratio
+        is None
+    )
+
+    assert (
+        report.batch_metrics.balanced_rescue_floor_status
+        == "NOT_APPLICABLE"
+    )
 
 
 def test_report_requires_human_approval_and_never_executes() -> None:

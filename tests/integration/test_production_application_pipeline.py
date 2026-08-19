@@ -104,6 +104,118 @@ def test_one_xlsx_runs_to_rescue_decision_report() -> None:
         selected_total
         == metrics.allocated_planning_quantity
     )
+    assert metrics.expected_cash_recovery == sum(
+        (
+            item.expected_cash_recovery
+            for item in report.selected_allocations
+        ),
+        Decimal("0"),
+    )
+
+    assert (
+        metrics.expected_future_branch_recovery
+        == sum(
+            (
+                item.expected_future_branch_recovery
+                for item in report.selected_allocations
+            ),
+            Decimal("0"),
+        )
+    )
+
+    assert (
+        metrics.expected_avoided_purchase_cost
+        == sum(
+            (
+                item.expected_avoided_purchase_cost
+                for item in report.selected_allocations
+            ),
+            Decimal("0"),
+        )
+    )
+
+    raw_lot_by_id = {
+        lot.lot_id: lot
+        for lot in result.raw_inventory_lots
+    }
+
+    assert (
+        metrics.expected_inventory_loss
+        == sum(
+            (
+                item.expected_waste_quantity
+                * raw_lot_by_id[
+                    item.source_lot_id
+                ].unit_cost
+                for item
+                in report.selected_allocations
+            ),
+            Decimal("0"),
+        )
+    )
+
+    assert (
+        metrics.expired_inventory_loss
+        == sum(
+            (
+                item.routed_quantity
+                * raw_lot_by_id[
+                    item.source_lot_id
+                ].unit_cost
+                for item in report.expired_routes
+            ),
+            Decimal("0"),
+        )
+    )
+
+    assert (
+        metrics.social_allocation_quantity
+        == sum(
+            (
+                item.allocated_quantity
+                for item
+                in report.selected_allocations
+                if (
+                    item.action_type
+                    is ActionType.DONATION
+                )
+            ),
+            Decimal("0"),
+        )
+    )
+
+    assert (
+        metrics.logistics_budget_used
+        == result.optimization_result.total_logistics_cost
+    )
+
+    capacities = {
+        "labor_hours": Decimal("6"),
+        "equipment_units": Decimal("8"),
+        "ingredient_units": Decimal("8"),
+        "bundle_companion_units": Decimal("4"),
+    }
+
+    assert (
+        set(metrics.capacity_utilization)
+        == set(capacities)
+    )
+
+    for resource_id, capacity in capacities.items():
+        usage = (
+            result.optimization_result
+            .shared_resource_usage[resource_id]
+        )
+
+        assert (
+            metrics.capacity_utilization[resource_id]
+            == usage / capacity
+        )
+
+    assert (
+        metrics.balanced_rescue_floor_status
+        == "NOT_APPLICABLE"
+    )
 
     selected_candidate_ids = {
         item.candidate_id
@@ -311,6 +423,33 @@ def test_production_pipeline_forwards_dynamic_optimizer_request_context(
     assert (
         result.report.optimization_objective
         is OptimizationObjective.BALANCED
+    )
+
+    metrics = result.report.batch_metrics
+
+    assert (
+        metrics.minimum_expected_rescue_ratio
+        == Decimal("0.50")
+    )
+
+    assert (
+        metrics.expected_rescue_ratio
+        >= Decimal("0.50")
+    )
+
+    assert (
+        metrics.balanced_rescue_floor_status
+        == "MET"
+    )
+
+    assert (
+        metrics.logistics_budget_used
+        == result.optimization_result.total_logistics_cost
+    )
+
+    assert (
+        metrics.logistics_budget_used
+        <= Decimal("30000")
     )
 
 def test_production_pipeline_forwards_rescue_deadline_to_hard_gates(
