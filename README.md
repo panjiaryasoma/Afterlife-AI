@@ -613,7 +613,7 @@ uv run pytest -q
 Latest local post-speedrun regression:
 
 ```text
-361 passed
+363 passed
 0 failed
 ```
 
@@ -809,7 +809,7 @@ GET / -> 200
 clean shutdown -> PASS
 ```
 
-The clean-clone evidence above refers to the locked Technical MVP checkpoint. The current local post-speedrun regression at the documented repository state is `361 passed`; fresh-clone verification will be repeated during the final release audit before `submission_ready` is changed.
+The clean-clone evidence above refers to the locked Technical MVP checkpoint. The current local post-speedrun regression at the documented repository state is `363 passed`; fresh-clone verification will be repeated during the final release audit before `submission_ready` is changed.
 
 ---
 
@@ -871,3 +871,4 @@ Primary implementation references include:
 - executable acceptance, integration, API, UI, and regression tests.
 
 Where documentation and executable contracts disagree, active contracts and passing tests should be treated as the implementation source of truth.
+
