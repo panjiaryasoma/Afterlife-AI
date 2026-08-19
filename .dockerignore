@@ -9,7 +9,12 @@ __pycache__
 *.py[cod]
 
 notebooks
-reports
+reports/*
+!reports/evidence/
+reports/evidence/*
+!reports/evidence/modeling/
+reports/evidence/modeling/*
+!reports/evidence/modeling/SELECTED_MODEL_MANIFEST_v1.json
 tests
 
 *.log
