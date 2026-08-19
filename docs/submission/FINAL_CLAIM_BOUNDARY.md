@@ -352,7 +352,9 @@ optional logistics budget
 optional minimum expected rescue ratio
 ```
 
-The pipeline also preserves deterministic fallback behavior when the optimizer outcome cannot be used and request constraints permit fallback.
+The pipeline may use deterministic fallback only for documented non-definitive optimizer outcomes when applicable request constraints can still be preserved.
+
+A proven `INFEASIBLE` CP-SAT result is definitive and is not converted into a successful fallback allocation.
 
 ## Supported evidence
 
@@ -612,6 +614,8 @@ HGB-E passed the registered AI Value Gate against B1 on the synthetic benchmark.
 Final locked synthetic-test HGB-E PR-AUC is approximately 0.874.
 
 The planner uses constrained global allocation.
+
+A proven INFEASIBLE optimizer result remains infeasible and is not converted into successful fallback allocation.
 
 Recorded evaluation evidence contains zero hard-constraint violations.
 

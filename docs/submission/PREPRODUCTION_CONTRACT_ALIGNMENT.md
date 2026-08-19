@@ -1,8 +1,8 @@
 # Afterlife AI — Preproduction Contract Alignment
 
 **Baseline:** Afterlife AI preproduction final package
-**Runtime checkpoint:** `GAP-02 hardening checkpoint (post-87aceb3)`
-**Status:** `PARTIALLY_ALIGNED_WITH_EXPLICIT_DEBT`
+**Runtime checkpoint:** `DEV-01 governance checkpoint (post-321de449)`
+**Status:** `ALIGNED_WITH_RECORDED_SEMANTIC_REFINEMENT`
 
 ## Purpose
 
@@ -34,7 +34,7 @@ synthetic_claim_boundary: PASS
 
 global_resource_capacity_wiring: PASS
 report_value_separation: PASS
-infeasible_fallback_semantics: INTENTIONAL_DEVIATION
+infeasible_fallback_semantics: ACCEPTED_REFINEMENT
 
 submission_ready: false
 ```
@@ -341,18 +341,24 @@ than the earlier toolchain wording.
 ### Status
 
 ```yaml
-contract_status: INTENTIONAL_DEVIATION
+contract_status: ACCEPTED_REFINEMENT
+
 safety_direction: MORE_CONSERVATIVE
+decision_record: docs/submission/IMPLEMENTATION_DECISION_INFEASIBLE_FALLBACK.md
 silent_contract_rewrite: FORBIDDEN
+regression_status: PASS
 ```
 
-### Required governance follow-up
+### Governance decision
 
-Do not rewrite the locked historical toolchain document.
+The locked historical toolchain document remains unchanged.
 
-Before final contract closure, record this semantic refinement through an
-explicit approved implementation/change decision so the production runtime
-and historical contract do not silently disagree.
+The semantic refinement is formally recorded in:
+
+`docs/submission/IMPLEMENTATION_DECISION_INFEASIBLE_FALLBACK.md`
+
+The production runtime, regression behavior, architecture documentation, and
+claim boundary use the narrower current-runtime semantic.
 
 ---
 
@@ -384,25 +390,29 @@ submission_ready: false
 ## 7. Decision
 
 ```yaml
-preproduction_contract_alignment: PARTIAL_WITH_EXPLICIT_DEBT
+preproduction_contract_alignment: ALIGNED_WITH_RECORDED_SEMANTIC_REFINEMENT
 
 blocking_safety_contradiction: false
 
 resolved_findings:
   - GAP-01 global resource capacity wiring
   - GAP-02 Rescue Decision Report value separation
+  - DEV-01 INFEASIBLE fallback semantic refinement
 
-production_follow_up_required:
-  - formally record INFEASIBLE fallback semantic refinement
+production_follow_up_required: []
 
 preproduction_contracts_modified: false
 submission_ready: false
 ```
 
-GAP-01 and GAP-02 are now supported by production implementation and
-regression evidence.
+GAP-01 and GAP-02 are supported by production implementation and regression
+evidence.
 
-The remaining INFEASIBLE semantic refinement must not be silently relabeled
-as resolved evidence until its governance record is completed.
+DEV-01 is closed through an explicit implementation decision record while the
+locked historical toolchain wording remains unchanged.
+
+The production behavior is intentionally more conservative: a proven
+INFEASIBLE result remains infeasible and is not converted into artificial
+fallback success.
 
 The locked preproduction artifacts remain unchanged.
