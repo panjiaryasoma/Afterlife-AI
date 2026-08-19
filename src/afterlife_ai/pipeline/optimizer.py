@@ -77,6 +77,51 @@ def _shared_action_capacities(
         ] = repurpose.maximum_quantity
 
     return capacities
+
+def _shared_resource_capacities(
+    config: RuntimeConfig,
+) -> dict[str, Decimal]:
+    """Expose generic runtime resource capacities to the optimizer."""
+
+    return dict(
+        config.capabilities.resource_capacities
+    )
+
+
+def _candidate_resource_requirements(
+    *,
+    candidates: list[CandidateAction],
+    config: RuntimeConfig,
+) -> dict[str, dict[str, Decimal]]:
+    """Derive per-candidate resource use from action capability rules."""
+
+    requirements: dict[
+        str,
+        dict[str, Decimal],
+    ] = {}
+
+    action_requirements = (
+        config.capabilities
+        .action_resource_requirements_per_unit
+    )
+
+    for candidate in candidates:
+        candidate_requirements = (
+            action_requirements.get(
+                candidate.action_type
+            )
+        )
+
+        if not candidate_requirements:
+            continue
+
+        requirements[candidate.candidate_id] = dict(
+            candidate_requirements
+        )
+
+    return requirements
+
+
 def _shared_destination_capacities(
     candidates: list[CandidateAction],
 ) -> dict[str, Decimal]:
@@ -161,6 +206,9 @@ def _fallback_result_to_optimization_result(
         unallocated_quantities=(
             fallback_result.unallocated_quantities
         ),
+        shared_resource_usage=(
+            fallback_result.shared_resource_usage
+        ),
     )
 
 
@@ -192,6 +240,17 @@ def optimize_production_candidates(
     shared_action_capacities = (
         _shared_action_capacities(config)
     )
+
+    shared_resource_capacities = (
+        _shared_resource_capacities(config)
+    )
+
+    candidate_resource_requirements = (
+        _candidate_resource_requirements(
+            candidates=candidates,
+            config=config,
+        )
+    )
     
     shared_destination_capacities = (
         _shared_destination_capacities(
@@ -207,6 +266,12 @@ def optimize_production_candidates(
         ),
         shared_destination_capacities=(
             shared_destination_capacities
+        ),
+        shared_resource_capacities=(
+            shared_resource_capacities
+        ),
+        candidate_resource_requirements=(
+            candidate_resource_requirements
         ),
         max_logistics_budget=max_logistics_budget,
         optimization_objective=optimization_objective,
@@ -241,6 +306,12 @@ def optimize_production_candidates(
             ),
             shared_destination_capacities=(
                 shared_destination_capacities
+            ),
+            shared_resource_capacities=(
+                shared_resource_capacities
+            ),
+            candidate_resource_requirements=(
+                candidate_resource_requirements
             ),
         )
     )

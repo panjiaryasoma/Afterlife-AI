@@ -46,7 +46,9 @@ class FallbackResult(BaseModel):
 
     allocations: list[FallbackAllocation]
     unallocated_quantities: dict[str, Decimal]
-
+    shared_resource_usage: dict[str, Decimal] = Field(
+        default_factory=dict
+    )
 
 def _is_fallback_eligible(
     candidate: CandidateAction,
@@ -103,6 +105,11 @@ def _validate_inputs(
     planning_quantities: dict[str, Decimal],
     shared_action_capacities: dict[ActionType, Decimal],
     shared_destination_capacities: dict[str, Decimal],
+    shared_resource_capacities: dict[str, Decimal],
+    candidate_resource_requirements: dict[
+        str,
+        dict[str, Decimal],
+    ],
 ) -> None:
     """Reject malformed fallback inputs before allocation."""
 
@@ -143,6 +150,39 @@ def _validate_inputs(
                 f"{destination_id}={capacity}"
             )
 
+    for resource_id, capacity in (
+        shared_resource_capacities.items()
+    ):
+        if capacity < ZERO:
+            raise ValueError(
+                "shared resource capacity tidak boleh negatif: "
+                f"{resource_id}={capacity}"
+            )
+
+    candidate_ids_set = set(candidate_ids)
+
+    for candidate_id, requirements in (
+        candidate_resource_requirements.items()
+    ):
+        if candidate_id not in candidate_ids_set:
+            raise ValueError(
+                "candidate_resource_requirements merujuk "
+                f"candidate yang tidak ada: {candidate_id}"
+            )
+
+        for resource_id, requirement in requirements.items():
+            if resource_id not in shared_resource_capacities:
+                raise ValueError(
+                    "Resource requirement tidak memiliki "
+                    f"shared capacity: {resource_id}"
+                )
+
+            if requirement < ZERO:
+                raise ValueError(
+                    "candidate resource requirement "
+                    "tidak boleh negatif."
+                )
+
     for candidate in candidates:
         if (
             _is_fallback_eligible(candidate)
@@ -165,6 +205,12 @@ def allocate_with_deterministic_fallback(
     shared_destination_capacities: (
         dict[str, Decimal] | None
     ) = None,
+        shared_resource_capacities: (
+        dict[str, Decimal] | None
+    ) = None,
+    candidate_resource_requirements: (
+        dict[str, dict[str, Decimal]] | None
+    ) = None,
 ) -> FallbackResult:
     """Allocate greedily with deterministic ordering and hard constraints."""
 
@@ -175,12 +221,26 @@ def allocate_with_deterministic_fallback(
         shared_destination_capacities or {}
     )
 
+    shared_resource_capacities = (
+        shared_resource_capacities or {}
+    )
+
+    candidate_resource_requirements = (
+        candidate_resource_requirements or {}
+    )
+
     _validate_inputs(
         candidates=candidates,
         planning_quantities=planning_quantities,
         shared_action_capacities=shared_action_capacities,
         shared_destination_capacities=(
             shared_destination_capacities
+        ),
+        shared_resource_capacities=(
+            shared_resource_capacities
+        ),
+        candidate_resource_requirements=(
+            candidate_resource_requirements
         ),
     )
 
@@ -200,6 +260,12 @@ def allocate_with_deterministic_fallback(
         destination_id: capacity
         for destination_id, capacity
         in shared_destination_capacities.items()
+    }
+
+    remaining_by_resource = {
+        resource_id: capacity
+        for resource_id, capacity
+        in shared_resource_capacities.items()
     }
 
     eligible_candidates = [
@@ -274,7 +340,28 @@ def allocate_with_deterministic_fallback(
                     candidate.destination_id
                 ],
             )
+        candidate_requirements = (
+            candidate_resource_requirements.get(
+                candidate.candidate_id,
+                {},
+            )
+        )
 
+        for resource_id, requirement in sorted(
+            candidate_requirements.items()
+        ):
+            if requirement == ZERO:
+                continue
+
+            resource_limited_quantity = (
+                remaining_by_resource[resource_id]
+                / requirement
+            )
+
+            allocatable = min(
+                allocatable,
+                resource_limited_quantity,
+            )
         if allocatable <= ZERO:
             continue
 
@@ -302,6 +389,12 @@ def allocate_with_deterministic_fallback(
             remaining_by_destination[
                 candidate.destination_id
             ] -= allocatable
+        for resource_id, requirement in (
+            candidate_requirements.items()
+        ):
+            remaining_by_resource[resource_id] -= (
+                allocatable * requirement
+            )
 
         binding_constraint_codes: list[str] = []
 
@@ -347,6 +440,21 @@ def allocate_with_deterministic_fallback(
             binding_constraint_codes.append(
                 "SHARED_DESTINATION_CAPACITY"
             )
+
+        for resource_id, requirement in sorted(
+            candidate_requirements.items()
+        ):
+            if (
+                requirement > ZERO
+                and remaining_by_resource[
+                    resource_id
+                ]
+                == ZERO
+            ):
+                binding_constraint_codes.append(
+                    "SHARED_RESOURCE_CAPACITY:"
+                    f"{resource_id}"
+                )
 
         allocations.append(
             FallbackAllocation(
@@ -404,6 +512,15 @@ def allocate_with_deterministic_fallback(
                 f"capacity untuk {destination_id}."
             )
 
+    for resource_id, remaining in (
+        remaining_by_resource.items()
+    ):
+        if remaining < ZERO:
+            raise RuntimeError(
+                "Fallback melanggar shared resource "
+                f"capacity untuk {resource_id}."
+            )
+
     unallocated_quantities = {
         planning_lot_id: remaining_by_lot[
             planning_lot_id
@@ -413,12 +530,25 @@ def allocate_with_deterministic_fallback(
         )
     }
 
+    shared_resource_usage = {
+        resource_id: (
+            shared_resource_capacities[resource_id]
+            - remaining_by_resource[resource_id]
+        )
+        for resource_id in sorted(
+            shared_resource_capacities
+        )
+    }
+
     return FallbackResult(
         solver_status=SolverStatus.FALLBACK_USED,
         objective_value=objective_value,
         allocations=allocations,
         unallocated_quantities=(
             unallocated_quantities
+        ),
+        shared_resource_usage=(
+            shared_resource_usage
         ),
     )
 

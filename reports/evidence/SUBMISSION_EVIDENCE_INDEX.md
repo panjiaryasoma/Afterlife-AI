@@ -399,7 +399,8 @@ Evidence classes:
 | Local and Docker reproducibility have historical repository evidence | Technical MVP RC clean-clone + Docker verification evidence | `PROVEN_BY_REPO` | Historical RC checkpoint; final frozen-commit verification remains `PENDING_G10` |
 | Training and evaluation evidence uses synthetic data | synthetic dataset manifest + benchmark freeze + final locked test | `SUPPORTED_BY_SYNTHETIC_EVAL` | Must not be presented as real merchant transaction or field-validation evidence |
 | Human review and approval remain outside automatic execution | report contract + runtime behavior + UI/report evidence | `PROVEN_BY_REPO` | Advisory decision-support only |
-| Preproduction contract alignment is explicitly audited against the current production runtime | `docs/submission/PREPRODUCTION_CONTRACT_ALIGNMENT.md` + current runtime implementation | `PROVEN_BY_REPO` | Two implementation gaps and one intentional semantic deviation remain explicitly disclosed |
+| Preproduction contract alignment is explicitly audited against the current production runtime | `docs/submission/PREPRODUCTION_CONTRACT_ALIGNMENT.md` + current runtime implementation | `PROVEN_BY_REPO` | GAP-01 resolved; one report-contract gap and one intentional semantic deviation remain explicitly disclosed |
+| Configured generic shared resource capacities are enforced in the production optimizer and deterministic fallback | `configs/runtime_v1.yaml` + production optimizer wiring + fallback implementation + resource-capacity regression tests | `PROVEN_BY_REPO` | Applies to configured resources and declared per-unit requirements; not real-world capacity validation |
 
 ---
 

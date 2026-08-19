@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 
 from afterlife_ai.contracts.enums import (
+    ActionType,
     BusinessType,
     ProductCategory,
 )
@@ -84,6 +85,32 @@ def test_load_runtime_config_reads_capability_defaults() -> None:
         capabilities.local_discount.price_fraction_of_normal
         == Decimal("0.75")
     )
+    assert capabilities.resource_capacities == {
+        "labor_hours": Decimal("6"),
+        "equipment_units": Decimal("8"),
+        "ingredient_units": Decimal("8"),
+        "bundle_companion_units": Decimal("4"),
+    }
+
+    assert (
+        capabilities.action_resource_requirements_per_unit[
+            ActionType.INTERNAL_REPURPOSE
+        ]
+        == {
+            "labor_hours": Decimal("1"),
+            "equipment_units": Decimal("1"),
+            "ingredient_units": Decimal("1"),
+        }
+    )
+
+    assert (
+        capabilities.action_resource_requirements_per_unit[
+            ActionType.BUNDLE
+        ]
+        == {
+            "bundle_companion_units": Decimal("1"),
+        }
+    )
 def test_load_runtime_config_rejects_duplicate_yaml_keys(
     tmp_path: Path,
 ) -> None:
@@ -125,16 +152,10 @@ def test_load_runtime_config_rejects_nested_duplicate_yaml_keys(
     )
 
     duplicate_source = source.replace(
-        (
-            "  real_world_validated: false\n"
-            "\n"
-            "  supported_actions:"
-        ),
+        "  real_world_validated: false\n",
         (
             "  real_world_validated: false\n"
             "  real_world_validated: true\n"
-            "\n"
-            "  supported_actions:"
         ),
         1,
     )

@@ -1,7 +1,7 @@
 # Afterlife AI — Preproduction Contract Alignment
 
 **Baseline:** Afterlife AI preproduction final package
-**Runtime checkpoint:** `48938f3`
+**Runtime checkpoint:** `GAP-01 hardening checkpoint (post-27bad53)`
 **Status:** `PARTIALLY_ALIGNED_WITH_EXPLICIT_DEBT`
 
 ## Purpose
@@ -32,7 +32,7 @@ human_review_boundary: PASS
 automatic_execution_boundary: PASS
 synthetic_claim_boundary: PASS
 
-global_resource_capacity_wiring: PARTIAL
+global_resource_capacity_wiring: PASS
 report_value_separation: PARTIAL
 infeasible_fallback_semantics: INTENTIONAL_DEVIATION
 
@@ -87,45 +87,62 @@ Global cold-storage use does not exceed available capacity after reservations.
 
 ### Current implementation
 
-The core CP-SAT optimizer supports:
+The production runtime now exposes typed generic resource capacities and
+per-action resource requirements through `RuntimeCapabilityConfig`.
+
+The active production optimizer derives and forwards:
 
 ```text
 shared_resource_capacities
 candidate_resource_requirements
 ```
 
-However, the active production runtime adapter currently derives and forwards:
+to the existing CP-SAT resource-constraint interface.
 
-```text
-shared_action_capacities
-shared_destination_capacities
-max_logistics_budget
-optimization_objective
-minimum_expected_rescue_ratio
-```
+The deterministic fallback receives the same resource-capacity contract and
+limits partial allocations when remaining shared resources become binding.
 
-The current `RuntimeCapabilityConfig` does not expose the generic
-`resource_capacities` map from the locked preproduction capability contract.
+Existing action-level and partner/destination capacity semantics remain
+unchanged.
+
+Regression coverage verifies:
+
+- runtime parsing and validation of generic resources;
+- production forwarding into CP-SAT;
+- global resource enforcement with `cold_storage_units`;
+- deterministic fallback resource enforcement;
+- preservation of the existing shared-capacity and quantity-conservation tests.
 
 ### Status
 
 ```yaml
-contract_status: PARTIAL
+contract_status: PASS
 core_optimizer_support: PRESENT
-production_runtime_wiring: INCOMPLETE
+production_runtime_wiring: PRESENT
+fallback_resource_enforcement: PRESENT
+regression_status: PASS
 ```
 
 ### Claim boundary
 
-Do not claim that arbitrary global capability resources, including generic
-cold-storage capacity, are enforced by the current production runtime.
+The current production runtime may claim enforcement of configured generic
+shared resource capacities for actions that declare corresponding per-unit
+resource requirements.
 
-Existing action-level and partner-level capacity constraints remain supported.
+This does not imply real-world measurement or validation of the configured
+resource capacities.
 
-### Required follow-up
+### Verification
 
-Production hardening should wire locked capability resource capacities into
-the optimizer without changing the preproduction contract.
+```text
+targeted GAP-01 suite: PASS
+full regression: 363 passed
+ruff: PASS
+mypy: PASS
+frontend JavaScript syntax: PASS
+```
+
+GAP-01 is closed without modifying the locked preproduction contract.
 
 ---
 
@@ -310,8 +327,10 @@ preproduction_contract_alignment: PARTIAL_WITH_EXPLICIT_DEBT
 
 blocking_safety_contradiction: false
 
+resolved_findings:
+  - GAP-01 global resource capacity wiring
+
 production_follow_up_required:
-  - wire generic global resource capacities
   - complete locked report-value separation
   - formally record INFEASIBLE fallback semantic refinement
 
@@ -319,7 +338,9 @@ preproduction_contracts_modified: false
 submission_ready: false
 ```
 
-Issue #11 may document these findings, but the two implementation gaps must
-not be silently relabeled as fully implemented evidence.
+GAP-01 is now supported by production implementation and regression evidence.
+
+The remaining report-contract gap and INFEASIBLE semantic refinement must not
+be silently relabeled as resolved evidence.
 
 The locked preproduction artifacts remain unchanged.

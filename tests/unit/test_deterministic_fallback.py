@@ -353,3 +353,58 @@ def test_fallback_allows_zero_value_donation_as_terminal_rescue_route() -> None:
     assert result.unallocated_quantities == {
         "PLAN-DONATION": Decimal("0"),
     }
+
+def test_fallback_respects_shared_resource_capacity() -> None:
+    candidates = [
+        build_candidate(
+            candidate_id="CAND-A",
+            planning_lot_id="PLAN-A",
+            action_type=ActionType.INTERNAL_REPURPOSE,
+            maximum_quantity="5",
+            expected_value_per_unit="2000",
+        ),
+        build_candidate(
+            candidate_id="CAND-B",
+            planning_lot_id="PLAN-B",
+            action_type=ActionType.INTERNAL_REPURPOSE,
+            maximum_quantity="5",
+            expected_value_per_unit="1000",
+        ),
+    ]
+
+    result = allocate_with_deterministic_fallback(
+        candidates=candidates,
+        planning_quantities={
+            "PLAN-A": Decimal("5"),
+            "PLAN-B": Decimal("5"),
+        },
+        shared_resource_capacities={
+            "cold_storage_units": Decimal("6"),
+        },
+        candidate_resource_requirements={
+            "CAND-A": {
+                "cold_storage_units": Decimal("1"),
+            },
+            "CAND-B": {
+                "cold_storage_units": Decimal("1"),
+            },
+        },
+    )
+
+    assert {
+        allocation.candidate_id:
+        allocation.allocated_quantity
+        for allocation in result.allocations
+    } == {
+        "CAND-A": Decimal("5"),
+        "CAND-B": Decimal("1"),
+    }
+
+    assert result.shared_resource_usage == {
+        "cold_storage_units": Decimal("6"),
+    }
+
+    assert (
+        "SHARED_RESOURCE_CAPACITY:cold_storage_units"
+        in result.allocations[-1].binding_constraint_codes
+    )

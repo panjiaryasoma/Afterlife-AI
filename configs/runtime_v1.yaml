@@ -45,6 +45,19 @@ capabilities:
 
   provenance: INTEGRATION_001_DERIVED_STATIC_MVP_DEFAULT
   real_world_validated: false
+  resource_capacities:
+    labor_hours: 6
+    equipment_units: 8
+    ingredient_units: 8
+    bundle_companion_units: 4
+
+  action_resource_requirements_per_unit:
+    INTERNAL_REPURPOSE:
+      labor_hours: 1
+      equipment_units: 1
+      ingredient_units: 1
+    BUNDLE:
+      bundle_companion_units: 1
 
   supported_actions:
     INTERNAL_REPURPOSE: true

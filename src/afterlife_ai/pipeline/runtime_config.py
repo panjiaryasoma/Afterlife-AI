@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from decimal import Decimal
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, Self
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 from yaml.nodes import MappingNode
 
 from afterlife_ai.contracts.enums import (
@@ -219,10 +219,49 @@ class RuntimeCapabilityConfig(BaseModel):
 
     supported_actions: dict[ActionType, bool]
 
+    resource_capacities: dict[str, Decimal]
+
+    action_resource_requirements_per_unit: dict[
+        ActionType,
+        dict[str, Decimal],
+    ]
+
     internal_repurpose: InternalRepurposeCapability
     bundle: BundleCapability
     local_discount: LocalDiscountCapability
     safe_disposal: SafeDisposalCapability
+    @model_validator(mode="after")
+    def validate_resource_contract(self) -> Self:
+        """Validate shared resource capacities and per-unit requirements."""
+
+        for resource_id, capacity in (
+            self.resource_capacities.items()
+        ):
+            if capacity < Decimal("0"):
+                raise ValueError(
+                    "resource capacity tidak boleh negatif: "
+                    f"{resource_id}={capacity}"
+                )
+
+        for action_type, requirements in (
+            self.action_resource_requirements_per_unit.items()
+        ):
+            for resource_id, requirement in requirements.items():
+                if resource_id not in self.resource_capacities:
+                    raise ValueError(
+                        "Resource requirement tidak memiliki "
+                        "resource capacity: "
+                        f"{action_type.value}:{resource_id}"
+                    )
+
+                if requirement < Decimal("0"):
+                    raise ValueError(
+                        "resource requirement tidak boleh negatif: "
+                        f"{action_type.value}:{resource_id}="
+                        f"{requirement}"
+                    )
+
+        return self
 
 
 class RuntimeConfig(BaseModel):
