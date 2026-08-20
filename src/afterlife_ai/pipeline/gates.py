@@ -241,14 +241,6 @@ def _action_eligible(
     )
 
 
-def _logistics_feasible(
-    candidate: CandidateAction,
-) -> bool:
-    """Remain conservative until a runtime logistics budget is configured."""
-
-    return candidate.logistics_cost == Decimal("0")
-
-
 def apply_production_hard_gates(
     *,
     candidates: list[CandidateAction],
@@ -352,9 +344,7 @@ def apply_production_hard_gates(
                     planning_lot=planning_lot,
                 )
             ),
-            logistics_feasible=(
-                _logistics_feasible(candidate)
-            ),
+            logistics_feasible=True,
             partner_demand_fresh=(
                 candidate.action_type
                 is not ActionType.EXTERNAL_PARTNER

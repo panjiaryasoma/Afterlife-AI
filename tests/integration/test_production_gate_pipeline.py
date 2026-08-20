@@ -190,7 +190,57 @@ def test_production_hard_gates_reject_candidates_that_miss_request_deadline() ->
                 "TIMING_INFEASIBLE"
                 in candidate.rejection_reason_codes
             )
+def test_positive_logistics_cost_does_not_make_candidate_infeasible() -> None:
+    analysis_at = datetime(
+        2026,
+        8,
+        5,
+        tzinfo=UTC,
+    )
 
+    config = load_runtime_config(
+        RUNTIME_CONFIG_PATH
+    )
+
+    triage = run_triage_pipeline(
+        workbook_path=WORKBOOK_PATH,
+        runtime_config_path=RUNTIME_CONFIG_PATH,
+        analysis_at=analysis_at,
+    )
+
+    planning_lots = build_production_planning_lots(
+        lots=triage.raw_inventory_lots,
+        triage_results=triage.triage_results,
+        config=config,
+    )
+
+    candidates = generate_production_candidates(
+        planning_lots=planning_lots,
+        config=config,
+    )
+
+    candidate = candidates[0].model_copy(
+        update={
+            "logistics_cost": Decimal("1000"),
+        }
+    )
+
+    [gated] = apply_production_hard_gates(
+        candidates=[candidate],
+        planning_lots=planning_lots,
+        raw_inventory_lots=triage.raw_inventory_lots,
+        config=config,
+        analysis_at=analysis_at,
+    )
+
+    assert (
+        gated.feasibility_status
+        is FeasibilityStatus.FEASIBLE
+    )
+    assert (
+        "LOGISTICS_INFEASIBLE"
+        not in gated.rejection_reason_codes
+    )
 def test_production_hard_gates_reject_all_candidates_when_request_deadline_is_expired() -> None:
     analysis_at = datetime(
         2026,
