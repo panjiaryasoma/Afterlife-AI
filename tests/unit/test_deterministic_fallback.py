@@ -26,6 +26,7 @@ def build_candidate(
     expected_value_per_unit: str,
     destination_id: str | None = None,
     feasible: bool = True,
+    minimum_order_quantity: str | None = None,
 ) -> CandidateAction:
     maximum = Decimal(maximum_quantity)
     value_per_unit = Decimal(expected_value_per_unit)
@@ -44,7 +45,11 @@ def build_candidate(
         estimated_completion_hours=None,
         active_demand_quantity=None,
         available_capacity=maximum,
-        minimum_order_quantity=None,
+        minimum_order_quantity=(
+            Decimal(minimum_order_quantity)
+            if minimum_order_quantity is not None
+            else None
+        ),
         capability_resource_ratio=None,
         demand_coverage_ratio=None,
         demand_freshness_hours=None,
@@ -407,4 +412,52 @@ def test_fallback_respects_shared_resource_capacity() -> None:
     assert (
         "SHARED_RESOURCE_CAPACITY:cold_storage_units"
         in result.allocations[-1].binding_constraint_codes
+    )
+
+def test_fallback_does_not_allocate_below_candidate_minimum_order_quantity() -> None:
+    candidate = build_candidate(
+        candidate_id="CAND-PARTNER-MOQ",
+        planning_lot_id="PLAN-MOQ",
+        action_type=ActionType.EXTERNAL_PARTNER,
+        maximum_quantity="10",
+        expected_value_per_unit="1000",
+        destination_id="PARTNER-MOQ",
+        minimum_order_quantity="5",
+    )
+
+    result = allocate_with_deterministic_fallback(
+        candidates=[candidate],
+        planning_quantities={
+            "PLAN-MOQ": Decimal("3"),
+        },
+    )
+
+    assert result.allocations == []
+    assert (
+        result.unallocated_quantities["PLAN-MOQ"]
+        == Decimal("3")
+    )
+
+def test_fallback_allocates_when_candidate_minimum_order_quantity_is_met() -> None:
+    candidate = build_candidate(
+        candidate_id="CAND-PARTNER-MOQ-OK",
+        planning_lot_id="PLAN-MOQ-OK",
+        action_type=ActionType.EXTERNAL_PARTNER,
+        maximum_quantity="10",
+        expected_value_per_unit="1000",
+        destination_id="PARTNER-MOQ-OK",
+        minimum_order_quantity="5",
+    )
+
+    result = allocate_with_deterministic_fallback(
+        candidates=[candidate],
+        planning_quantities={
+            "PLAN-MOQ-OK": Decimal("7"),
+        },
+    )
+
+    assert len(result.allocations) == 1
+    assert (
+        result.allocations[0].allocated_quantity
+        == Decimal("7")
     )

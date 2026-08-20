@@ -362,7 +362,15 @@ def allocate_with_deterministic_fallback(
                 allocatable,
                 resource_limited_quantity,
             )
+
         if allocatable <= ZERO:
+            continue
+
+        if (
+            candidate.minimum_order_quantity is not None
+            and allocatable
+            < candidate.minimum_order_quantity
+        ):
             continue
 
         expected_net_recovery = (

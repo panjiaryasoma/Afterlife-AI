@@ -439,8 +439,9 @@ def optimize_with_cp_sat(
     )
 
     quantity_values.extend(
-        candidate.maximum_feasible_quantity
+        candidate.minimum_order_quantity
         for candidate in eligible_candidates
+        if candidate.minimum_order_quantity is not None
     )
 
     quantity_values.extend(
@@ -527,9 +528,20 @@ def optimize_with_cp_sat(
             <= maximum_scaled * selected_variable
         )
 
+        minimum_scaled = 1
+
+        if candidate.minimum_order_quantity is not None:
+            minimum_scaled = max(
+                1,
+                _to_scaled_int(
+                    candidate.minimum_order_quantity,
+                    quantity_scale,
+                ),
+            )
+
         model.add(
             quantity_variable
-            >= selected_variable
+            >= minimum_scaled * selected_variable
         )
 
     # --------------------------------------------------------
