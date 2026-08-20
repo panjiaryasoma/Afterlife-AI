@@ -1,4 +1,4 @@
-"""Deterministic inventory triage engine."""
+﻿"""Deterministic inventory triage engine."""
 
 from datetime import datetime
 from decimal import Decimal
@@ -14,7 +14,51 @@ from afterlife_ai.contracts.inventory import RawInventoryLot
 from afterlife_ai.contracts.triage import InventoryTriageResult
 
 ZERO = Decimal("0")
+SECONDS_PER_HOUR = Decimal("3600")
+HOURS_PER_DAY = Decimal("24")
 
+def _remaining_window_hours(
+    *,
+    cutoff_at: datetime | None,
+    analysis_at: datetime,
+) -> Decimal | None:
+    """Return non-negative hours remaining until a cutoff."""
+
+    if cutoff_at is None:
+        return None
+
+    try:
+        delta = cutoff_at - analysis_at
+    except TypeError as exc:
+        raise ValueError(
+            "cutoff timestamp dan analysis_at harus memiliki "
+            "timezone awareness yang konsisten."
+        ) from exc
+
+    remaining_hours = (
+        Decimal(str(delta.total_seconds()))
+        / SECONDS_PER_HOUR
+    )
+
+    return max(ZERO, remaining_hours)
+
+
+def _remaining_window_days(
+    *,
+    cutoff_at: datetime | None,
+    analysis_at: datetime,
+) -> Decimal | None:
+    """Return non-negative days remaining until a cutoff."""
+
+    remaining_hours = _remaining_window_hours(
+        cutoff_at=cutoff_at,
+        analysis_at=analysis_at,
+    )
+
+    if remaining_hours is None:
+        return None
+
+    return remaining_hours / HOURS_PER_DAY
 
 def triage_inventory_lot(
     lot: RawInventoryLot,
@@ -38,6 +82,20 @@ def triage_inventory_lot(
             "expiry_monitor_threshold_days tidak boleh negatif."
         )
 
+    remaining_safe_window_hours = (
+        _remaining_window_hours(
+            cutoff_at=lot.safe_use_by_at,
+            analysis_at=analysis_at,
+        )
+    )
+
+    remaining_commercial_window_days = (
+        _remaining_window_days(
+            cutoff_at=lot.commercial_sale_cutoff_at,
+            analysis_at=analysis_at,
+        )
+    )
+
     remaining_shelf_life_days = (
         (lot.expiry_date - analysis_at.date()).days
         if lot.expiry_date is not None
@@ -54,8 +112,12 @@ def triage_inventory_lot(
             remaining_shelf_life_days=(
                 remaining_shelf_life_days
             ),
-            remaining_safe_window_hours=None,
-            remaining_commercial_window_days=None,
+            remaining_safe_window_hours=(
+                remaining_safe_window_hours
+            ),
+            remaining_commercial_window_days=(
+                remaining_commercial_window_days
+            ),
             average_daily_sales=None,
             effective_sales_window_days=None,
             expected_normal_sales=None,
@@ -96,8 +158,8 @@ def triage_inventory_lot(
             remaining_shelf_life_days=(
                 remaining_shelf_life_days
             ),
-            remaining_safe_window_hours=None,
-            remaining_commercial_window_days=None,
+            remaining_safe_window_hours=remaining_safe_window_hours,
+            remaining_commercial_window_days=remaining_commercial_window_days,
             average_daily_sales=None,
             effective_sales_window_days=None,
             expected_normal_sales=None,
@@ -145,8 +207,8 @@ def triage_inventory_lot(
             remaining_shelf_life_days=(
                 remaining_shelf_life_days
             ),
-            remaining_safe_window_hours=None,
-            remaining_commercial_window_days=None,
+            remaining_safe_window_hours=remaining_safe_window_hours,
+            remaining_commercial_window_days=remaining_commercial_window_days,
             average_daily_sales=None,
             effective_sales_window_days=None,
             expected_normal_sales=None,
@@ -183,8 +245,8 @@ def triage_inventory_lot(
             remaining_shelf_life_days=(
                 remaining_shelf_life_days
             ),
-            remaining_safe_window_hours=None,
-            remaining_commercial_window_days=None,
+            remaining_safe_window_hours=remaining_safe_window_hours,
+            remaining_commercial_window_days=remaining_commercial_window_days,
             average_daily_sales=None,
             effective_sales_window_days=None,
             expected_normal_sales=None,
@@ -242,8 +304,8 @@ def triage_inventory_lot(
             remaining_shelf_life_days=(
                 remaining_shelf_life_days
             ),
-            remaining_safe_window_hours=None,
-            remaining_commercial_window_days=None,
+            remaining_safe_window_hours=remaining_safe_window_hours,
+            remaining_commercial_window_days=remaining_commercial_window_days,
             average_daily_sales=average_daily_sales,
             effective_sales_window_days=(
                 effective_sales_window_days
@@ -288,8 +350,8 @@ def triage_inventory_lot(
             remaining_shelf_life_days=(
                 remaining_shelf_life_days
             ),
-            remaining_safe_window_hours=None,
-            remaining_commercial_window_days=None,
+            remaining_safe_window_hours=remaining_safe_window_hours,
+            remaining_commercial_window_days=remaining_commercial_window_days,
             average_daily_sales=average_daily_sales,
             effective_sales_window_days=(
                 effective_sales_window_days
@@ -328,8 +390,8 @@ def triage_inventory_lot(
             source_lot_id=lot.lot_id,
             analysis_date=analysis_at.date(),
             remaining_shelf_life_days=remaining_shelf_life_days,
-            remaining_safe_window_hours=None,
-            remaining_commercial_window_days=None,
+            remaining_safe_window_hours=remaining_safe_window_hours,
+            remaining_commercial_window_days=remaining_commercial_window_days,
             average_daily_sales=average_daily_sales,
             effective_sales_window_days=(
                 effective_sales_window_days
@@ -364,8 +426,8 @@ def triage_inventory_lot(
         source_lot_id=lot.lot_id,
         analysis_date=analysis_at.date(),
         remaining_shelf_life_days=remaining_shelf_life_days,
-        remaining_safe_window_hours=None,
-        remaining_commercial_window_days=None,
+        remaining_safe_window_hours=remaining_safe_window_hours,
+        remaining_commercial_window_days=remaining_commercial_window_days,
         average_daily_sales=average_daily_sales,
         effective_sales_window_days=effective_sales_window_days,
         expected_normal_sales=expected_normal_sales,
@@ -394,3 +456,4 @@ def triage_inventory_lot(
 
 
 __all__ = ["triage_inventory_lot"]
+
