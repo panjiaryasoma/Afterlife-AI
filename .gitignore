@@ -92,7 +92,6 @@ desktop.ini
 # ============================================================
 
 models/*
-!models/.gitkeep
 !models/*.json
 !models/*.yaml
 !models/*.yml
