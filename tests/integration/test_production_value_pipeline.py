@@ -2,6 +2,17 @@
 from decimal import Decimal
 from pathlib import Path
 
+from afterlife_ai.contracts.candidate import CandidateAction
+from afterlife_ai.contracts.enums import (
+    ActionType,
+    CoverageStatus,
+    FeasibilityStatus,
+    MatchStatus,
+    ModelScoringStatus,
+    SafetyStatus,
+    ValidationStatus,
+    VerificationStatus,
+)
 from afterlife_ai.pipeline.candidates import (
     generate_production_candidates,
 )
@@ -124,3 +135,73 @@ def test_production_expected_value_uses_model_score_and_candidate_economics() ->
                 Decimal("1") - probability
             ) * quantity
         )
+def test_safe_disposal_is_not_counted_as_physical_rescue() -> None:
+    candidate = CandidateAction(
+        candidate_id="CAND-001-DISPOSAL",
+        planning_lot_id="PLAN-LOT-001",
+        action_type=ActionType.SAFE_DISPOSAL,
+        destination_id=None,
+        destination_type=None,
+        maximum_feasible_quantity=Decimal("10"),
+        offered_or_selling_price_per_unit=Decimal("0"),
+        direct_action_cost=Decimal("0"),
+        logistics_cost=Decimal("0"),
+        handling_cost=Decimal("0"),
+        estimated_completion_hours=Decimal("1"),
+        active_demand_quantity=None,
+        available_capacity=Decimal("10"),
+        minimum_order_quantity=None,
+        capability_resource_ratio=None,
+        demand_coverage_ratio=None,
+        demand_freshness_hours=None,
+        distance_km=None,
+        category_match_status=MatchStatus.NOT_APPLICABLE,
+        package_size_match_status=MatchStatus.NOT_APPLICABLE,
+        customer_segment_match_status=MatchStatus.NOT_APPLICABLE,
+        storage_compatibility_status=MatchStatus.MATCH,
+        validation_status=ValidationStatus.PASSED,
+        coverage_status=CoverageStatus.SUPPORTED,
+        safety_status=SafetyStatus.ACCEPTABLE,
+        verification_status=VerificationStatus.VERIFIED,
+        feasibility_status=FeasibilityStatus.FEASIBLE,
+        model_scoring_status=ModelScoringStatus.DEFERRED,
+        rejection_reason_codes=[],
+        fixture_rescue_success_score=None,
+        estimated_rescue_success_score=None,
+        model_version=None,
+        expected_cash_recovery=Decimal("0"),
+        expected_future_branch_recovery=Decimal("0"),
+        expected_avoided_purchase_cost=Decimal("0"),
+        expected_physical_rescue_quantity=Decimal("0"),
+        expected_waste_quantity=Decimal("0"),
+        expected_net_recovery=Decimal("0"),
+    )
+    config = load_runtime_config(
+        RUNTIME_CONFIG_PATH
+    )
+
+    [scored] = score_production_candidates(
+        candidates=[candidate],
+        planning_lots=[],
+        config=config,
+    )
+
+    assert (
+        scored.model_scoring_status
+        is ModelScoringStatus.SKIPPED
+    )
+    assert scored.estimated_rescue_success_score is None
+    assert scored.model_version is None
+
+    [valued] = apply_production_expected_values(
+        candidates=[scored],
+    )
+
+    assert (
+        valued.expected_physical_rescue_quantity
+        == Decimal("0")
+    )
+    assert (
+        valued.expected_waste_quantity
+        == Decimal("10")
+    )

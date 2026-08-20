@@ -5,7 +5,10 @@ from __future__ import annotations
 from decimal import Decimal
 
 from afterlife_ai.contracts.candidate import CandidateAction
-from afterlife_ai.contracts.enums import ModelScoringStatus
+from afterlife_ai.contracts.enums import (
+    ActionType,
+    ModelScoringStatus,
+)
 from afterlife_ai.planner.value import (
     ExpectedValueInput,
     calculate_expected_value,
@@ -18,6 +21,25 @@ def _apply_expected_value(
     candidate: CandidateAction,
 ) -> CandidateAction:
     """Calculate deterministic economic value for one scored candidate."""
+    if candidate.action_type is ActionType.SAFE_DISPOSAL:
+        quantity = candidate.maximum_feasible_quantity
+
+        if quantity <= ZERO:
+            raise ValueError(
+                "maximum_feasible_quantity harus positif untuk "
+                f"{candidate.candidate_id}."
+            )
+
+        return candidate.model_copy(
+            update={
+                "expected_cash_recovery": ZERO,
+                "expected_future_branch_recovery": ZERO,
+                "expected_avoided_purchase_cost": ZERO,
+                "expected_physical_rescue_quantity": ZERO,
+                "expected_waste_quantity": quantity,
+                "expected_net_recovery": ZERO,
+            }
+        )
 
     if (
         candidate.model_scoring_status

@@ -5,7 +5,10 @@ from __future__ import annotations
 from decimal import Decimal
 
 from afterlife_ai.contracts.candidate import CandidateAction
-from afterlife_ai.contracts.enums import ModelScoringStatus
+from afterlife_ai.contracts.enums import (
+    ActionType,
+    ModelScoringStatus,
+)
 from afterlife_ai.contracts.planning import SurplusPlanningLot
 from afterlife_ai.pipeline.runtime_config import RuntimeConfig
 from afterlife_ai.scoring.model_provider import ModelScoreProvider
@@ -79,6 +82,20 @@ def score_production_candidates(
                 f"{candidate.model_scoring_status.value}; "
                 "expected DEFERRED atau BLOCKED."
             )
+
+        if candidate.action_type is ActionType.SAFE_DISPOSAL:
+            scored.append(
+                candidate.model_copy(
+                    update={
+                        "estimated_rescue_success_score": None,
+                        "model_version": None,
+                        "model_scoring_status": (
+                            ModelScoringStatus.SKIPPED
+                        ),
+                    }
+                )
+            )
+            continue
 
         planning_lot = planning_by_id.get(
             candidate.planning_lot_id
