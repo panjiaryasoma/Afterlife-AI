@@ -18,6 +18,43 @@ Afterlife AI tidak mengeksekusi diskon, transfer, repurpose, partner allocation,
 
 ---
 
+---
+
+## Why Afterlife AI
+
+Masalah surplus inventory bukan sekadar menentukan apakah suatu barang “berlebih”.
+
+Satu file inventori dapat mencampurkan:
+
+- stok sehat yang tidak boleh disentuh;
+- stok yang hanya perlu dimonitor;
+- surplus parsial;
+- barang near-expiry;
+- barang expired;
+- data yang tidak lengkap;
+- barang yang memiliki beberapa alternatif recovery;
+- kandidat yang tampak menarik secara ekonomi tetapi tidak aman atau tidak feasible.
+
+Keputusan rescue juga saling berbagi constraint.
+
+Satu tindakan dapat menggunakan labor, equipment, ingredient, bundle companion, cold storage, partner capacity, logistics budget, atau waktu yang juga dibutuhkan oleh kandidat lain.
+
+Karena itu, memilih alternatif terbaik satu lot pada satu waktu belum tentu menghasilkan rencana batch yang feasible.
+
+Afterlife AI memisahkan tanggung jawab tersebut:
+
+```text
+rules determine eligibility
+model estimates rescue success
+optimizer allocates constrained resources
+report exposes evidence
+human retains authority
+```
+
+---
+
+---
+
 ## Quick Start
 
 The primary competition-facing application is the **FastAPI + Jinja2** interface.
@@ -70,36 +107,6 @@ http://127.0.0.1:8000
 The reference workbook is a technical evaluation fixture, not real merchant transaction data.
 
 ---
-## Why Afterlife AI
-
-Masalah surplus inventory bukan sekadar menentukan apakah suatu barang “berlebih”.
-
-Satu file inventori dapat mencampurkan:
-
-- stok sehat yang tidak boleh disentuh;
-- stok yang hanya perlu dimonitor;
-- surplus parsial;
-- barang near-expiry;
-- barang expired;
-- data yang tidak lengkap;
-- barang yang memiliki beberapa alternatif recovery;
-- kandidat yang tampak menarik secara ekonomi tetapi tidak aman atau tidak feasible.
-
-Keputusan rescue juga saling berbagi constraint.
-
-Satu tindakan dapat menggunakan labor, equipment, ingredient, bundle companion, cold storage, partner capacity, logistics budget, atau waktu yang juga dibutuhkan oleh kandidat lain.
-
-Karena itu, memilih alternatif terbaik satu lot pada satu waktu belum tentu menghasilkan rencana batch yang feasible.
-
-Afterlife AI memisahkan tanggung jawab tersebut:
-
-```text
-rules determine eligibility
-model estimates rescue success
-optimizer allocates constrained resources
-report exposes evidence
-human retains authority
-```
 
 ---
 
@@ -162,6 +169,8 @@ Deterministic Inventory Triage
 The ordering is intentional.
 
 A model score cannot make an unsafe candidate safe, cannot revive a blocked candidate, and cannot bypass deterministic feasibility constraints.
+
+---
 
 ---
 
@@ -424,6 +433,8 @@ Reports are not persisted in a runtime database.
 
 ---
 
+---
+
 ## Supported Runtime Rescue Actions
 
 The domain contracts define a broader rescue-action vocabulary, but the active Technical MVP intentionally enables a narrower production profile.
@@ -443,6 +454,8 @@ Availability is still conditional.
 An enabled action is not automatically feasible for every inventory lot.
 
 Candidate generation, compatibility, timing, capacity, demand, safety, resource, and optimizer constraints still apply.
+
+---
 
 ---
 
@@ -487,6 +500,8 @@ internet-connected partner discovery
 
 ---
 
+---
+
 ## Decision Context
 
 One analysis request may include:
@@ -516,6 +531,8 @@ Optimization policy never overrides deterministic safety or feasibility decision
 
 ---
 
+---
+
 ## Where AI Is Used
 
 Afterlife AI intentionally does not force machine learning into every stage.
@@ -538,6 +555,8 @@ The AI component answers a narrow question:
 > Among candidates that are already allowed and feasible, which candidates have stronger estimated rescue-success evidence?
 
 This separation prevents model confidence from being mistaken for safety authority.
+
+---
 
 ---
 
@@ -599,6 +618,8 @@ They do not establish field accuracy or real-world rescue probability calibratio
 
 ---
 
+---
+
 ## Synthetic Data Artifacts
 
 Frozen synthetic artifacts are included in the repository for inspection and reproducibility.
@@ -630,6 +651,8 @@ reports/evidence/modeling/
 Synthetic data is used to evaluate the technical mechanism under controlled scenarios.
 
 It should not be interpreted as representative statistics for Indonesian merchants or as evidence of real-world business impact.
+
+---
 
 ---
 
@@ -668,38 +691,6 @@ Visual and interface references:
 - [`DESIGN.md`](DESIGN.md)
 
 ---
-
-## Streamlit Challenger
-
-A Streamlit presentation layer is retained as a thin challenger/reference implementation.
-
-Run it with:
-
-```powershell
-uv run streamlit run streamlit_app.py
-```
-
-The Streamlit implementation reuses the same:
-
-```text
-validation
-triage
-candidate generation
-hard gates
-scoring
-optimization
-reporting
-```
-
-It does not contain a second copy of business logic.
-
-After a controlled comparison, FastAPI + Jinja2 was retained as the primary interface because it provides stronger presentation hierarchy and clearer competition-facing explanation of hard gates, alternatives, provenance, limitations, and human authority.
-
-Comparison evidence:
-
-```text
-docs/frontend_comparison/
-```
 
 ---
 
@@ -742,6 +733,47 @@ containerization:
 runtime_database: none
 runtime_internet_dependency: none
 ```
+
+---
+
+---
+
+## Local Development
+
+### Requirements
+
+```text
+Python 3.12
+uv
+```
+
+Install the locked dependency set:
+
+```powershell
+uv sync --locked
+```
+
+Start the primary application:
+
+```powershell
+uv run uvicorn backend.main:app --host 127.0.0.1 --port 8000
+```
+
+Open:
+
+```text
+http://127.0.0.1:8000
+```
+
+Reference demo workbook:
+
+```text
+tests/fixtures/integration_001/RAW_INVENTORY_FIXTURE.xlsx
+```
+
+The fixture is a technical evaluation fixture, not real merchant transaction data.
+
+---
 
 ---
 
@@ -790,41 +822,6 @@ docker compose down
 The core runtime is local-first and does not require a runtime database or internet-connected business service.
 
 ---
-
-## Local Development
-
-### Requirements
-
-```text
-Python 3.12
-uv
-```
-
-Install the locked dependency set:
-
-```powershell
-uv sync --locked
-```
-
-Start the primary application:
-
-```powershell
-uv run uvicorn backend.main:app --host 127.0.0.1 --port 8000
-```
-
-Open:
-
-```text
-http://127.0.0.1:8000
-```
-
-Reference demo workbook:
-
-```text
-tests/fixtures/integration_001/RAW_INVENTORY_FIXTURE.xlsx
-```
-
-The fixture is a technical evaluation fixture, not real merchant transaction data.
 
 ---
 
@@ -898,6 +895,44 @@ invalid request context -> HTTP 422
 ```
 
 Unexpected internal failures remain server errors and are not presented as successful analysis results.
+
+---
+
+---
+
+## Streamlit Challenger
+
+A Streamlit presentation layer is retained as a thin challenger/reference implementation.
+
+Run it with:
+
+```powershell
+uv run streamlit run streamlit_app.py
+```
+
+The Streamlit implementation reuses the same:
+
+```text
+validation
+triage
+candidate generation
+hard gates
+scoring
+optimization
+reporting
+```
+
+It does not contain a second copy of business logic.
+
+After a controlled comparison, FastAPI + Jinja2 was retained as the primary interface because it provides stronger presentation hierarchy and clearer competition-facing explanation of hard gates, alternatives, provenance, limitations, and human authority.
+
+Comparison evidence:
+
+```text
+docs/frontend_comparison/
+```
+
+---
 
 ---
 
@@ -976,6 +1011,8 @@ Git whitespace integrity:
 ```powershell
 git diff --check
 ```
+
+---
 
 ---
 
@@ -1064,6 +1101,8 @@ Afterlife-AI/
 
 ---
 
+---
+
 ## Evidence Map
 
 The repository intentionally preserves implementation and evaluation evidence rather than reducing the project to a single headline metric.
@@ -1146,6 +1185,8 @@ submission evidence mapping
 
 ---
 
+---
+
 ## Contract and Governance References
 
 Canonical implementation-facing references include:
@@ -1171,6 +1212,8 @@ Locked preproduction contracts remain historical source-of-truth records.
 Where production semantics required a narrower or safer refinement, the difference is recorded explicitly rather than silently rewriting the original contract.
 
 Executable tests remain part of the implementation source of truth.
+
+---
 
 ---
 
@@ -1203,6 +1246,8 @@ Human decision authority remains outside automatic execution.
 
 ---
 
+---
+
 ## Runtime Boundary
 
 The current Technical MVP is intentionally:
@@ -1217,6 +1262,8 @@ automatic_execution: none
 ```
 
 This scope follows the competition requirement to prioritize one working core interaction instead of adding surrounding platform infrastructure.
+
+---
 
 ---
 
@@ -1259,6 +1306,8 @@ A technically functioning decision mechanism should not be presented as field va
 
 ---
 
+---
+
 ## Non-Goals
 
 The competition Technical MVP intentionally excludes:
@@ -1281,6 +1330,8 @@ closed-loop learning
 multi-agent orchestration
 cloud-dependent core runtime
 ```
+
+---
 
 ---
 
@@ -1311,6 +1362,8 @@ The technical repository has now passed the G10 final release audit and is froze
 
 ---
 
+---
+
 ## Competition Context
 
 Afterlife AI is developed for:
@@ -1335,6 +1388,8 @@ no unnecessary surrounding platform
 The competition submission additionally requires external deliverables such as proof-of-work video, promotional video, and proposal.
 
 Those deliverables are tracked separately from production runtime readiness.
+
+---
 
 ---
 
@@ -1372,6 +1427,8 @@ nationally representative merchant data
 The complete canonical claim register is maintained in:
 
 [`docs/submission/FINAL_CLAIM_BOUNDARY.md`](docs/submission/FINAL_CLAIM_BOUNDARY.md)
+
+---
 
 ---
 
