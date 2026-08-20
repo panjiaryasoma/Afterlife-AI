@@ -1,0 +1,19 @@
+LOCAL G10 FULL REGRESSION
+command=uv run pytest -q
+status=PASS
+passed=372
+failed=0
+errors=0
+duration_seconds=40.55
+
+FRESH CLONE G10 FULL REGRESSION
+command=uv run pytest -q
+status=PASS
+passed=372
+failed=0
+errors=0
+warnings=2
+duration_seconds=58.52
+
+warnings_classification=DeprecationWarning
+blocking=false

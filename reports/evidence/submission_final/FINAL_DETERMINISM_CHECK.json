@@ -1,0 +1,10 @@
+{
+  "status": "PASS",
+  "reports_identical": true,
+  "optimizer_random_seed": 42,
+  "optimizer_num_search_workers": 1,
+  "solver_status": "OPTIMAL",
+  "selected_allocations": 4,
+  "human_final_approval_status": "PENDING",
+  "execution_performed": false
+}

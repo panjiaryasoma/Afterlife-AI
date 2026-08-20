@@ -455,3 +455,46 @@ final_submission_capture: PENDING_G10_RELEASE_AUDIT
 ```
 
 G4 is complete when this index is placed under `reports/evidence/` and the final release audit remains explicitly pending rather than silently borrowing numbers from an older checkpoint.
+
+
+---
+
+## G10 Final Submission Evidence
+
+Technical final-release evidence is frozen under:
+
+```text
+reports/evidence/submission_final/
+```
+
+Audit subject commit:
+
+`52cfb2d7563e2b359a2c0dae0137262fad6b6100`
+
+Release record ref:
+
+`submission-final-2026-08-20`
+
+Key artifacts:
+
+```text
+FINAL_RELEASE_VERIFICATION.md
+FINAL_REPOSITORY_STATE.txt
+FINAL_RUFF.txt
+FINAL_MYPY.txt
+FINAL_PYTEST.txt
+FINAL_CLEAN_CLONE.md
+FINAL_DOCKER_SMOKE.md
+FINAL_UI_SMOKE.md
+FINAL_DEMO_REPORT.json
+FINAL_HEALTH_RESPONSE.json
+FINAL_DETERMINISM_CHECK.json
+FINAL_PARTNER_REGISTRY_SMOKE.json
+```
+
+G10 technical status:
+
+```yaml
+final_release_audit: PASS
+technical_repository_frozen: true
+```

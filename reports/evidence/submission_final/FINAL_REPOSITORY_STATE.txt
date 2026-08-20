@@ -1,0 +1,10 @@
+G10 FINAL REPOSITORY STATE
+
+audit_subject_commit=52cfb2d7563e2b359a2c0dae0137262fad6b6100
+branch=main
+project_python=3.12.7
+uv=uv 0.12.1 (329541a50 2026-07-31 x86_64-pc-windows-msvc)
+docker=Docker version 29.6.2, build dfc4efb
+
+working_tree_before_audit=clean
+static_integrity=PASS

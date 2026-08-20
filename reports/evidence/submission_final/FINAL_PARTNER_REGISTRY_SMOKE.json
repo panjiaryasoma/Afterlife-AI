@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "registry_snapshot_id": "PDR-DEMO-V1",
+  "snapshot_mode": "STATIC_OFFLINE",
+  "source_type": "SYNTHETIC_DEMO_FIXTURE",
+  "real_world_verified": false,
+  "runtime_internet_required": false,
+  "matching_records": 1,
+  "observable_external_partner_candidates": 1,
+  "selected_external_partner_allocations": 1,
+  "report_partner_registry_source_type": "SYNTHETIC_DEMO_FIXTURE",
+  "report_partner_registry_real_world_verified": false
+}

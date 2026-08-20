@@ -1246,15 +1246,16 @@ local_code_freeze_ready: true
 
 production_follow_up_required: []
 
-final_release_audit: NOT_EXECUTED
+final_release_audit: PASS
+technical_repository_frozen: true
 submission_ready: false
 ```
 
 `submission_ready: false` does not indicate an unresolved production-runtime blocker.
 
-It means final competition deliverables and the final frozen-submission verification remain separate from local runtime readiness.
+The technical repository has now passed the G10 final release audit and is frozen for recording and submission packaging.
 
-Before final submission, the exact frozen commit must undergo the final release audit, including fresh-clone, regression, Docker, UI, documentation, architecture, and claim consistency checks.
+`submission_ready` remains separate because competition deliverables outside the technical repository may still be pending.
 
 ---
 

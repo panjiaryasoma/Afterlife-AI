@@ -1,0 +1,3 @@
+command=uv run mypy src backend
+status=PASS
+result=Success: no issues found in 69 source files

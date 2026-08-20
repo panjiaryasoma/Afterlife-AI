@@ -1,0 +1,273 @@
+{
+  "request_id": "REQ-G10-FINAL",
+  "analysis_timestamp": "2026-08-20T12:00:00Z",
+  "feature_schema_version": "2.0.0",
+  "input_snapshot_sha256": "61400124e490b7f8a811aa7ce0777685a7c48e3cf53402eab6dbe921e32c4afd",
+  "model_version": "HGB_E_v1",
+  "model_sha256": "a318a2550d97ea0861b85fd7af5f9b2be0291eb29f57b07a00b32ab5ea5295d9",
+  "ruleset_version": "runtime-triage-v1.0",
+  "capability_snapshot_version": "runtime-capability-v1.0",
+  "partner_registry_snapshot_id": "PDR-DEMO-V1",
+  "partner_registry_snapshot_timestamp": "2026-08-05T00:00:00Z",
+  "partner_registry_source_type": "SYNTHETIC_DEMO_FIXTURE",
+  "partner_registry_real_world_verified": false,
+  "objective_policy_version": "runtime-objective-v1.0",
+  "optimization_objective": "MAXIMIZE_RECOVERY_VALUE",
+  "optimization_solver_status": "OPTIMAL",
+  "validation_summary": {
+    "status": "PASSED",
+    "input_lots": 6,
+    "canonical_records": 6
+  },
+  "triage_summary": {
+    "protected_quantity": "30",
+    "monitor_quantity": "0",
+    "planning_quantity": "18",
+    "expired_quantity": "22",
+    "review_quantity": "32"
+  },
+  "healthy_stock": [
+    {
+      "source_lot_id": "LOT-001",
+      "routed_quantity": "15",
+      "triage_reason_codes": [
+        "WITHIN_PROTECTED_NORMAL_STOCK"
+      ],
+      "urgency_level": "LOW"
+    },
+    {
+      "source_lot_id": "LOT-003",
+      "routed_quantity": "15",
+      "triage_reason_codes": [
+        "PARTIAL_EXCESS_ABOVE_PROTECTED_STOCK"
+      ],
+      "urgency_level": "MEDIUM"
+    }
+  ],
+  "monitor_only": [],
+  "surplus_planning_lots": [
+    {
+      "planning_lot_id": "PLAN-LOT-003",
+      "source_lot_id": "LOT-003",
+      "planning_quantity": "10"
+    },
+    {
+      "planning_lot_id": "PLAN-LOT-006",
+      "source_lot_id": "LOT-006",
+      "planning_quantity": "8"
+    }
+  ],
+  "expired_routes": [
+    {
+      "source_lot_id": "LOT-002",
+      "routed_quantity": "10",
+      "triage_reason_codes": [
+        "EXPIRED_HARD_REJECT"
+      ],
+      "urgency_level": "HIGH"
+    },
+    {
+      "source_lot_id": "LOT-004",
+      "routed_quantity": "12",
+      "triage_reason_codes": [
+        "EXPIRED_HARD_REJECT"
+      ],
+      "urgency_level": "HIGH"
+    }
+  ],
+  "score_provenance": {
+    "provider_name": "M1_HIST_GRADIENT_BOOSTING",
+    "score_type": "MODEL_ESTIMATED_RESCUE_SUCCESS",
+    "source_type": "SYNTHETIC_GENERATED",
+    "fixture_version": null
+  },
+  "model_execution_performed": true,
+  "deterministic_execution": true,
+  "optimizer_random_seed": 42,
+  "optimizer_num_search_workers": 1,
+  "batch_metrics": {
+    "input_lots": 6,
+    "input_quantity": "102",
+    "protected_quantity": "30",
+    "monitor_quantity": "0",
+    "planning_quantity": "18",
+    "expired_quantity": "22",
+    "review_quantity": "32",
+    "allocated_planning_quantity": "18",
+    "unallocated_planning_quantity": "0",
+    "expected_total_economic_value": "32781.40",
+    "expected_cash_recovery": "33713.05120790743086000000",
+    "expected_future_branch_recovery": "0E-18",
+    "expected_avoided_purchase_cost": "0E-18",
+    "expected_inventory_loss": "4282.300282950676500000",
+    "expired_inventory_loss": "36500",
+    "social_allocation_quantity": "0",
+    "expected_physical_rescue_quantity": "14.5741597736394588",
+    "expected_waste_quantity": "3.4258402263605412",
+    "expected_rescue_ratio": "0.8096755429799699333333333333",
+    "logistics_budget_used": "0",
+    "capacity_utilization": {
+      "labor_hours": "1",
+      "equipment_units": "0.75",
+      "ingredient_units": "0.75",
+      "bundle_companion_units": "1"
+    },
+    "minimum_expected_rescue_ratio": null,
+    "balanced_rescue_floor_status": "NOT_APPLICABLE"
+  },
+  "review_required_lots": [
+    {
+      "source_lot_id": "LOT-005",
+      "review_quantity": "20",
+      "reason_codes": [
+        "UNKNOWN_STORAGE_HISTORY"
+      ]
+    },
+    {
+      "source_lot_id": "LOT-006",
+      "review_quantity": "12",
+      "reason_codes": [
+        "VALID_PARTIAL_USER_DECLARED_SURPLUS"
+      ]
+    }
+  ],
+  "selected_allocations": [
+    {
+      "allocation_id": "ALLOC-003-BUNDLE",
+      "candidate_id": "CAND-003-BUNDLE",
+      "planning_lot_id": "PLAN-LOT-003",
+      "source_lot_id": "LOT-003",
+      "action_type": "BUNDLE",
+      "destination_id": "STORE-01_BUNDLE_CAMPAIGN",
+      "destination_type": "INTERNAL_CHANNEL",
+      "allocated_quantity": "4",
+      "offered_or_selling_price_per_unit": "1600",
+      "estimated_rescue_success_score": "0.8269867447659732",
+      "direct_action_cost": "0",
+      "logistics_cost": "0",
+      "handling_cost": "0",
+      "estimated_completion_hours": "2",
+      "distance_km": null,
+      "expected_value_per_unit": "1323.1788",
+      "binding_constraint_codes": [
+        "CANDIDATE_CAPACITY",
+        "SHARED_RESOURCE_CAPACITY:bundle_companion_units"
+      ],
+      "expected_cash_recovery": "5292.7151665022284800",
+      "expected_future_branch_recovery": "0E-16",
+      "expected_avoided_purchase_cost": "0E-16",
+      "expected_physical_rescue_quantity": "3.3079469790638928",
+      "expected_waste_quantity": "0.6920530209361072",
+      "expected_net_recovery": "5292.72"
+    },
+    {
+      "allocation_id": "ALLOC-003-PARTNER-PARTNER-DEMO-001",
+      "candidate_id": "CAND-003-PARTNER-PARTNER-DEMO-001",
+      "planning_lot_id": "PLAN-LOT-003",
+      "source_lot_id": "LOT-003",
+      "action_type": "EXTERNAL_PARTNER",
+      "destination_id": "PARTNER-DEMO-001",
+      "destination_type": "EXTERNAL_PARTNER",
+      "allocated_quantity": "6",
+      "offered_or_selling_price_per_unit": "1800",
+      "estimated_rescue_success_score": "0.7541604293781301",
+      "direct_action_cost": "0",
+      "logistics_cost": "0",
+      "handling_cost": "0",
+      "estimated_completion_hours": "6",
+      "distance_km": "3",
+      "expected_value_per_unit": "1357.4888",
+      "binding_constraint_codes": [
+        "CANDIDATE_CAPACITY",
+        "SHARED_DESTINATION_CAPACITY"
+      ],
+      "expected_cash_recovery": "8144.9326372838050800",
+      "expected_future_branch_recovery": "0E-16",
+      "expected_avoided_purchase_cost": "0E-16",
+      "expected_physical_rescue_quantity": "4.5249625762687806",
+      "expected_waste_quantity": "1.4750374237312194",
+      "expected_net_recovery": "8144.93"
+    },
+    {
+      "allocation_id": "ALLOC-006-DISCOUNT",
+      "candidate_id": "CAND-006-DISCOUNT",
+      "planning_lot_id": "PLAN-LOT-006",
+      "source_lot_id": "LOT-006",
+      "action_type": "LOCAL_DISCOUNT",
+      "destination_id": "STORE-01_LOCAL_SALES",
+      "destination_type": "INTERNAL_CHANNEL",
+      "allocated_quantity": "2",
+      "offered_or_selling_price_per_unit": "1500.00",
+      "estimated_rescue_success_score": "0.8297430899880879",
+      "direct_action_cost": "0.00",
+      "logistics_cost": "0.00",
+      "handling_cost": "0.00",
+      "estimated_completion_hours": "1",
+      "distance_km": null,
+      "expected_value_per_unit": "1244.6146",
+      "binding_constraint_codes": [],
+      "expected_cash_recovery": "2489.22926996426370000000",
+      "expected_future_branch_recovery": "0E-18",
+      "expected_avoided_purchase_cost": "0E-18",
+      "expected_physical_rescue_quantity": "1.659486179976175800",
+      "expected_waste_quantity": "0.340513820023824200",
+      "expected_net_recovery": "2489.23"
+    },
+    {
+      "allocation_id": "ALLOC-006-REPURPOSE",
+      "candidate_id": "CAND-006-REPURPOSE",
+      "planning_lot_id": "PLAN-LOT-006",
+      "source_lot_id": "LOT-006",
+      "action_type": "INTERNAL_REPURPOSE",
+      "destination_id": "STORE-01_PREPARED_DRINK_CHANNEL",
+      "destination_type": "INTERNAL_CHANNEL",
+      "allocated_quantity": "6",
+      "offered_or_selling_price_per_unit": "3500",
+      "estimated_rescue_success_score": "0.8469606730551016",
+      "direct_action_cost": "1100",
+      "logistics_cost": "0",
+      "handling_cost": "0",
+      "estimated_completion_hours": "4",
+      "distance_km": null,
+      "expected_value_per_unit": "2809.0862",
+      "binding_constraint_codes": [
+        "CANDIDATE_CAPACITY",
+        "SHARED_ACTION_CAPACITY",
+        "SHARED_RESOURCE_CAPACITY:labor_hours"
+      ],
+      "expected_cash_recovery": "17786.1741341571336000",
+      "expected_future_branch_recovery": "0E-16",
+      "expected_avoided_purchase_cost": "0E-16",
+      "expected_physical_rescue_quantity": "5.0817640383306096",
+      "expected_waste_quantity": "0.9182359616693904",
+      "expected_net_recovery": "16854.52"
+    }
+  ],
+  "rejected_candidates": [
+    {
+      "candidate_id": "CAND-003-REPURPOSE",
+      "planning_lot_id": "PLAN-LOT-003",
+      "action_type": "INTERNAL_REPURPOSE",
+      "rejection_reason_codes": [
+        "OPTIMIZER_NOT_SELECTED"
+      ]
+    },
+    {
+      "candidate_id": "CAND-003-DISCOUNT",
+      "planning_lot_id": "PLAN-LOT-003",
+      "action_type": "LOCAL_DISCOUNT",
+      "rejection_reason_codes": [
+        "OPTIMIZER_NOT_SELECTED"
+      ]
+    }
+  ],
+  "fallback_chain": [],
+  "limitations": [
+    "Rescue-success probabilities come from a model trained on the frozen synthetic benchmark and must not be interpreted as validated real-world probabilities.",
+    "Runtime capability, cost, capacity, and pricing parameters are static MVP defaults and are not validated real-world operating thresholds.",
+    "This Rescue Decision Report is advisory only. No discount, repurpose, bundle, transfer, donation, disposal, or other physical action is automatically executed."
+  ],
+  "human_exception_review_required": true,
+  "human_final_approval_status": "PENDING",
+  "execution_performed": false
+}

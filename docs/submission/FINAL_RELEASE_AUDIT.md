@@ -1,9 +1,12 @@
 # Afterlife AI — Final Release / Submission Audit Gate
 
-**Project:** Afterlife AI  
-**Gate:** G10  
-**Current status:** NOT YET EXECUTED  
-**Reason:** remaining implementation issues still exist.
+**Project:** Afterlife AI
+**Gate:** G10
+**Current status:** PASS ? TECHNICAL REPOSITORY FREEZE
+**Execution date:** 2026-08-20
+**Audit subject commit:** `52cfb2d7563e2b359a2c0dae0137262fad6b6100`
+**Release record ref:** `submission-final-2026-08-20`
+**Reason:** all technical G10 gates passed; external competition deliverables are tracked separately.
 
 This file defines the final release audit that must be executed only after all code and submission-relevant implementation work is frozen.
 
@@ -532,23 +535,24 @@ Inventory
 
 ---
 
-# 19. Submission-Readiness Flag
+# 19. Submission-Readiness Flags
 
-Do not set any final submission flag to true before all G10 checks pass.
+G10 controls the final technical repository freeze.
 
-Only after successful final audit:
+After successful G10:
 
 ```yaml
-submission_ready: true
+final_release_audit: PASS
+technical_repository_frozen: true
 ```
 
-Before that:
+Overall competition submission readiness is broader than the technical repository.
+
+If external competition deliverables remain pending:
 
 ```yaml
 submission_ready: false
 ```
-
-No partial credit from YAML optimism.
 
 ---
 
@@ -603,13 +607,26 @@ Fix, recommit, and restart the affected audit steps.
 
 ```yaml
 audit_specification: READY
-final_audit_execution: NOT_STARTED
-final_submission_commit: NOT_FROZEN
+final_audit_execution: PASS
+audit_subject_commit: 52cfb2d7563e2b359a2c0dae0137262fad6b6100
+release_record_ref: submission-final-2026-08-20
+technical_repository_frozen: true
 submission_ready: false
-
-reason:
-  - remaining issues still need implementation
-  - final repository state does not yet exist
+technical_gates:
+  static_integrity: PASS
+  ruff: PASS
+  mypy: PASS
+  pytest: PASS
+  api_ui_smoke: PASS
+  partner_registry_smoke: PASS
+  determinism: PASS
+  docker: PASS
+  fresh_clone: PASS
+  claim_audit: PASS
+  documentation_consistency: PASS
+  architecture_consistency: PASS
 ```
 
-**G10 Decision now: AUDIT GATE DEFINED, EXECUTION DEFERRED UNTIL FINAL CODE FREEZE.**
+**G10 Decision: PASS ? TECHNICAL REPOSITORY FROZEN.**
+
+External competition deliverables remain outside this technical gate.
