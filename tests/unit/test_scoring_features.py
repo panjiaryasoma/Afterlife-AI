@@ -106,3 +106,97 @@ def test_build_model_feature_row_maps_runtime_objects() -> None:
     )
 
     assert len(features) == 30
+
+def test_build_model_feature_row_derives_runtime_ratios() -> None:
+    planning_lot = SurplusPlanningLot(
+        planning_lot_id="PLAN-LOT-RATIO",
+        source_lot_id="LOT-RATIO",
+        sku="SKU-RATIO",
+        product_name="Ratio Test",
+        product_category=ProductCategory.PACKAGED_BEVERAGE,
+        product_subcategory="POWDER_DRINK",
+        planning_quantity=Decimal("20"),
+        unit=UnitCode.SACHET,
+        unit_cost=Decimal("1000"),
+        normal_selling_price=Decimal("2000"),
+        minimum_recovery_price=None,
+        source_location="STORE-001",
+        remaining_shelf_life_days=10,
+        remaining_safe_window_hours=Decimal("48"),
+        remaining_commercial_window_days=Decimal("2"),
+        urgency_level=UrgencyLevel.MEDIUM,
+        surplus_source=SurplusSource.CALCULATED,
+        seasonality_status=None,
+        storage_type=StorageType.DRY_AMBIENT,
+        storage_requirement_mode=(
+            StorageRequirementMode.AMBIENT_ALLOWED
+        ),
+        storage_history_status=(
+            StorageHistoryStatus.NOT_APPLICABLE
+        ),
+        product_condition=ProductCondition.GOOD,
+        packaging_condition=PackagingCondition.INTACT,
+        defect_severity=DefectSeverity.NONE,
+        quality_inspection_status=(
+            QualityInspectionStatus.PASSED
+        ),
+        verification_status=VerificationStatus.VERIFIED,
+        package_volume_ml=None,
+        package_weight_g=None,
+        package_format="SACHET",
+        estimated_current_value=Decimal("20000"),
+    )
+
+    candidate = generate_candidates(
+        planning_lot,
+        [
+            CandidateActionSpec(
+                action_type=ActionType.EXTERNAL_PARTNER,
+                maximum_quantity=Decimal("10"),
+                destination_id="PARTNER-001",
+                destination_type="EXTERNAL_PARTNER",
+                offered_or_selling_price_per_unit=Decimal("1500"),
+                estimated_completion_hours=Decimal("2"),
+                active_demand_quantity=Decimal("15"),
+                available_capacity=Decimal("10"),
+                minimum_order_quantity=Decimal("5"),
+            )
+        ],
+    )[0]
+
+    features = build_model_feature_row(
+        planning_lot=planning_lot,
+        candidate=candidate,
+        business_type=BusinessType.SMALL_RETAIL,
+    )
+
+    assert (
+        features["capability_resource_ratio"]
+        == Decimal("0.5")
+    )
+    assert (
+        features["demand_coverage_ratio"]
+        == Decimal("0.75")
+    )
+
+    candidate_with_explicit_ratios = candidate.model_copy(
+        update={
+            "capability_resource_ratio": Decimal("0.9"),
+            "demand_coverage_ratio": Decimal("0.8"),
+        }
+    )
+
+    explicit_features = build_model_feature_row(
+        planning_lot=planning_lot,
+        candidate=candidate_with_explicit_ratios,
+        business_type=BusinessType.SMALL_RETAIL,
+    )
+
+    assert (
+        explicit_features["capability_resource_ratio"]
+        == Decimal("0.9")
+    )
+    assert (
+        explicit_features["demand_coverage_ratio"]
+        == Decimal("0.8")
+    )

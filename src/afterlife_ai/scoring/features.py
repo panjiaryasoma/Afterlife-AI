@@ -2,12 +2,29 @@
 
 from __future__ import annotations
 
+from decimal import Decimal
 from typing import Any
 
 from afterlife_ai.contracts.candidate import CandidateAction
 from afterlife_ai.contracts.enums import BusinessType
 from afterlife_ai.contracts.planning import SurplusPlanningLot
 
+
+def _derive_ratio(
+    *,
+    explicit_value: Decimal | None,
+    numerator: Decimal | None,
+    denominator: Decimal,
+) -> Decimal | None:
+    """Use explicit ratio or derive it from available runtime quantities."""
+
+    if explicit_value is not None:
+        return explicit_value
+
+    if numerator is None or denominator <= 0:
+        return None
+
+    return numerator / denominator
 
 def build_model_feature_row(
     *,
@@ -67,10 +84,16 @@ def build_model_feature_row(
         "active_demand_quantity": candidate.active_demand_quantity,
         "available_capacity": candidate.available_capacity,
         "minimum_order_quantity": candidate.minimum_order_quantity,
-        "capability_resource_ratio": (
-            candidate.capability_resource_ratio
+        "capability_resource_ratio": _derive_ratio(
+            explicit_value=candidate.capability_resource_ratio,
+            numerator=candidate.available_capacity,
+            denominator=planning_lot.planning_quantity,
         ),
-        "demand_coverage_ratio": candidate.demand_coverage_ratio,
+        "demand_coverage_ratio": _derive_ratio(
+            explicit_value=candidate.demand_coverage_ratio,
+            numerator=candidate.active_demand_quantity,
+            denominator=planning_lot.planning_quantity,
+        ),
         "demand_freshness_hours": (
             candidate.demand_freshness_hours
         ),
