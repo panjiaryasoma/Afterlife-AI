@@ -1,7 +1,7 @@
 # Afterlife AI — Preproduction Contract Alignment
 
-**Baseline:** Afterlife AI preproduction final package
-**Runtime checkpoint:** `DEV-01 governance checkpoint (post-321de449)`
+**Baseline:** Afterlife AI preproduction final package  
+**Runtime checkpoint:** `d68a417`  
 **Status:** `ALIGNED_WITH_RECORDED_SEMANTIC_REFINEMENT`
 
 ## Purpose
@@ -36,6 +36,16 @@ global_resource_capacity_wiring: PASS
 report_value_separation: PASS
 infeasible_fallback_semantics: ACCEPTED_REFINEMENT
 
+candidate_identity_uniqueness: PASS
+candidate_minimum_order_quantity: PASS
+safe_disposal_semantics: PASS
+logistics_budget_semantics: PASS
+safe_commercial_window_derivation: PASS
+runtime_model_feature_parity: PASS
+report_value_reconciliation: PASS
+
+runtime_verification: PASS
+local_code_freeze_ready: true
 submission_ready: false
 ```
 
@@ -62,6 +72,27 @@ semantics:
 - human approval remains pending outside automatic execution;
 - `execution_performed` remains `false`.
 
+The post-audit runtime reconciliation additionally verifies that:
+
+- candidate identifiers remain deterministic and unique when one planning lot
+  produces multiple external-partner candidates;
+- candidate-level `minimum_order_quantity` is enforced by both CP-SAT and the
+  deterministic fallback;
+- `SAFE_DISPOSAL` is excluded from rescue-success model scoring and is not
+  counted as expected physical rescue;
+- positive logistics cost is not treated as a hard feasibility failure;
+- the configured request-level logistics budget remains enforced by the
+  optimizer;
+- `remaining_safe_window_hours` and
+  `remaining_commercial_window_days` are derived from the corresponding
+  inventory timestamps and never reported as negative values;
+- runtime model features derive available capability and demand ratios using
+  the same semantics as the frozen synthetic benchmark when explicit values
+  are absent;
+- report economic value remains monetary regardless of optimization objective;
+- expected inventory loss includes planning-stage expected waste from selected
+  allocations plus unallocated planning quantity valued at source unit cost.
+
 ---
 
 ## 3. GAP-01 — Global Resource Capacity Wiring
@@ -87,7 +118,7 @@ Global cold-storage use does not exceed available capacity after reservations.
 
 ### Current implementation
 
-The production runtime now exposes typed generic resource capacities and
+The production runtime exposes typed generic resource capacities and
 per-action resource requirements through `RuntimeCapabilityConfig`.
 
 The active production optimizer derives and forwards:
@@ -136,7 +167,7 @@ resource capacities.
 
 ```text
 targeted GAP-01 suite: PASS
-full regression: 363 passed
+full regression: 372 passed
 ruff: PASS
 mypy: PASS
 frontend JavaScript syntax: PASS
@@ -191,7 +222,7 @@ expected_waste_quantity
 expected_net_recovery
 ```
 
-Batch metrics now explicitly expose:
+Batch metrics expose:
 
 ```text
 expected_total_economic_value
@@ -214,12 +245,23 @@ The production report aggregates cash recovery, future branch recovery,
 avoided purchase cost, physical rescue, and waste from the selected
 allocation-level values.
 
-`expected_inventory_loss` represents expected planning-stage waste valued
-using the source lot unit cost.
+`expected_total_economic_value` is a monetary aggregate of selected
+allocation `expected_net_recovery` values. It is intentionally separated from
+the optimizer's internal objective value because optimization objectives may
+use different units.
 
-`expired_inventory_loss` is reported separately from planning-stage expected
-inventory loss and is derived from deterministic expired routing and source
-lot unit cost.
+`expected_inventory_loss` represents planning-stage expected waste valued
+using source lot unit cost. It includes:
+
+```text
+expected waste from selected rescue allocations
++
+unallocated planning quantity
+```
+
+`expired_inventory_loss` remains reported separately from planning-stage
+expected inventory loss and is derived from deterministic expired routing and
+source lot unit cost.
 
 `social_allocation_quantity` represents selected donation quantity. It is a
 physical allocation quantity and is not converted into an invented monetary
@@ -277,8 +319,8 @@ impact, field-validated loss reduction, or real-world capacity utilization.
 ### Verification
 
 ```text
-targeted GAP-02 report suite: 27 passed
-full regression: 363 passed
+targeted GAP-02 report suite: PASS
+full regression: 372 passed
 ruff: PASS
 mypy: PASS
 frontend JavaScript syntax: PASS
@@ -304,7 +346,7 @@ lead to deterministic fallback planning with solver status reported.
 
 ### Current implementation
 
-The production optimizer currently treats:
+The production optimizer treats:
 
 ```text
 OPTIMAL
@@ -362,7 +404,186 @@ claim boundary use the narrower current-runtime semantic.
 
 ---
 
-## 6. Accepted Non-Blocking Debt
+## 6. Post-Audit Runtime Reconciliation
+
+A repository-wide runtime audit identified implementation gaps that were
+closed through targeted local-first patches. These changes align production
+behavior with the locked contracts without expanding MVP scope.
+
+### PATCH-01 — Multi-partner candidate identity
+
+```yaml
+status: CLOSED
+result:
+  deterministic_candidate_ids: PRESERVED
+  external_partner_candidate_ids: UNIQUE_PER_DESTINATION
+  optimizer_duplicate_id_failure: PREVENTED
+regression_status: PASS
+```
+
+One planning lot may produce multiple external-partner candidates. Candidate
+identity therefore includes destination identity for external-partner actions
+while preserving the existing identifier shape for other action types.
+
+### PATCH-02 — Candidate minimum order quantity
+
+```yaml
+status: CLOSED
+cp_sat_enforcement: PRESENT
+deterministic_fallback_enforcement: PRESENT
+regression_status: PASS
+```
+
+Candidate-level `minimum_order_quantity` is enforced when a candidate is
+selected. Partial allocations below the candidate minimum are not permitted.
+
+### PATCH-03 — SAFE_DISPOSAL scoring and value semantics
+
+```yaml
+status: CLOSED
+model_scoring_status: SKIPPED
+physical_rescue_contribution: ZERO
+expected_waste_semantic: FULL_DISPOSAL_QUANTITY
+regression_status: PASS
+```
+
+`SAFE_DISPOSAL` is a terminal safety action, not a rescue-success action.
+It is not passed through the HGB-E rescue-success model and does not increase
+expected physical rescue.
+
+### PATCH-04 — Logistics feasibility and budget separation
+
+```yaml
+status: CLOSED
+positive_logistics_cost_hard_reject: REMOVED
+request_level_budget_enforcement: PRESERVED
+regression_status: PASS
+```
+
+A positive logistics cost is not itself evidence of infeasibility. Monetary
+budget feasibility is enforced by the optimizer through
+`max_logistics_budget`.
+
+### PATCH-05 — Safe-use and commercial timing windows
+
+```yaml
+status: CLOSED
+remaining_safe_window_hours: DERIVED
+remaining_commercial_window_days: DERIVED
+past_cutoff_behavior: CLAMP_TO_ZERO
+regression_status: PASS
+```
+
+The production triage path now derives both timing windows from inventory
+timestamps relative to `analysis_at`, while rejecting inconsistent timezone
+awareness rather than silently guessing.
+
+### PATCH-06 — Runtime model feature parity
+
+```yaml
+status: CLOSED
+capability_resource_ratio: DERIVED_WHEN_AVAILABLE
+demand_coverage_ratio: DERIVED_WHEN_AVAILABLE
+explicit_runtime_values: PRESERVED
+retraining_required: false
+regression_status: PASS
+```
+
+Where exact runtime numerators and denominators are available, production
+derives the same ratio semantics used by the frozen synthetic benchmark.
+Missing features without factual runtime sources remain missing rather than
+being filled with invented values.
+
+### PATCH-07 — Rescue report value reconciliation
+
+```yaml
+status: CLOSED
+economic_value_unit_separation: PASS
+planning_inventory_loss_reconciliation: PASS
+regression_status: PASS
+```
+
+The report now keeps economic value monetary for all optimization objectives
+and values both selected expected waste and unallocated planning quantity in
+`expected_inventory_loss`.
+
+---
+
+## 7. Final Runtime Verification
+
+The reconciled runtime was verified locally after PATCH-07.
+
+```yaml
+runtime_checkpoint: d68a417
+
+full_regression:
+  status: PASS
+  tests_passed: 372
+
+ruff:
+  status: PASS
+
+mypy:
+  status: PASS
+  source_files_checked: 73
+
+frontend_javascript_syntax:
+  status: PASS
+
+git_diff_check:
+  status: PASS
+
+docker_clean_build:
+  status: PASS
+  mode: no-cache
+
+docker_compose_startup:
+  status: PASS
+
+container_health:
+  status: PASS
+
+http_health_endpoint:
+  status: PASS
+  status_code: 200
+
+http_root_ui:
+  status: PASS
+  status_code: 200
+
+canonical_xlsx_e2e:
+  status: PASS
+
+rescue_decision_report_render:
+  status: PASS
+
+rescue_decision_report_download:
+  status: PASS
+
+container_cleanup:
+  status: PASS
+
+working_tree_after_verification:
+  status: CLEAN
+```
+
+The canonical XLSX smoke test produced an `OPTIMAL` Rescue Decision Report
+with traceable triage, selected allocations, human-review items, model
+provenance, optimizer provenance, limitations, and downloadable JSON output.
+
+The smoke test also preserved the advisory boundary:
+
+```text
+human_final_approval_status: PENDING
+execution_performed: false
+```
+
+This verification supports a local code-freeze decision. It does not by itself
+complete competition submission deliverables.
+
+---
+
+## 8. Accepted Non-Blocking Debt
 
 The following remain explicitly non-blocking for this alignment checkpoint:
 
@@ -372,32 +593,47 @@ real-world merchant validation
 real-world partner validation
 field probability calibration
 report usability study
-final frozen-commit reproducibility
+final submission package reproducibility
 ```
 
 These must remain limitations or deferred evidence and must not be promoted
 into stronger competition claims.
 
-Final frozen-commit reproducibility remains:
+The current state is:
 
 ```yaml
-status: PENDING_G10
+local_runtime_reproducibility: VERIFIED
+local_code_freeze_ready: true
+final_submission_package_reproducibility: PENDING
 submission_ready: false
 ```
 
+`submission_ready` remains `false` because competition deliverables outside
+the production runtime are still pending, including the final PoW, promotional
+video, proposal, and final frozen submission checkpoint.
+
 ---
 
-## 7. Decision
+## 9. Decision
 
 ```yaml
 preproduction_contract_alignment: ALIGNED_WITH_RECORDED_SEMANTIC_REFINEMENT
 
 blocking_safety_contradiction: false
+runtime_verification: PASS
+local_code_freeze_ready: true
 
 resolved_findings:
   - GAP-01 global resource capacity wiring
   - GAP-02 Rescue Decision Report value separation
   - DEV-01 INFEASIBLE fallback semantic refinement
+  - PATCH-01 multi-partner candidate identity
+  - PATCH-02 candidate minimum order quantity enforcement
+  - PATCH-03 SAFE_DISPOSAL scoring and value semantics
+  - PATCH-04 logistics feasibility and budget separation
+  - PATCH-05 safe-use and commercial timing-window derivation
+  - PATCH-06 runtime model ratio derivation
+  - PATCH-07 Rescue Decision Report value reconciliation
 
 production_follow_up_required: []
 
@@ -411,8 +647,9 @@ evidence.
 DEV-01 is closed through an explicit implementation decision record while the
 locked historical toolchain wording remains unchanged.
 
-The production behavior is intentionally more conservative: a proven
-INFEASIBLE result remains infeasible and is not converted into artificial
-fallback success.
+PATCH-01 through PATCH-07 close the additional runtime gaps found during the
+post-speedrun repository audit without expanding the MVP feature boundary.
+
+The production runtime is locally verified and ready for code freeze.
 
 The locked preproduction artifacts remain unchanged.
