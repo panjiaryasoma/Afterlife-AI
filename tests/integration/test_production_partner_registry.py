@@ -643,6 +643,12 @@ matching_records:
     ]
 
     assert len(partner_candidates) == 2
+    assert len(
+        {
+            candidate.candidate_id
+            for candidate in partner_candidates
+        }
+    ) == 2
 
     gated = apply_production_hard_gates(
         candidates=partner_candidates,

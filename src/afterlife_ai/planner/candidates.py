@@ -138,13 +138,22 @@ def _planning_lot_token(planning_lot_id: str) -> str:
 def _candidate_id(
     planning_lot: SurplusPlanningLot,
     action_type: ActionType,
+    destination_id: str | None = None,
 ) -> str:
     """Build deterministic candidate identifier."""
 
     token = _planning_lot_token(planning_lot.planning_lot_id)
     suffix = _ACTION_ID_SUFFIX[action_type]
 
-    return f"CAND-{token}-{suffix}"
+    candidate_id = f"CAND-{token}-{suffix}"
+
+    if (
+        action_type is ActionType.EXTERNAL_PARTNER
+        and destination_id is not None
+    ):
+        return f"{candidate_id}-{destination_id}"
+
+    return candidate_id
 
 
 def generate_candidates(
@@ -181,6 +190,7 @@ def generate_candidates(
             candidate_id=_candidate_id(
                 planning_lot,
                 spec.action_type,
+                spec.destination_id,
             ),
             planning_lot_id=planning_lot.planning_lot_id,
             action_type=spec.action_type,
