@@ -343,6 +343,39 @@ def test_infeasible_optimizer_is_explicit_in_rescue_report(
         report.batch_metrics.unallocated_planning_quantity
         == report.batch_metrics.planning_quantity
     )
+    raw_lot_by_id = {
+        lot.lot_id: lot
+        for lot in result.raw_inventory_lots
+    }
+
+    planning_lot_by_id = {
+        lot.planning_lot_id: lot
+        for lot in result.planning_lots
+    }
+
+    expected_inventory_loss = sum(
+        (
+            quantity
+            * raw_lot_by_id[
+                planning_lot_by_id[
+                    planning_lot_id
+                ].source_lot_id
+            ].unit_cost
+            for planning_lot_id, quantity
+            in (
+                result.optimization_result
+                .unallocated_quantities.items()
+            )
+        ),
+        Decimal("0"),
+    )
+
+    assert expected_inventory_loss > Decimal("0")
+
+    assert (
+        report.batch_metrics.expected_inventory_loss
+        == expected_inventory_loss
+    )
 
     assert report.rejected_candidates
 
@@ -1078,4 +1111,35 @@ def test_no_feasible_candidate_is_explicit_and_requires_human_review(
         item.rejection_reason_codes
         == ["TEST_NO_FEASIBLE_CANDIDATE"]
         for item in report.rejected_candidates
+    )
+
+def test_minimize_waste_report_keeps_economic_value_in_currency() -> None:
+    result = run_production_pipeline(
+        workbook_path=WORKBOOK_PATH,
+        runtime_config_path=RUNTIME_CONFIG_PATH,
+        analysis_at=datetime(
+            2026,
+            8,
+            5,
+            tzinfo=UTC,
+        ),
+        request_id="PRODUCTION-MIN-WASTE-VALUE",
+        optimization_objective=(
+            OptimizationObjective.MINIMIZE_WASTE
+        ),
+    )
+
+    report = result.report
+
+    expected_economic_value = sum(
+        (
+            allocation.expected_net_recovery
+            for allocation in report.selected_allocations
+        ),
+        Decimal("0"),
+    )
+
+    assert (
+        report.batch_metrics.expected_total_economic_value
+        == expected_economic_value
     )

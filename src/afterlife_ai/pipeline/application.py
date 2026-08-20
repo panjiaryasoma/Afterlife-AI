@@ -397,6 +397,15 @@ def _build_report(
         ),
         ZERO,
     )
+
+    expected_total_economic_value = sum(
+        (
+            item["expected_net_recovery"]
+            for item in selected_allocations
+        ),
+        ZERO,
+    )
+
     raw_lot_by_id = {
         lot.lot_id: lot
         for lot in raw_inventory_lots
@@ -404,7 +413,7 @@ def _build_report(
 
     # Planning-stage expected loss only.
     # Deterministic expired inventory is reported separately.
-    expected_inventory_loss = sum(
+    allocated_expected_inventory_loss = sum(
         (
             item["expected_waste_quantity"]
             * raw_lot_by_id[
@@ -413,6 +422,25 @@ def _build_report(
             for item in selected_allocations
         ),
         ZERO,
+    )
+
+    unallocated_expected_inventory_loss = sum(
+        (
+            quantity
+            * raw_lot_by_id[
+                planning_by_id[
+                    planning_lot_id
+                ].source_lot_id
+            ].unit_cost
+            for planning_lot_id, quantity
+            in optimization_result.unallocated_quantities.items()
+        ),
+        ZERO,
+    )
+
+    expected_inventory_loss = (
+        allocated_expected_inventory_loss
+        + unallocated_expected_inventory_loss
     )
 
     expired_inventory_loss = sum(
@@ -773,7 +801,7 @@ def _build_report(
                 unallocated_quantity
             ),
             "expected_total_economic_value": (
-                optimization_result.objective_value
+                expected_total_economic_value
             ),
             "expected_cash_recovery": (
                 expected_cash_recovery
