@@ -1,11 +1,11 @@
-# Afterlife AI ? Post-Freeze UI Revalidation
+# Afterlife AI - Post-Freeze UI Revalidation
 
-**Gate:** G10.1  
-**Type:** Post-freeze corrective presentation revalidation  
-**Execution date:** 2026-08-21  
-**Technical behavior baseline:** `c45f1f3952fa25dfed76b25e951a3d8f0fa8af12`  
-**Previous technical freeze:** G10 / `52cfb2d7563e2b359a2c0dae0137262fad6b6100`  
-**Status:** PASS ? TECHNICAL REPOSITORY RE-FROZEN
+**Gate:** G10.1
+**Type:** Post-freeze corrective presentation revalidation
+**Execution date:** 2026-08-21
+**Technical behavior baseline:** `c45f1f3952fa25dfed76b25e951a3d8f0fa8af12`
+**Previous technical freeze:** G10 / `52cfb2d7563e2b359a2c0dae0137262fad6b6100`
+**Status:** PASS - TECHNICAL REPOSITORY RE-FROZEN
 
 ---
 
@@ -137,15 +137,18 @@ G10
 52cfb2d7563e2b359a2c0dae0137262fad6b6100
 Original technical repository freeze
 
-        ?
+        |
+        v
 
 post-freeze responsive presentation defect discovered
 
-        ?
+        |
+        v
 
 CSS-only corrective patch
 
-        ?
+        |
+        v
 
 G10.1
 c45f1f3952fa25dfed76b25e951a3d8f0fa8af12
@@ -196,19 +199,19 @@ After this checkpoint:
 
 ```text
 new product feature development
-? STOP
+-> STOP
 
 core behavior changes
-? STOP unless a proven release blocker exists
+-> STOP unless a proven release blocker exists
 
 allowed work
-? proposal
-? proof-of-work video
-? promotional video
-? screenshots / submission assets
-? documentation clarity fixes
-? submission packaging
-? proven critical or submission-blocking fixes
+-> proposal
+-> proof-of-work video
+-> promotional video
+-> screenshots / submission assets
+-> documentation clarity fixes
+-> submission packaging
+-> proven critical or submission-blocking fixes
 ```
 
 Any later runtime or product-behavior change requires another explicit
@@ -227,4 +230,4 @@ core_behavior_changed: false
 submission_ready: false
 ```
 
-**Decision: PASS ? AFTERLIFE AI TECHNICAL REPOSITORY RE-FROZEN AFTER RESPONSIVE UI CORRECTION.**
+**Decision: PASS - AFTERLIFE AI TECHNICAL REPOSITORY RE-FROZEN AFTER RESPONSIVE UI CORRECTION.**
