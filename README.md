@@ -18,6 +18,58 @@ Afterlife AI tidak mengeksekusi diskon, transfer, repurpose, partner allocation,
 
 ---
 
+## Quick Start
+
+The primary competition-facing application is the **FastAPI + Jinja2** interface.
+
+### Run locally with uv
+
+Requirements:
+
+```text
+Python 3.12
+uv
+```
+
+Install the locked dependency set:
+
+```powershell
+uv sync --locked
+```
+
+Start the primary application:
+
+```powershell
+uv run uvicorn backend.main:app --host 127.0.0.1 --port 8000
+```
+
+Open:
+
+```text
+http://127.0.0.1:8000
+```
+
+Reference demo workbook:
+
+```text
+tests/fixtures/integration_001/RAW_INVENTORY_FIXTURE.xlsx
+```
+
+### Run with Docker
+
+```powershell
+docker compose up --build
+```
+
+Open the same primary interface at:
+
+```text
+http://127.0.0.1:8000
+```
+
+The reference workbook is a technical evaluation fixture, not real merchant transaction data.
+
+---
 ## Why Afterlife AI
 
 Masalah surplus inventory bukan sekadar menentukan apakah suatu barang “berlebih”.
