@@ -498,3 +498,31 @@ G10 technical status:
 final_release_audit: PASS
 technical_repository_frozen: true
 ```
+
+
+---
+
+## G10.1 Post-Freeze UI Revalidation
+
+A responsive presentation correction was applied after the original G10
+technical freeze.
+
+Technical behavior baseline:
+
+`c45f1f3952fa25dfed76b25e951a3d8f0fa8af12`
+
+Canonical record:
+
+```text
+docs/submission/POST_FREEZE_UI_REVALIDATION.md
+```
+
+Verification:
+
+```yaml
+change_type: PRESENTATION_ONLY
+targeted_ui_tests_passed: 6
+full_regression_tests_passed: 372
+core_behavior_changed: false
+technical_repository_re_frozen: true
+```

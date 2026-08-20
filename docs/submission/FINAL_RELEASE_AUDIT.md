@@ -630,3 +630,32 @@ technical_gates:
 **G10 Decision: PASS ? TECHNICAL REPOSITORY FROZEN.**
 
 External competition deliverables remain outside this technical gate.
+
+
+---
+
+# 22. G10.1 Post-Freeze Corrective UI Revalidation
+
+A post-freeze responsive presentation defect was corrected after the original
+G10 checkpoint.
+
+The original G10 audit remains preserved as historical evidence.
+
+Active technical behavior baseline:
+
+`c45f1f3952fa25dfed76b25e951a3d8f0fa8af12`
+
+Canonical follow-up record:
+
+`docs/submission/POST_FREEZE_UI_REVALIDATION.md`
+
+```yaml
+change_type: PRESENTATION_ONLY
+core_behavior_changed: false
+targeted_ui_regression:
+  passed: 6
+full_regression:
+  passed: 372
+G10_1_status: PASS
+technical_repository_re_frozen: true
+```
