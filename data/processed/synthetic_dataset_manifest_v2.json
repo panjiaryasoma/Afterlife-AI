@@ -1,0 +1,31 @@
+{
+  "candidate_artifact": {
+    "path": "data/generated/synthetic_candidates_v2.csv",
+    "sha256": "c1c47ace2097f6a566e9d825436fd2b6b4483905b6e2e4a447bf961d3f944ca0"
+  },
+  "candidate_row_count": 12020,
+  "categorical_feature_count": 10,
+  "claim_boundary": "Synthetic dataset generated from schema-v2 contracts and versioned synthetic rules. It is not real transaction data and does not establish real-world rescue probabilities.",
+  "dataset_kind": "SYNTHETIC_GENERATED",
+  "feature_schema_version": "2.0.0",
+  "generator_config_version": "1.0.0",
+  "group_split_fields": [
+    "scenario_group_id",
+    "business_profile_id"
+  ],
+  "latent_oracle_field": "generator_success_probability",
+  "manifest_version": "1.0.0",
+  "model_feature_count": 30,
+  "negative_count": 2385,
+  "numeric_feature_count": 20,
+  "oracle_artifact": {
+    "path": "data/generated/synthetic_oracle_v2.csv",
+    "sha256": "0efeac6a17f84f74a1c8cdfbb9de9afa8aea044a55168dd15285c6aff6bd4171"
+  },
+  "outcome_recipe_version": "1.0.0",
+  "positive_count": 9635,
+  "positive_rate": 0.8015807,
+  "primary_seed": 42,
+  "scenario_group_count": 2400,
+  "target": "simulated_rescue_outcome"
+}

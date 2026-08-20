@@ -85,19 +85,6 @@ desktop.ini
 
 
 # ============================================================
-# Generated and processed datasets
-#
-# Fixtures and user-facing templates remain tracked.
-# ============================================================
-
-data/generated/*
-!data/generated/.gitkeep
-
-data/processed/*
-!data/processed/.gitkeep
-
-
-# ============================================================
 # Model artifacts
 #
 # Binary model files are reproducible and should not be stored
