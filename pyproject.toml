@@ -24,8 +24,6 @@ dependencies = [
     "scikit-learn",
     "joblib",
     "ortools",
-    "matplotlib",
-    "streamlit>=1.61.1",
 ]
 
 
@@ -37,6 +35,8 @@ dev = [
     "ruff",
     "mypy",
     "httpx2>=2.10.0",
+    "matplotlib",
+    "streamlit>=1.61.1",
 ]
 
 

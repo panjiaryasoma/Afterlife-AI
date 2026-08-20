@@ -24,7 +24,6 @@ dependencies = [
     { name = "fastapi" },
     { name = "jinja2" },
     { name = "joblib" },
-    { name = "matplotlib" },
     { name = "numpy" },
     { name = "openpyxl" },
     { name = "ortools" },
@@ -34,7 +33,6 @@ dependencies = [
     { name = "python-multipart" },
     { name = "pyyaml" },
     { name = "scikit-learn" },
-    { name = "streamlit" },
     { name = "uvicorn", extra = ["standard"] },
 ]
 
@@ -42,10 +40,12 @@ dependencies = [
 dev = [
     { name = "httpx" },
     { name = "httpx2" },
+    { name = "matplotlib" },
     { name = "mypy" },
     { name = "pytest" },
     { name = "pytest-cov" },
     { name = "ruff" },
+    { name = "streamlit" },
 ]
 
 [package.metadata]
@@ -53,7 +53,6 @@ requires-dist = [
     { name = "fastapi" },
     { name = "jinja2" },
     { name = "joblib" },
-    { name = "matplotlib" },
     { name = "numpy", specifier = ">=2.4,<2.5" },
     { name = "openpyxl" },
     { name = "ortools" },
@@ -63,7 +62,6 @@ requires-dist = [
     { name = "python-multipart" },
     { name = "pyyaml" },
     { name = "scikit-learn" },
-    { name = "streamlit", specifier = ">=1.61.1" },
     { name = "uvicorn", extras = ["standard"] },
 ]
 
@@ -71,10 +69,12 @@ requires-dist = [
 dev = [
     { name = "httpx" },
     { name = "httpx2", specifier = ">=2.10.0" },
+    { name = "matplotlib" },
     { name = "mypy" },
     { name = "pytest" },
     { name = "pytest-cov" },
     { name = "ruff" },
+    { name = "streamlit", specifier = ">=1.61.1" },
 ]
 
 [[package]]
