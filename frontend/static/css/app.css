@@ -1314,37 +1314,34 @@ a:focus-visible {
     }
 }
 
-/* V7B — treat decision constraints as worksheet controls,
-   not SaaS input cards. */
-@media (min-width: 901px) {
+/* V7B — treat decision constraints as worksheet controls
+   across viewport sizes, not SaaS input cards. */
+#analysis-form .field:not(.field--wide) input:not([type="file"]),
+#analysis-form .field:not(.field--wide) select {
+    min-height: 44px;
+    padding-left: 0;
+    padding-right: var(--space-3);
+    border: 0;
+    border-bottom: 1px solid var(--border-strong);
+    border-radius: 0;
+    background: transparent;
+}
 
-    #analysis-form .field:not(.field--wide) input:not([type="file"]),
-    #analysis-form .field:not(.field--wide) select {
-        min-height: 44px;
-        padding-left: 0;
-        padding-right: var(--space-3);
-        border: 0;
-        border-bottom: 1px solid var(--border-strong);
-        border-radius: 0;
-        background: transparent;
-    }
+#analysis-form .field:not(.field--wide) input:not([type="file"]):hover:not(:disabled),
+#analysis-form .field:not(.field--wide) select:hover {
+    border-bottom-color: var(--text-secondary);
+}
 
-    #analysis-form .field:not(.field--wide) input:not([type="file"]):hover:not(:disabled),
-    #analysis-form .field:not(.field--wide) select:hover {
-        border-bottom-color: var(--text-secondary);
-    }
+#analysis-form .field:not(.field--wide) input:not([type="file"]):focus-visible,
+#analysis-form .field:not(.field--wide) select:focus-visible {
+    outline: none;
+    border-bottom-color: var(--interactive);
+    box-shadow: 0 1px 0 var(--interactive);
+}
 
-    #analysis-form .field:not(.field--wide) input:not([type="file"]):focus-visible,
-    #analysis-form .field:not(.field--wide) select:focus-visible {
-        outline: none;
-        border-bottom-color: var(--interactive);
-        box-shadow: 0 1px 0 var(--interactive);
-    }
-
-    #analysis-form .field:not(.field--wide) input:disabled {
-        border-bottom-color: var(--border);
-        background: transparent;
-    }
+#analysis-form .field:not(.field--wide) input:disabled {
+    border-bottom-color: var(--border);
+    background: transparent;
 }
 
 /* V7C — keep success feedback lightweight.
@@ -1484,4 +1481,282 @@ a:focus-visible {
 
 .file-dropzone[data-state="selected"] .file-dropzone__title {
     color: var(--success);
+}
+
+/* Final mobile decision-form correction. */
+@media (max-width: 767px) {
+    .workspace-section {
+        padding: var(--space-10) 0;
+    }
+
+    .section-heading {
+        gap: var(--space-3);
+        margin-bottom: var(--space-6);
+    }
+
+    .field,
+    .field:nth-child(2n):not(.field--wide),
+    .field:nth-child(2n + 1):not(.field--wide) {
+        padding: var(--space-4) 0;
+    }
+
+    .field label {
+        margin-bottom: var(--space-2);
+    }
+
+    .field-help {
+        margin-top: var(--space-1);
+    }
+
+    .form-actions {
+        gap: var(--space-4);
+        padding-top: var(--space-6);
+    }
+
+    .field .file-dropzone__surface {
+        min-height: 88px;
+        padding: var(--space-4);
+    }
+
+    .file-dropzone__file {
+        margin-top: var(--space-1);
+    }
+}
+
+@media (max-width: 480px) {
+    .file-dropzone__prompt {
+        display: none;
+    }
+
+    .file-dropzone__prompt::before {
+        content: none;
+    }
+}
+
+/* Final mobile visual consistency pass.
+   Preserve the desktop language while adapting density and hierarchy
+   for narrow operator screens. */
+@media (max-width: 767px) {
+    /* Keep the primary action visually consistent with the desktop
+       operator control without sacrificing the full-width touch target. */
+    #analyze-button {
+        min-width: 0;
+        min-height: 42px;
+        gap: 0;
+        border-color: var(--interactive);
+        background: transparent;
+        color: var(--interactive);
+        transform: none;
+    }
+
+    #analyze-button:hover:not(:disabled) {
+        border-color: var(--interactive);
+        background: var(--interactive);
+        color: var(--canvas);
+        transform: none;
+    }
+
+    #analyze-button .button-arrow {
+        display: none;
+    }
+
+    /* Reduce report whitespace on narrow screens. */
+    .report-heading {
+        padding: var(--space-10) 0 var(--space-8);
+    }
+
+    .result-section {
+        padding-top: var(--space-10);
+        padding-bottom: var(--space-10);
+    }
+
+    /* Flatten summary metrics into a compact evidence ledger. */
+    #triage-metrics,
+    #metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        border-left: 0;
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+    }
+
+    #triage-metrics .metric,
+    #metrics .metric {
+        min-height: 0;
+        gap: var(--space-3);
+        padding: var(--space-4) var(--space-3);
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+        background: transparent;
+    }
+
+    #triage-metrics .metric:nth-child(even),
+    #metrics .metric:nth-child(even) {
+        border-left: 1px solid var(--border);
+    }
+
+    #triage-metrics .metric:last-child:nth-child(odd) {
+        grid-column: 1 / -1;
+        border-left: 0;
+    }
+
+    #triage-metrics .metric__value,
+    #metrics .metric__value {
+        font-size: 28px;
+    }
+
+    /* Let selected allocations use the full mobile content width. */
+    #allocations .allocation-block {
+        padding-top: var(--space-6);
+        padding-bottom: var(--space-6);
+    }
+
+    .allocation-block__header {
+        grid-template-columns: 1fr;
+        gap: var(--space-2);
+    }
+
+    .allocation-block__number {
+        margin-bottom: var(--space-1);
+    }
+
+    .allocation-block__quantity {
+        grid-column: 1;
+        margin-top: var(--space-3);
+        text-align: left;
+    }
+
+    .allocation-block__body {
+        grid-template-columns: 1fr;
+        gap: var(--space-4);
+        margin-top: var(--space-6);
+    }
+
+    .allocation-detail {
+        grid-column: 1;
+    }
+
+    /* Facts remain dense at tablet/mobile-landscape widths while
+       losing the heavy dashboard-card treatment. */
+    .fact-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0;
+        border: 0;
+        border-top: 1px solid var(--border);
+        background: transparent;
+    }
+
+    .fact {
+        min-height: 0;
+        padding: var(--space-4) var(--space-3);
+        border-bottom: 1px solid var(--border);
+        background: transparent;
+    }
+
+    .fact:nth-child(even) {
+        border-left: 1px solid var(--border);
+    }
+
+    /* Match the desktop provenance evidence-ledger language. */
+    #provenance {
+        border-left: 0;
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+    }
+
+    #provenance .provenance-card {
+        padding: var(--space-5) 0;
+        border-right: 0;
+        border-left: 0;
+        border-bottom: 1px solid var(--border);
+    }
+
+    #provenance .provenance-card:last-child {
+        border-bottom: 0;
+    }
+
+    #provenance .provenance-card__label {
+        margin-bottom: var(--space-3);
+    }
+
+    #provenance .provenance-card h3 {
+        margin-bottom: var(--space-4);
+    }
+
+    #provenance .badge {
+        min-height: 0;
+        padding: 0 0 3px;
+        border: 0;
+        border-bottom: 1px solid currentColor;
+        border-radius: 0;
+        background: transparent;
+    }
+}
+
+@media (max-width: 480px) {
+    /* One-column evidence ledgers for genuinely narrow phone screens. */
+    #triage-metrics,
+    #metrics {
+        grid-template-columns: 1fr;
+    }
+
+    #triage-metrics .metric,
+    #metrics .metric {
+        grid-column: 1;
+        padding-left: 0;
+        padding-right: 0;
+        border-left: 0;
+    }
+
+    #triage-metrics .metric:nth-child(even),
+    #metrics .metric:nth-child(even) {
+        border-left: 0;
+    }
+
+    .fact-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .fact {
+        padding-left: 0;
+        padding-right: 0;
+        border-left: 0;
+    }
+
+    .fact:nth-child(even) {
+        border-left: 0;
+    }
+}
+
+/* Final select-control normalization.
+   Keep the closed control inside the Afterlife AI visual system while
+   allowing the browser to retain native keyboard and option behavior. */
+#analysis-form select {
+    appearance: none;
+    -webkit-appearance: none;
+    color-scheme: dark;
+    background-image:
+        linear-gradient(
+            45deg,
+            transparent 50%,
+            var(--text-secondary) 50%
+        ),
+        linear-gradient(
+            135deg,
+            var(--text-secondary) 50%,
+            transparent 50%
+        );
+    background-position:
+        calc(100% - 14px) 50%,
+        calc(100% - 9px) 50%;
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+}
+
+#analysis-form select option {
+    background: var(--surface);
+    color: var(--text-primary);
+}
+
+#analysis-form select option:disabled {
+    color: var(--text-tertiary);
 }
