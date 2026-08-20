@@ -96,4 +96,4 @@ warn_unused_configs = true
 warn_unused_ignores = true
 ignore_missing_imports = true
 [tool.vercel]
-entrypoint = "backend.main:app"
+entrypoint = "backend.vercel:app"
