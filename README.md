@@ -199,6 +199,10 @@ The intake layer performs workbook, worksheet, column, row, and contract validat
 
 Invalid input does not proceed to model scoring or optimization.
 
+Demand-signal or analytical workbooks that do not implement the
+`inventory_lots` contract are supporting data artifacts, not direct
+`/api/analyze` inputs, and are expected to be rejected with validation detail.
+
 ### 2. Deterministic Inventory Triage
 
 Triage protects normal inventory before rescue planning.
@@ -945,7 +949,7 @@ contract_alignment: PASS
 runtime_verification: PASS
 
 full_regression:
-  tests_passed: 372
+  tests_passed: 375
   failed: 0
 
 ruff: PASS
@@ -964,6 +968,11 @@ canonical_xlsx_e2e: PASS
 report_render: PASS
 report_download: PASS
 
+realistic_inventory_workbooks:
+  warung_75: PASS
+  minimarket_180: PASS
+  distributor_1500: PASS
+
 working_tree_after_verification: CLEAN
 ```
 
@@ -974,7 +983,8 @@ quantity_conservation: PASS
 hard_constraint_violations: 0
 ```
 
-The runtime was considered locally ready for code freeze after post-audit contract reconciliation.
+The current runtime checkpoint passed full local regression and
+realistic-workbook validation after corrective numeric hardening.
 
 These values describe the recorded aligned runtime checkpoint.
 
