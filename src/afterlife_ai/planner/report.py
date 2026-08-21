@@ -22,6 +22,20 @@ from afterlife_ai.contracts.enums import (
 )
 
 ZERO = Decimal("0")
+QUANTITY_RECONCILIATION_TOLERANCE = Decimal("1E-18")
+
+
+def _quantities_match(
+    left: Decimal,
+    right: Decimal,
+) -> bool:
+    """Compare quantities while ignoring Decimal arithmetic residue."""
+
+    return (
+        abs(left - right)
+        <= QUANTITY_RECONCILIATION_TOLERANCE
+    )
+
 
 class ReportValidationSummary(BaseModel):
     """Summary of successful intake and canonical validation."""
@@ -347,10 +361,12 @@ class RescueDecisionReport(BaseModel):
 
         metrics = self.batch_metrics
 
-        if (
-            metrics.allocated_planning_quantity
-            + metrics.unallocated_planning_quantity
-            != metrics.planning_quantity
+        if not _quantities_match(
+            (
+                metrics.allocated_planning_quantity
+                + metrics.unallocated_planning_quantity
+            ),
+            metrics.planning_quantity,
         ):
             raise ValueError(
                 "quantity reconciliation failed: "
@@ -366,9 +382,9 @@ class RescueDecisionReport(BaseModel):
             ZERO,
         )
 
-        if (
-            allocation_total
-            != metrics.allocated_planning_quantity
+        if not _quantities_match(
+            allocation_total,
+            metrics.allocated_planning_quantity,
         ):
             raise ValueError(
                 "quantity reconciliation failed: "
@@ -384,7 +400,10 @@ class RescueDecisionReport(BaseModel):
             ZERO,
         )
 
-        if review_total != metrics.review_quantity:
+        if not _quantities_match(
+            review_total,
+            metrics.review_quantity,
+        ):
             raise ValueError(
                 "quantity reconciliation failed: "
                 "review-required quantity must equal "
@@ -407,7 +426,10 @@ class RescueDecisionReport(BaseModel):
             ZERO,
         )
 
-        if healthy_total != metrics.protected_quantity:
+        if not _quantities_match(
+            healthy_total,
+            metrics.protected_quantity,
+        ):
             raise ValueError(
                 "quantity reconciliation failed: "
                 "healthy_stock must equal protected quantity."
@@ -421,7 +443,10 @@ class RescueDecisionReport(BaseModel):
             ZERO,
         )
 
-        if monitor_total != metrics.monitor_quantity:
+        if not _quantities_match(
+            monitor_total,
+            metrics.monitor_quantity,
+        ):
             raise ValueError(
                 "quantity reconciliation failed: "
                 "monitor_only must equal monitor quantity."
@@ -435,7 +460,10 @@ class RescueDecisionReport(BaseModel):
             ZERO,
         )
 
-        if planning_lot_total != metrics.planning_quantity:
+        if not _quantities_match(
+            planning_lot_total,
+            metrics.planning_quantity,
+        ):
             raise ValueError(
                 "quantity reconciliation failed: "
                 "surplus_planning_lots must equal "
@@ -450,13 +478,19 @@ class RescueDecisionReport(BaseModel):
             ZERO,
         )
 
-        if expired_total != metrics.expired_quantity:
+        if not _quantities_match(
+            expired_total,
+            metrics.expired_quantity,
+        ):
             raise ValueError(
                 "quantity reconciliation failed: "
                 "expired_routes must equal expired quantity."
             )
 
-        if routed_total != metrics.input_quantity:
+        if not _quantities_match(
+            routed_total,
+            metrics.input_quantity,
+        ):
             raise ValueError(
                 "quantity reconciliation failed: "
                 "protected + monitor + planning + expired "
