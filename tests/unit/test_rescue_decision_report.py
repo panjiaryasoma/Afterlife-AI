@@ -10,6 +10,7 @@ from afterlife_ai.contracts.enums import (
     SolverStatus,
 )
 from afterlife_ai.planner.report import (
+    RescueDecisionReport,
     build_rescue_decision_report,
 )
 
@@ -598,3 +599,32 @@ def test_report_contains_canonical_triage_routes() -> None:
         item.routed_quantity
         for item in report.expired_routes
     ) == Decimal("12")
+
+def test_report_accepts_decimal_reconciliation_residue() -> None:
+    payload = build_report().model_dump()
+
+    payload["batch_metrics"][
+        "unallocated_planning_quantity"
+    ] = Decimal("1E-24")
+
+    report = RescueDecisionReport.model_validate(payload)
+
+    assert (
+        report.batch_metrics.unallocated_planning_quantity
+        == Decimal("1E-24")
+    )
+
+
+def test_report_accepts_decimal_route_sum_residue() -> None:
+    payload = build_report().model_dump()
+
+    payload["batch_metrics"]["input_quantity"] = Decimal(
+        "102.000000000000000000000001"
+    )
+
+    report = RescueDecisionReport.model_validate(payload)
+
+    assert (
+        report.batch_metrics.input_quantity
+        == Decimal("102.000000000000000000000001")
+    )

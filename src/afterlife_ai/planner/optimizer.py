@@ -1,6 +1,6 @@
 """CP-SAT allocation optimizer for deterministic rescue planning."""
 
-from decimal import ROUND_HALF_UP, Decimal
+from decimal import ROUND_CEILING, ROUND_FLOOR, ROUND_HALF_UP, Decimal
 
 from ortools.sat.python import cp_model
 from pydantic import BaseModel, ConfigDict, Field
@@ -28,6 +28,10 @@ ONE = Decimal("1")
 # objective precision before integer scaling so repeating
 # Decimal divisions cannot create unsafe coefficient scales.
 OPTIMIZER_VALUE_QUANTUM = Decimal("0.0001")
+OPTIMIZER_RESCUE_QUANTUM = Decimal("0.0001")
+OPTIMIZER_QUANTITY_MAX_DECIMAL_PLACES = 4
+CP_SAT_INT64_MIN = -(2**63)
+CP_SAT_INT64_MAX = (2**63) - 1
 MONEY_QUANTUM = Decimal("0.01")
 
 
@@ -86,7 +90,11 @@ def _decimal_places(value: Decimal) -> int:
     return max(0, -exponent)
 
 
-def _scale(values: list[Decimal]) -> int:
+def _scale(
+    values: list[Decimal],
+    *,
+    max_decimal_places: int | None = None,
+) -> int:
     if not values:
         return 1
 
@@ -95,22 +103,55 @@ def _scale(values: list[Decimal]) -> int:
         for value in values
     )
 
+    if max_decimal_places is not None:
+        if max_decimal_places < 0:
+            raise ValueError(
+                "max_decimal_places tidak boleh negatif."
+            )
+
+        decimal_places = min(
+            decimal_places,
+            max_decimal_places,
+        )
+
     return int(10**decimal_places)
 
 
 def _to_scaled_int(
     value: Decimal,
     scale: int,
+    *,
+    rounding: str | None = None,
 ) -> int:
     scaled = value * Decimal(scale)
 
-    if scaled != scaled.to_integral_value():
-        raise ValueError(
-            f"Value {value} tidak dapat direpresentasikan "
-            f"dengan scale {scale}."
+    if rounding is None:
+        integral = scaled.to_integral_value()
+
+        if scaled != integral:
+            raise ValueError(
+                f"Value {value} tidak dapat direpresentasikan "
+                f"dengan scale {scale}."
+            )
+    else:
+        integral = scaled.to_integral_value(
+            rounding=rounding
         )
 
-    return int(scaled)
+    result = int(integral)
+
+    if not (
+        CP_SAT_INT64_MIN
+        <= result
+        <= CP_SAT_INT64_MAX
+    ):
+        raise ValueError(
+            "Scaled optimizer integer berada di luar "
+            "rentang int64 CP-SAT: "
+            f"value={value}, scale={scale}, scaled={result}."
+        )
+
+    return result
 
 
 def _exact_int(value: Decimal) -> int:
@@ -173,9 +214,14 @@ def _expected_rescue_per_unit(
             "maximum_feasible_quantity harus positif."
         )
 
-    return (
+    rescue_per_unit = (
         candidate.expected_physical_rescue_quantity
         / candidate.maximum_feasible_quantity
+    )
+
+    return rescue_per_unit.quantize(
+        OPTIMIZER_RESCUE_QUANTUM,
+        rounding=ROUND_HALF_UP,
     )
 
 
@@ -456,7 +502,12 @@ def optimize_with_cp_sat(
         shared_destination_capacities.values()
     )
 
-    quantity_scale = _scale(quantity_values)
+    quantity_scale = _scale(
+        quantity_values,
+        max_decimal_places=(
+            OPTIMIZER_QUANTITY_MAX_DECIMAL_PLACES
+        ),
+    )
 
     value_per_unit = {
         candidate.candidate_id:
@@ -503,6 +554,7 @@ def optimize_with_cp_sat(
         maximum_scaled = _to_scaled_int(
             candidate.maximum_feasible_quantity,
             quantity_scale,
+                    rounding=ROUND_FLOOR,
         )
 
         quantity_variable = model.new_int_var(
@@ -536,6 +588,7 @@ def optimize_with_cp_sat(
                 _to_scaled_int(
                     candidate.minimum_order_quantity,
                     quantity_scale,
+                                    rounding=ROUND_CEILING,
                 ),
             )
 
@@ -566,6 +619,7 @@ def optimize_with_cp_sat(
                 <= _to_scaled_int(
                     planning_quantity,
                     quantity_scale,
+                                    rounding=ROUND_FLOOR,
                 )
             )
 
@@ -591,6 +645,7 @@ def optimize_with_cp_sat(
                 <= _to_scaled_int(
                     capacity,
                     quantity_scale,
+                                    rounding=ROUND_FLOOR,
                 )
             )
 
@@ -651,6 +706,7 @@ def optimize_with_cp_sat(
                 _to_scaled_int(
                     total_available,
                     quantity_scale,
+                                    rounding=ROUND_FLOOR,
                 )
                 * action_used
             )
@@ -662,6 +718,7 @@ def optimize_with_cp_sat(
                 _to_scaled_int(
                     minimum_quantity,
                     quantity_scale,
+                                    rounding=ROUND_CEILING,
                 )
                 * action_used
             )
@@ -689,6 +746,7 @@ def optimize_with_cp_sat(
                 <= _to_scaled_int(
                     capacity,
                     quantity_scale,
+                                    rounding=ROUND_FLOOR,
                 )
             )
 

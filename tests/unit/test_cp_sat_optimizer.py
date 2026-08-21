@@ -1025,3 +1025,48 @@ def test_optimizer_allocates_when_candidate_minimum_order_quantity_is_met() -> N
         result.allocations[0].allocated_quantity
         == Decimal("7")
     )
+def test_optimizer_handles_repeating_decimal_planning_quantity() -> None:
+    planning_quantity = Decimal(
+        "78.66666666666666666666666667"
+    )
+
+    candidate = build_candidate(
+        candidate_id="CAND-REPEATING-PRECISION",
+        planning_lot_id="PLAN-REPEATING-PRECISION",
+        action_type=ActionType.LOCAL_DISCOUNT,
+        maximum_quantity=str(planning_quantity),
+        expected_value_per_unit="1000",
+    )
+
+    result = optimize_with_cp_sat(
+        candidates=[candidate],
+        planning_quantities={
+            "PLAN-REPEATING-PRECISION": planning_quantity,
+        },
+    )
+
+    allocated_quantity = sum(
+        (
+            allocation.allocated_quantity
+            for allocation in result.allocations
+        ),
+        Decimal("0"),
+    )
+
+    unallocated_quantity = result.unallocated_quantities[
+        "PLAN-REPEATING-PRECISION"
+    ]
+
+    assert result.solver_status in {
+        SolverStatus.OPTIMAL,
+        SolverStatus.FEASIBLE,
+    }
+
+    assert allocated_quantity <= planning_quantity
+    assert unallocated_quantity >= Decimal("0")
+
+    assert (
+        allocated_quantity
+        + unallocated_quantity
+        == planning_quantity
+    )
