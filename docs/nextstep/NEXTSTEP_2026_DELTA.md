@@ -63,6 +63,8 @@ Expose:
 - mass-evidence coverage
 - missing-data limitations
 
+The first UI increment adds operator-confirmed outcome reconciliation directly below the existing rescue summary. It clearly separates model/plan estimates from realized operator-confirmed outcomes and uses the stateless reconciliation endpoint. Batch mass-evidence coverage remains available in the NextStep pipeline output and will be surfaced when the NextStep analysis envelope is connected to the web analysis path.
+
 ### NEXTSTEP-04 — Impact-Aware Report Envelope
 
 Preserve the pre-NextStep `RescueDecisionReport` contract and wrap it in a NextStep-specific output:
@@ -99,6 +101,7 @@ The wrapper validates that sustainability quantities agree with canonical batch 
 - the canonical `RescueDecisionReport` contract remains backward compatible
 - NextStep sustainability output must reconcile with canonical report quantity metrics
 - reconciliation API responses must not imply that observations were stored or persisted
+- the UI must label expected/model-derived quantities separately from operator-confirmed realized outcomes
 
 ## 6. Acceptance Suite
 
@@ -122,3 +125,7 @@ NEXTSTEP-017 — the reconciliation API returns realized impact for a valid oper
 NEXTSTEP-018 — the reconciliation API rejects confirmed quantities above the reconciled scope
 NEXTSTEP-019 — the reconciliation API rejects expected quantities that do not reconcile to the observation scope
 NEXTSTEP-020 — repeated reconciliation calls are deterministic and do not claim persistence
+NEXTSTEP-021 — the web UI loads the dedicated outcome reconciliation interface
+NEXTSTEP-022 — the UI exposes operator-confirmed rescued and waste quantity controls
+NEXTSTEP-023 — the UI renders expected and realized outcomes as distinct claim classes
+NEXTSTEP-024 — the UI submits reconciliation to the stateless outcome endpoint without claiming persistence
