@@ -2,8 +2,8 @@ const resultsRoot = document.querySelector("#results");
 const allocationsRoot = document.querySelector("#allocations");
 
 const IMPACT_SECTION_ID = "impact-reconciliation-section";
-const NEXTSTEP_REPORT_EVENT = "afterlife:nextstep-report";
-const NEXTSTEP_CLEAR_EVENT = "afterlife:nextstep-clear";
+const IMPACT_NEXTSTEP_REPORT_EVENT = "afterlife:nextstep-report";
+const IMPACT_NEXTSTEP_CLEAR_EVENT = "afterlife:nextstep-clear";
 
 function impactEscapeHtml(value) {
     return String(value ?? "")
@@ -389,10 +389,10 @@ function renderNextStepImpact(event) {
 }
 
 window.addEventListener(
-    NEXTSTEP_REPORT_EVENT,
+    IMPACT_NEXTSTEP_REPORT_EVENT,
     renderNextStepImpact
 );
 window.addEventListener(
-    NEXTSTEP_CLEAR_EVENT,
+    IMPACT_NEXTSTEP_CLEAR_EVENT,
     clearImpactUi
 );
