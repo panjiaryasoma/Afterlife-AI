@@ -78,6 +78,29 @@ def test_impact_ui_consumes_typed_sustainability_summary() -> None:
     assert "parseRenderedNumber" not in javascript
 
 
+def test_impact_ui_uses_editorial_layout_instead_of_metric_card_grid() -> None:
+    javascript_response = client.get("/static/js/impact-ui.js")
+    stylesheet_response = client.get("/static/css/impact.css")
+
+    assert javascript_response.status_code == 200
+    assert stylesheet_response.status_code == 200
+
+    javascript = javascript_response.text
+    stylesheet = stylesheet_response.text
+
+    assert 'class="metric-grid"' not in javascript
+    assert 'class="analysis-form"' not in javascript
+    assert "impact-overview" in javascript
+    assert "impact-ledger" in javascript
+    assert "impact-entry" in javascript
+    assert "impact-comparison" in javascript
+    assert "/static/css/impact.css" in javascript
+    assert ".impact-overview__value" in stylesheet
+    assert 'font-family: Georgia, "Times New Roman", serif;' in stylesheet
+    assert ".impact-field input" in stylesheet
+    assert "border-radius: 0;" in stylesheet
+
+
 def test_impact_ui_exposes_operator_confirmed_outcome_controls() -> None:
     response = client.get("/static/js/impact-ui.js")
 
@@ -115,10 +138,11 @@ def test_impact_ui_preserves_expected_vs_realized_claim_boundary() -> None:
 
     javascript = response.text
 
-    assert "EXPECTED IMPACT" in javascript
+    assert "EXPECTED RESCUE" in javascript
     assert "REALIZED OUTCOME" in javascript
-    assert "Model/plan estimate" in javascript
-    assert "Operator-confirmed quantity" in javascript
+    assert "Planned impact is model-derived" in javascript
+    assert "Actual impact is entered by" in javascript
+    assert "operator-confirmed" in javascript
     assert "not persisted by this demo" in javascript
     assert "Mass evidence" in javascript
-    assert "Full-batch mass withheld" in javascript
+    assert "Full-batch mass is withheld" in javascript
