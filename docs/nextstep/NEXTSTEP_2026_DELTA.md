@@ -61,6 +61,15 @@ Expose:
 - mass-evidence coverage
 - missing-data limitations
 
+### NEXTSTEP-04 — Impact-Aware Report Envelope
+
+Preserve the pre-NextStep `RescueDecisionReport` contract and wrap it in a NextStep-specific output:
+
+- `rescue_decision_report`: unchanged canonical advisory report
+- `sustainability_summary`: first-class NextStep sustainability output
+
+The wrapper validates that sustainability quantities agree with canonical batch metrics. This avoids silently changing the historical report contract while still exposing impact as an official pipeline result.
+
 ## 4. Non-Goals
 
 - no second ML model
@@ -85,6 +94,8 @@ Expose:
 - missing weight must not be imputed
 - synthetic model scores remain synthetic evidence
 - expected impact must never be presented as realized impact
+- the canonical `RescueDecisionReport` contract remains backward compatible
+- NextStep sustainability output must reconcile with canonical report quantity metrics
 
 ## 6. Acceptance Suite
 
@@ -102,3 +113,5 @@ NEXTSTEP-011 — missing weight in a relevant lot yields `PARTIAL` mass-evidence
 NEXTSTEP-012 — partial coverage never claims full batch rescue or waste mass
 NEXTSTEP-013 — sustainability reporting preserves existing report quantity metrics
 NEXTSTEP-014 — sustainability reporting cannot mutate optimizer-selected rescue allocations
+NEXTSTEP-015 — the NextStep pipeline returns canonical rescue output and sustainability output together
+NEXTSTEP-016 — the NextStep report envelope rejects sustainability quantities that disagree with canonical report metrics
