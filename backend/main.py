@@ -8,6 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from backend.api.impact_routes import router as impact_router
+from backend.api.nextstep_routes import router as nextstep_router
 from backend.api.routes import router as api_router
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
@@ -19,6 +20,7 @@ app = FastAPI(
 )
 
 app.include_router(api_router)
+app.include_router(nextstep_router)
 app.include_router(impact_router)
 
 app.mount(
