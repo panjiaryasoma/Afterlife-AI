@@ -4,7 +4,10 @@ from pathlib import Path
 from afterlife_ai.impact.reporting import (
     build_report_sustainability_summary,
 )
-from afterlife_ai.pipeline.application import run_production_pipeline
+from afterlife_ai.pipeline.application import (
+    ProductionPipelineResult,
+    run_production_pipeline,
+)
 
 FIXTURE_DIR = (
     Path(__file__).resolve().parents[1]
@@ -15,7 +18,7 @@ WORKBOOK_PATH = FIXTURE_DIR / "RAW_INVENTORY_FIXTURE.xlsx"
 RUNTIME_CONFIG_PATH = Path("configs/runtime_v1.yaml")
 
 
-def _run_pipeline():
+def _run_pipeline() -> ProductionPipelineResult:
     return run_production_pipeline(
         workbook_path=WORKBOOK_PATH,
         runtime_config_path=RUNTIME_CONFIG_PATH,
@@ -34,6 +37,7 @@ def test_sustainability_summary_preserves_existing_quantity_metrics() -> None:
         unallocated_quantities=(
             result.optimization_result.unallocated_quantities
         ),
+        batch_metrics=metrics,
     )
 
     assert summary.reconciled_quantity == metrics.planning_quantity
@@ -61,6 +65,7 @@ def test_sustainability_reporting_does_not_mutate_rescue_allocations() -> None:
         unallocated_quantities=(
             result.optimization_result.unallocated_quantities
         ),
+        batch_metrics=result.report.batch_metrics,
     )
 
     after = [
@@ -80,6 +85,7 @@ def test_incomplete_mass_evidence_never_claims_full_batch_mass() -> None:
         unallocated_quantities=(
             result.optimization_result.unallocated_quantities
         ),
+        batch_metrics=result.report.batch_metrics,
     )
 
     if summary.mass_evidence_coverage != "COMPLETE":
