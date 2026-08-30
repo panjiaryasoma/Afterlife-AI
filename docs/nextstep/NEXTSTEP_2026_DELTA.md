@@ -63,7 +63,7 @@ Expose:
 - mass-evidence coverage
 - missing-data limitations
 
-The first UI increment adds operator-confirmed outcome reconciliation directly below the existing rescue summary. It clearly separates model/plan estimates from realized operator-confirmed outcomes and uses the stateless reconciliation endpoint. Batch mass-evidence coverage remains available in the NextStep pipeline output and will be surfaced when the NextStep analysis envelope is connected to the web analysis path.
+The web UI now consumes the typed NextStep sustainability summary directly from the impact-aware analysis envelope. It does not reconstruct expected metrics by scraping rendered DOM text. When mass-evidence coverage is incomplete, full-batch rescue and waste mass are withheld rather than presented as complete totals.
 
 ### NEXTSTEP-04 — Impact-Aware Report Envelope
 
@@ -73,6 +73,8 @@ Preserve the pre-NextStep `RescueDecisionReport` contract and wrap it in a NextS
 - `sustainability_summary`: first-class NextStep sustainability output
 
 The wrapper validates that sustainability quantities agree with canonical batch metrics. This avoids silently changing the historical report contract while still exposing impact as an official pipeline result.
+
+The web/API boundary exposes this envelope through `POST /api/analyze-nextstep`. The legacy `POST /api/analyze` route remains available with its original direct `RescueDecisionReport` response shape.
 
 ## 4. Non-Goals
 
@@ -102,6 +104,8 @@ The wrapper validates that sustainability quantities agree with canonical batch 
 - NextStep sustainability output must reconcile with canonical report quantity metrics
 - reconciliation API responses must not imply that observations were stored or persisted
 - the UI must label expected/model-derived quantities separately from operator-confirmed realized outcomes
+- the legacy `/api/analyze` response shape must remain unchanged
+- the NextStep UI must consume typed sustainability output rather than infer it from rendered text
 
 ## 6. Acceptance Suite
 
@@ -129,3 +133,7 @@ NEXTSTEP-021 — the web UI loads the dedicated outcome reconciliation interface
 NEXTSTEP-022 — the UI exposes operator-confirmed rescued and waste quantity controls
 NEXTSTEP-023 — the UI renders expected and realized outcomes as distinct claim classes
 NEXTSTEP-024 — the UI submits reconciliation to the stateless outcome endpoint without claiming persistence
+NEXTSTEP-025 — `POST /api/analyze-nextstep` returns the typed NextStep report envelope
+NEXTSTEP-026 — the legacy `POST /api/analyze` response remains a direct canonical Rescue Decision Report
+NEXTSTEP-027 — the web analysis path consumes typed sustainability summary fields without DOM metric scraping
+NEXTSTEP-028 — incomplete mass evidence is surfaced explicitly and never displayed as a complete batch mass total
