@@ -32,10 +32,10 @@ rescue planning + measurable environmental outcome reconciliation
 ### NEXTSTEP-01 — Sustainability Summary
 
 Add:
-- planned rescue quantity
-- planned waste quantity
-- planned diversion ratio
-- optional mass-based metrics when unit weight is provided
+- expected physical rescue quantity
+- expected waste quantity
+- expected rescue/diversion ratio
+- optional mass-based metrics when `package_weight_g` evidence is available
 
 ### NEXTSTEP-02 — Outcome Reconciliation
 
@@ -45,14 +45,14 @@ Allow operator-confirmed outcomes:
 - unresolved quantity
 
 Calculate:
-- realized diversion ratio
-- planned vs realized rescue delta
-- planned vs realized waste delta
+- realized diversion ratio from confirmed outcomes
+- expected vs realized rescue delta
+- expected vs realized waste delta
 
 ### NEXTSTEP-03 — Sustainability UI
 
 Expose:
-- planned impact
+- expected impact
 - realized impact
 - reconciliation status
 - missing-data limitations
@@ -72,20 +72,21 @@ Expose:
 
 - existing rescue plan semantics must remain unchanged
 - actual outcomes must never alter historical recommendations
-- actual quantities cannot exceed planning quantity
+- confirmed outcome quantity cannot exceed reconciled quantity
+- expected rescue quantity + expected waste quantity must equal reconciled quantity
 - quantity conservation must hold
 - mass metrics only exist when weight evidence exists
 - missing weight must not be imputed
 - synthetic model scores remain synthetic evidence
-- planned impact must never be presented as realized impact
+- expected impact must never be presented as realized impact
 
 ## 6. Acceptance Suite
 
-NEXTSTEP-001 — planned diversion quantity conservation
-NEXTSTEP-002 — weight metrics when weight exists
-NEXTSTEP-003 — no mass claim when weight is absent
-NEXTSTEP-004 — actual outcome cannot exceed planning quantity
-NEXTSTEP-005 — realized diversion ratio calculation
-NEXTSTEP-006 — partial outcome produces unresolved quantity
-NEXTSTEP-007 — reconciliation cannot mutate original plan
-NEXTSTEP-008 — existing AIC fixtures remain backward compatible
+NEXTSTEP-001 — expected rescue and expected waste quantities reconcile against the relevant quantity scope
+NEXTSTEP-002 — mass metrics are produced only when `package_weight_g` evidence is available
+NEXTSTEP-003 — missing weight produces no fabricated mass metric
+NEXTSTEP-004 — confirmed outcome cannot exceed reconciled quantity
+NEXTSTEP-005 — realized diversion ratio is computed only from confirmed outcomes
+NEXTSTEP-006 — partial outcome records produce explicit unresolved quantity
+NEXTSTEP-007 — reconciliation cannot mutate the original observation or rescue plan
+NEXTSTEP-008 — existing AIC-era fixtures and report contracts remain backward compatible
