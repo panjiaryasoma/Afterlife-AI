@@ -146,3 +146,5 @@ def test_impact_ui_preserves_expected_vs_realized_claim_boundary() -> None:
     assert "not persisted by this demo" in javascript
     assert "Mass evidence" in javascript
     assert "Full-batch mass is withheld" in javascript
+    assert "units confirmed ·" in javascript
+    assert "Realized diversion ratio uses confirmed outcomes only" in javascript
