@@ -4,6 +4,18 @@ const allocationsRoot = document.querySelector("#allocations");
 const IMPACT_SECTION_ID = "impact-reconciliation-section";
 const IMPACT_NEXTSTEP_REPORT_EVENT = "afterlife:nextstep-report";
 const IMPACT_NEXTSTEP_CLEAR_EVENT = "afterlife:nextstep-clear";
+const IMPACT_STYLESHEET_HREF = "/static/css/impact.css";
+
+function ensureImpactStylesheet() {
+    if (document.querySelector(`link[href="${IMPACT_STYLESHEET_HREF}"]`)) {
+        return;
+    }
+
+    const stylesheet = document.createElement("link");
+    stylesheet.rel = "stylesheet";
+    stylesheet.href = IMPACT_STYLESHEET_HREF;
+    document.head.appendChild(stylesheet);
+}
 
 function impactEscapeHtml(value) {
     return String(value ?? "")
@@ -12,16 +24,6 @@ function impactEscapeHtml(value) {
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
-}
-
-function impactMetric(label, value, note = "") {
-    return `
-        <div class="metric">
-            <span class="metric__label">${impactEscapeHtml(label)}</span>
-            <strong class="metric__value">${impactEscapeHtml(value)}</strong>
-            <span class="metric__note">${impactEscapeHtml(note)}</span>
-        </div>
-    `;
 }
 
 function formatImpactNumber(value) {
@@ -38,6 +40,24 @@ function formatImpactNumber(value) {
     return new Intl.NumberFormat("en-US", {
         maximumFractionDigits: 2,
     }).format(numeric);
+}
+
+function formatImpactSignedNumber(value) {
+    if (value === null || value === undefined || value === "") {
+        return "—";
+    }
+
+    const numeric = Number(value);
+
+    if (!Number.isFinite(numeric)) {
+        return "—";
+    }
+
+    if (numeric > 0) {
+        return `+${formatImpactNumber(numeric)}`;
+    }
+
+    return formatImpactNumber(numeric);
 }
 
 function formatImpactPercent(value) {
@@ -78,41 +98,87 @@ function impactErrorMessage(payload, status) {
     return `Outcome reconciliation failed (HTTP ${status}).`;
 }
 
-function renderReconciliationResult(container, reconciliation) {
+function renderReconciliationResult(container, reconciliation, context) {
     container.innerHTML = `
-        <div class="summary-group">
-            <p class="section-index">REALIZED OUTCOME</p>
-            <div class="metric-grid">
-                ${impactMetric(
-                    "Actual rescued",
-                    formatImpactNumber(reconciliation.actual_rescued_quantity),
-                    "Operator-confirmed quantity"
-                )}
-                ${impactMetric(
-                    "Actual waste",
-                    formatImpactNumber(reconciliation.actual_waste_quantity),
-                    "Operator-confirmed quantity"
-                )}
-                ${impactMetric(
-                    "Unresolved",
-                    formatImpactNumber(reconciliation.unresolved_quantity),
-                    "Outcome not yet confirmed"
-                )}
-                ${impactMetric(
-                    "Realized diversion ratio",
-                    formatImpactPercent(reconciliation.realized_diversion_ratio),
-                    "Confirmed outcomes only"
-                )}
-                ${impactMetric(
-                    "Rescue delta",
-                    formatImpactNumber(reconciliation.rescue_quantity_delta),
-                    "Realized minus expected"
-                )}
-                ${impactMetric(
-                    "Waste delta",
-                    formatImpactNumber(reconciliation.waste_quantity_delta),
-                    "Realized minus expected"
-                )}
+        <div class="impact-result">
+            <div>
+                <p class="impact-result__eyebrow">REALIZED OUTCOME</p>
+                <p class="impact-result__ratio">
+                    ${impactEscapeHtml(
+                        formatImpactPercent(
+                            reconciliation.realized_diversion_ratio
+                        )
+                    )}
+                </p>
+                <p class="impact-result__ratio-note">
+                    Realized diversion ratio from confirmed outcomes only.
+                    Unresolved quantity is excluded from this ratio.
+                </p>
+            </div>
+
+            <div>
+                <table class="impact-comparison">
+                    <thead>
+                        <tr>
+                            <th scope="col">Outcome</th>
+                            <th scope="col">Expected</th>
+                            <th scope="col">Confirmed</th>
+                            <th scope="col">Delta</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th scope="row">Actual rescued</th>
+                            <td>${impactEscapeHtml(
+                                formatImpactNumber(
+                                    context.expectedRescueQuantity
+                                )
+                            )}</td>
+                            <td>${impactEscapeHtml(
+                                formatImpactNumber(
+                                    reconciliation.actual_rescued_quantity
+                                )
+                            )}</td>
+                            <td>${impactEscapeHtml(
+                                formatImpactSignedNumber(
+                                    reconciliation.rescue_quantity_delta
+                                )
+                            )}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Actual waste</th>
+                            <td>${impactEscapeHtml(
+                                formatImpactNumber(
+                                    context.expectedWasteQuantity
+                                )
+                            )}</td>
+                            <td>${impactEscapeHtml(
+                                formatImpactNumber(
+                                    reconciliation.actual_waste_quantity
+                                )
+                            )}</td>
+                            <td>${impactEscapeHtml(
+                                formatImpactSignedNumber(
+                                    reconciliation.waste_quantity_delta
+                                )
+                            )}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Unresolved</th>
+                            <td class="impact-comparison__muted">—</td>
+                            <td>${impactEscapeHtml(
+                                formatImpactNumber(
+                                    reconciliation.unresolved_quantity
+                                )
+                            )}</td>
+                            <td class="impact-comparison__muted">—</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p class="impact-result__ratio-note">
+                    Rescue delta and Waste delta are realized minus expected.
+                    Values remain operator-confirmed and are not persisted.
+                </p>
             </div>
         </div>
     `;
@@ -160,9 +226,10 @@ function buildImpactSection(context) {
     const completeMassEvidence = (
         context.massEvidenceCoverage === "COMPLETE"
     );
+    const massEvidenceLabel = context.massEvidenceCoverage.toLowerCase();
     const massNote = completeMassEvidence
-        ? "Complete package-weight evidence"
-        : "Full-batch mass withheld because weight evidence is incomplete";
+        ? "Every relevant positive-quantity slice has package-weight evidence."
+        : "Full-batch mass is withheld because package-weight evidence is incomplete.";
 
     section.innerHTML = `
         <div class="section-heading">
@@ -174,97 +241,141 @@ function buildImpactSection(context) {
             </div>
 
             <p class="section-note">
-                Actual outcomes are operator-confirmed and are not persisted by this demo.
+                Planned impact is model-derived. Actual impact is entered by
+                an operator and is not persisted by this demo.
             </p>
         </div>
 
-        <div class="summary-group">
-            <p class="section-index">EXPECTED IMPACT</p>
-            <div class="metric-grid">
-                ${impactMetric(
-                    "Reconciled scope",
-                    formatImpactNumber(context.reconciledQuantity),
-                    "Planning quantity"
-                )}
-                ${impactMetric(
-                    "Expected rescue",
-                    formatImpactNumber(context.expectedRescueQuantity),
-                    "Model/plan estimate"
-                )}
-                ${impactMetric(
-                    "Expected waste",
-                    formatImpactNumber(context.expectedWasteQuantity),
-                    "Model/plan estimate"
-                )}
-                ${impactMetric(
-                    "Expected rescue ratio",
-                    formatImpactPercent(context.expectedRescueRatio),
-                    "Estimated, not observed"
-                )}
-                ${impactMetric(
-                    "Mass evidence",
-                    context.massEvidenceCoverage,
-                    massNote
-                )}
-                ${impactMetric(
-                    "Expected rescue mass",
-                    completeMassEvidence
-                        ? formatImpactMass(context.expectedRescueMassKg)
-                        : "—",
-                    massNote
-                )}
-                ${impactMetric(
-                    "Expected waste mass",
-                    completeMassEvidence
-                        ? formatImpactMass(context.expectedWasteMassKg)
-                        : "—",
-                    massNote
-                )}
+        <div class="impact-overview">
+            <div class="impact-overview__lead">
+                <p class="impact-overview__eyebrow">EXPECTED RESCUE</p>
+                <p class="impact-overview__measure">
+                    <strong class="impact-overview__value">
+                        ${impactEscapeHtml(
+                            formatImpactNumber(context.expectedRescueQuantity)
+                        )}
+                    </strong>
+                    <span class="impact-overview__scope">
+                        of ${impactEscapeHtml(
+                            formatImpactNumber(context.reconciledQuantity)
+                        )} planned units
+                    </span>
+                </p>
+                <p class="impact-overview__statement">
+                    The current plan estimates an
+                    <span class="impact-overview__ratio">
+                        ${impactEscapeHtml(
+                            formatImpactPercent(context.expectedRescueRatio)
+                        )}
+                    </span>
+                    rescue ratio, with
+                    ${impactEscapeHtml(
+                        formatImpactNumber(context.expectedWasteQuantity)
+                    )}
+                    units expected to remain waste.
+                </p>
             </div>
+
+            <dl class="impact-ledger">
+                <div class="impact-ledger__row">
+                    <dt>Expected waste</dt>
+                    <dd>${impactEscapeHtml(
+                        formatImpactNumber(context.expectedWasteQuantity)
+                    )} units</dd>
+                </div>
+                <div class="impact-ledger__row">
+                    <dt>Mass evidence</dt>
+                    <dd>
+                        <span class="impact-ledger__evidence">
+                            ${impactEscapeHtml(massEvidenceLabel)}
+                        </span>
+                    </dd>
+                    <span class="impact-ledger__note">
+                        ${impactEscapeHtml(massNote)}
+                    </span>
+                </div>
+                <div class="impact-ledger__row">
+                    <dt>Expected rescue mass</dt>
+                    <dd>${impactEscapeHtml(
+                        completeMassEvidence
+                            ? formatImpactMass(context.expectedRescueMassKg)
+                            : "—"
+                    )}</dd>
+                </div>
+                <div class="impact-ledger__row">
+                    <dt>Expected waste mass</dt>
+                    <dd>${impactEscapeHtml(
+                        completeMassEvidence
+                            ? formatImpactMass(context.expectedWasteMassKg)
+                            : "—"
+                    )}</dd>
+                </div>
+            </dl>
         </div>
 
-        <form id="outcome-reconciliation-form" class="analysis-form">
-            <div class="field">
-                <label for="actual-rescued-quantity">Actual rescued quantity</label>
-                <input
-                    id="actual-rescued-quantity"
-                    name="actual_rescued_quantity"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    inputmode="decimal"
-                    placeholder="Operator-confirmed"
-                    required
-                >
-                <p class="field-help">Confirmed rescued quantity within this planning scope.</p>
-            </div>
-
-            <div class="field">
-                <label for="actual-waste-quantity">Actual waste quantity</label>
-                <input
-                    id="actual-waste-quantity"
-                    name="actual_waste_quantity"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    inputmode="decimal"
-                    placeholder="Operator-confirmed"
-                    required
-                >
-                <p class="field-help">Confirmed waste quantity. Any remainder stays unresolved.</p>
-            </div>
-
-            <div class="form-actions field--wide">
-                <p class="form-assurance">
-                    Confirmed rescued + waste cannot exceed ${impactEscapeHtml(
-                        formatImpactNumber(context.reconciledQuantity)
-                    )} units.
+        <div class="impact-entry">
+            <div class="impact-entry__intro">
+                <p class="impact-entry__eyebrow">RECORD ACTUAL OUTCOME</p>
+                <p>
+                    Enter only quantities that have been physically confirmed.
+                    Any remainder stays unresolved rather than being guessed.
                 </p>
-                <button class="secondary-button" type="submit">
-                    Reconcile Actual Outcome
-                </button>
             </div>
-        </form>
+
+            <form id="outcome-reconciliation-form" class="impact-form">
+                <div class="impact-form__fields">
+                    <div class="impact-field">
+                        <label for="actual-rescued-quantity">
+                            Actual rescued quantity
+                        </label>
+                        <input
+                            id="actual-rescued-quantity"
+                            name="actual_rescued_quantity"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            inputmode="decimal"
+                            placeholder="Operator-confirmed"
+                            required
+                        >
+                        <p class="impact-field__help">
+                            Confirmed rescued quantity within this planning scope.
+                        </p>
+                    </div>
+
+                    <div class="impact-field">
+                        <label for="actual-waste-quantity">
+                            Actual waste quantity
+                        </label>
+                        <input
+                            id="actual-waste-quantity"
+                            name="actual_waste_quantity"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            inputmode="decimal"
+                            placeholder="Operator-confirmed"
+                            required
+                        >
+                        <p class="impact-field__help">
+                            Confirmed waste quantity. Unconfirmed units remain unresolved.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="impact-form__footer">
+                    <p class="impact-form__limit">
+                        Confirmed rescued + waste cannot exceed
+                        ${impactEscapeHtml(
+                            formatImpactNumber(context.reconciledQuantity)
+                        )} units.
+                    </p>
+                    <button class="secondary-button" type="submit">
+                        Reconcile outcome
+                    </button>
+                </div>
+            </form>
+        </div>
 
         <div
             id="outcome-reconciliation-status"
@@ -343,7 +454,8 @@ function buildImpactSection(context) {
 
             renderReconciliationResult(
                 realized,
-                payload.reconciliation
+                payload.reconciliation,
+                context
             );
             status.textContent = (
                 "Outcome reconciled · realized impact shown below."
@@ -387,6 +499,8 @@ function renderNextStepImpact(event) {
         resultsRoot.appendChild(section);
     }
 }
+
+ensureImpactStylesheet();
 
 window.addEventListener(
     IMPACT_NEXTSTEP_REPORT_EVENT,
