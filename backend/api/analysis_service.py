@@ -3,11 +3,10 @@
 from __future__ import annotations
 
 import tempfile
-from datetime import UTC, datetime
+from datetime import datetime
 from decimal import Decimal
 from pathlib import Path
-from typing import Protocol, TypeVar
-from uuid import uuid4
+from typing import Protocol
 from zipfile import BadZipFile
 
 from fastapi import HTTPException, UploadFile
@@ -24,11 +23,8 @@ PARTNER_REGISTRY_PATH = Path(
 MAX_UPLOAD_SIZE_BYTES = 10 * 1024 * 1024
 UPLOAD_CHUNK_SIZE_BYTES = 1024 * 1024
 
-ResultT = TypeVar("ResultT")
-ResultT_co = TypeVar("ResultT_co", covariant=True)
 
-
-class AnalysisRunner(Protocol[ResultT_co]):
+class AnalysisRunner[ResultT](Protocol):
     """Callable contract shared by production and NextStep pipeline runners."""
 
     def __call__(
@@ -43,7 +39,7 @@ class AnalysisRunner(Protocol[ResultT_co]):
         minimum_expected_rescue_ratio: Decimal | None,
         rescue_deadline_at: datetime | None,
         partner_registry_path: str | Path,
-    ) -> ResultT_co: ...
+    ) -> ResultT: ...
 
 
 def _validation_detail(exc: ValidationError) -> list[dict[str, object]]:
@@ -60,7 +56,7 @@ def _validation_detail(exc: ValidationError) -> list[dict[str, object]]:
     ]
 
 
-def run_uploaded_analysis(
+def run_uploaded_analysis[ResultT](
     *,
     inventory_file: UploadFile,
     optimization_objective: OptimizationObjective,
@@ -68,12 +64,16 @@ def run_uploaded_analysis(
     minimum_expected_rescue_ratio: Decimal | None,
     rescue_deadline_at: datetime | None,
     runner: AnalysisRunner[ResultT],
+    analysis_at: datetime,
+    request_id: str,
+    runtime_config_path: str | Path,
+    partner_registry_path: str | Path,
+    max_upload_size_bytes: int,
+    upload_chunk_size_bytes: int = UPLOAD_CHUNK_SIZE_BYTES,
 ) -> ResultT:
     """Validate one uploaded workbook, run the supplied pipeline, then clean up."""
 
     filename = inventory_file.filename or ""
-    analysis_at = datetime.now(UTC)
-    request_id = f"REQ-{uuid4().hex}"
 
     try:
         request_context = AnalysisRequest(
@@ -112,7 +112,7 @@ def run_uploaded_analysis(
 
             while True:
                 chunk = inventory_file.file.read(
-                    UPLOAD_CHUNK_SIZE_BYTES
+                    upload_chunk_size_bytes
                 )
 
                 if not chunk:
@@ -120,12 +120,12 @@ def run_uploaded_analysis(
 
                 total_bytes += len(chunk)
 
-                if total_bytes > MAX_UPLOAD_SIZE_BYTES:
+                if total_bytes > max_upload_size_bytes:
                     raise HTTPException(
                         status_code=413,
                         detail=(
                             "inventory_file melebihi batas upload "
-                            f"{MAX_UPLOAD_SIZE_BYTES} bytes."
+                            f"{max_upload_size_bytes} bytes."
                         ),
                     )
 
@@ -140,8 +140,8 @@ def run_uploaded_analysis(
         try:
             return runner(
                 workbook_path=temp_path,
-                runtime_config_path=RUNTIME_CONFIG_PATH,
-                partner_registry_path=PARTNER_REGISTRY_PATH,
+                runtime_config_path=runtime_config_path,
+                partner_registry_path=partner_registry_path,
                 analysis_at=analysis_at,
                 request_id=request_id,
                 optimization_objective=(
