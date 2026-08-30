@@ -25,9 +25,10 @@ MAX_UPLOAD_SIZE_BYTES = 10 * 1024 * 1024
 UPLOAD_CHUNK_SIZE_BYTES = 1024 * 1024
 
 ResultT = TypeVar("ResultT")
+ResultT_co = TypeVar("ResultT_co", covariant=True)
 
 
-class AnalysisRunner(Protocol[ResultT]):
+class AnalysisRunner(Protocol[ResultT_co]):
     """Callable contract shared by production and NextStep pipeline runners."""
 
     def __call__(
@@ -42,7 +43,7 @@ class AnalysisRunner(Protocol[ResultT]):
         minimum_expected_rescue_ratio: Decimal | None,
         rescue_deadline_at: datetime | None,
         partner_registry_path: str | Path,
-    ) -> ResultT: ...
+    ) -> ResultT_co: ...
 
 
 def _validation_detail(exc: ValidationError) -> list[dict[str, object]]:
