@@ -35,7 +35,10 @@ Add:
 - expected physical rescue quantity
 - expected waste quantity
 - expected rescue/diversion ratio
-- optional mass-based metrics when `package_weight_g` evidence is available
+- optional mass-based metrics derived per source lot from `package_weight_g`
+- explicit batch mass-evidence coverage: `COMPLETE`, `PARTIAL`, or `NONE`
+
+Batch mass claims are emitted only when every relevant positive-quantity slice has weight evidence. Mixed package weights are aggregated per source lot rather than by applying one global package weight to the whole batch.
 
 ### NEXTSTEP-02 — Outcome Reconciliation
 
@@ -55,6 +58,7 @@ Expose:
 - expected impact
 - realized impact
 - reconciliation status
+- mass-evidence coverage
 - missing-data limitations
 
 ## 4. Non-Goals
@@ -75,7 +79,9 @@ Expose:
 - confirmed outcome quantity cannot exceed reconciled quantity
 - expected rescue quantity + expected waste quantity must equal reconciled quantity
 - quantity conservation must hold
-- mass metrics only exist when weight evidence exists
+- mass metrics only exist when complete weight evidence exists for the relevant batch scope
+- partial weight coverage must not be presented as full batch mass
+- mixed package weights must be applied per source lot
 - missing weight must not be imputed
 - synthetic model scores remain synthetic evidence
 - expected impact must never be presented as realized impact
@@ -90,3 +96,9 @@ NEXTSTEP-005 — realized diversion ratio is computed only from confirmed outcom
 NEXTSTEP-006 — partial outcome records produce explicit unresolved quantity
 NEXTSTEP-007 — reconciliation cannot mutate the original observation or rescue plan
 NEXTSTEP-008 — existing AIC-era fixtures and report contracts remain backward compatible
+NEXTSTEP-009 — a single-lot batch produces correct rescue and waste mass
+NEXTSTEP-010 — mixed-weight lots aggregate mass per source lot correctly
+NEXTSTEP-011 — missing weight in a relevant lot yields `PARTIAL` mass-evidence coverage
+NEXTSTEP-012 — partial coverage never claims full batch rescue or waste mass
+NEXTSTEP-013 — sustainability reporting preserves existing report quantity metrics
+NEXTSTEP-014 — sustainability reporting cannot mutate optimizer-selected rescue allocations
