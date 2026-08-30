@@ -52,6 +52,8 @@ Calculate:
 - expected vs realized rescue delta
 - expected vs realized waste delta
 
+The first production surface is a stateless `POST /api/outcomes/reconcile` endpoint. It validates an operator observation against the expected planning scope and returns a reconciliation result. It does not claim to persist the observation or mutate the original rescue plan.
+
 ### NEXTSTEP-03 — Sustainability UI
 
 Expose:
@@ -78,7 +80,7 @@ The wrapper validates that sustainability quantities agree with canonical batch 
 - no automatic outcome prediction
 - no invented CO2 estimates
 - no automatic retraining
-- no database expansion
+- no database expansion or outcome persistence in the NextStep MVP
 - no major UI redesign
 
 ## 5. Core Invariants
@@ -96,6 +98,7 @@ The wrapper validates that sustainability quantities agree with canonical batch 
 - expected impact must never be presented as realized impact
 - the canonical `RescueDecisionReport` contract remains backward compatible
 - NextStep sustainability output must reconcile with canonical report quantity metrics
+- reconciliation API responses must not imply that observations were stored or persisted
 
 ## 6. Acceptance Suite
 
@@ -115,3 +118,7 @@ NEXTSTEP-013 — sustainability reporting preserves existing report quantity met
 NEXTSTEP-014 — sustainability reporting cannot mutate optimizer-selected rescue allocations
 NEXTSTEP-015 — the NextStep pipeline returns canonical rescue output and sustainability output together
 NEXTSTEP-016 — the NextStep report envelope rejects sustainability quantities that disagree with canonical report metrics
+NEXTSTEP-017 — the reconciliation API returns realized impact for a valid operator observation
+NEXTSTEP-018 — the reconciliation API rejects confirmed quantities above the reconciled scope
+NEXTSTEP-019 — the reconciliation API rejects expected quantities that do not reconcile to the observation scope
+NEXTSTEP-020 — repeated reconciliation calls are deterministic and do not claim persistence
