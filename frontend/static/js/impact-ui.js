@@ -99,6 +99,11 @@ function impactErrorMessage(payload, status) {
 }
 
 function renderReconciliationResult(container, reconciliation, context) {
+    const confirmedQuantity = (
+        Number(reconciliation.actual_rescued_quantity)
+        + Number(reconciliation.actual_waste_quantity)
+    );
+
     container.innerHTML = `
         <div class="impact-result">
             <div>
@@ -111,8 +116,21 @@ function renderReconciliationResult(container, reconciliation, context) {
                     )}
                 </p>
                 <p class="impact-result__ratio-note">
-                    Realized diversion ratio from confirmed outcomes only.
-                    Unresolved quantity is excluded from this ratio.
+                    <span class="impact-overview__ratio">
+                        ${impactEscapeHtml(
+                            formatImpactNumber(confirmedQuantity)
+                        )} of ${impactEscapeHtml(
+                            formatImpactNumber(
+                                reconciliation.reconciled_quantity
+                            )
+                        )} units confirmed · ${impactEscapeHtml(
+                            formatImpactNumber(
+                                reconciliation.unresolved_quantity
+                            )
+                        )} unresolved
+                    </span>
+                    <br>
+                    Realized diversion ratio uses confirmed outcomes only.
                 </p>
             </div>
 
