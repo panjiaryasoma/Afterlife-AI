@@ -36,6 +36,24 @@ def test_nextstep_web_adapter_calls_impact_aware_analysis_endpoint() -> None:
     assert "afterlife:nextstep-clear" in javascript
 
 
+def test_impact_ui_avoids_global_event_constant_collision() -> None:
+    nextstep_response = client.get("/static/js/nextstep-analysis.js")
+    impact_response = client.get("/static/js/impact-ui.js")
+
+    assert nextstep_response.status_code == 200
+    assert impact_response.status_code == 200
+
+    nextstep_javascript = nextstep_response.text
+    impact_javascript = impact_response.text
+
+    assert "const NEXTSTEP_REPORT_EVENT" in nextstep_javascript
+    assert "const NEXTSTEP_CLEAR_EVENT" in nextstep_javascript
+    assert "const NEXTSTEP_REPORT_EVENT" not in impact_javascript
+    assert "const NEXTSTEP_CLEAR_EVENT" not in impact_javascript
+    assert "const IMPACT_NEXTSTEP_REPORT_EVENT" in impact_javascript
+    assert "const IMPACT_NEXTSTEP_CLEAR_EVENT" in impact_javascript
+
+
 def test_impact_ui_consumes_typed_sustainability_summary() -> None:
     response = client.get("/static/js/impact-ui.js")
 
