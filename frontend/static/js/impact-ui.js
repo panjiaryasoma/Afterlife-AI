@@ -5,6 +5,7 @@ const IMPACT_SECTION_ID = "impact-reconciliation-section";
 const IMPACT_NEXTSTEP_REPORT_EVENT = "afterlife:nextstep-report";
 const IMPACT_NEXTSTEP_CLEAR_EVENT = "afterlife:nextstep-clear";
 const IMPACT_STYLESHEET_HREF = "/static/css/impact.css";
+const MARKDOWN_REPORT_SCRIPT_SRC = "/static/js/report-markdown.js";
 
 function ensureImpactStylesheet() {
     if (document.querySelector(`link[href="${IMPACT_STYLESHEET_HREF}"]`)) {
@@ -15,6 +16,24 @@ function ensureImpactStylesheet() {
     stylesheet.rel = "stylesheet";
     stylesheet.href = IMPACT_STYLESHEET_HREF;
     document.head.appendChild(stylesheet);
+}
+
+function ensureMarkdownReportScript() {
+    if (document.querySelector(`script[src="${MARKDOWN_REPORT_SCRIPT_SRC}"]`)) {
+        return;
+    }
+
+    const script = document.createElement("script");
+    script.src = MARKDOWN_REPORT_SCRIPT_SRC;
+    script.async = false;
+    document.body.appendChild(script);
+}
+
+function setReportExportState(sustainabilitySummary, reconciliation = null) {
+    window.AfterlifeReportExportState = {
+        sustainabilitySummary: sustainabilitySummary || null,
+        reconciliation: reconciliation || null,
+    };
 }
 
 function impactEscapeHtml(value) {
@@ -100,8 +119,8 @@ function impactErrorMessage(payload, status) {
 
 function renderReconciliationResult(container, reconciliation, context) {
     const confirmedQuantity = (
-        Number(reconciliation.actual_rescued_quantity)
-        + Number(reconciliation.actual_waste_quantity)
+        Number(reconciliation.actual_rescued_quantity || 0)
+        + Number(reconciliation.actual_waste_quantity || 0)
     );
 
     container.innerHTML = `
@@ -115,22 +134,21 @@ function renderReconciliationResult(container, reconciliation, context) {
                         )
                     )}
                 </p>
+                <p class="impact-result__coverage">
+                    <strong>${impactEscapeHtml(
+                        formatImpactNumber(confirmedQuantity)
+                    )}</strong>
+                    of ${impactEscapeHtml(
+                        formatImpactNumber(reconciliation.reconciled_quantity)
+                    )} units confirmed
+                    <span aria-hidden="true">·</span>
+                    ${impactEscapeHtml(
+                        formatImpactNumber(reconciliation.unresolved_quantity)
+                    )} unresolved
+                </p>
                 <p class="impact-result__ratio-note">
-                    <span class="impact-overview__ratio">
-                        ${impactEscapeHtml(
-                            formatImpactNumber(confirmedQuantity)
-                        )} of ${impactEscapeHtml(
-                            formatImpactNumber(
-                                reconciliation.reconciled_quantity
-                            )
-                        )} units confirmed · ${impactEscapeHtml(
-                            formatImpactNumber(
-                                reconciliation.unresolved_quantity
-                            )
-                        )} unresolved
-                    </span>
-                    <br>
                     Realized diversion ratio uses confirmed outcomes only.
+                    Unresolved quantity is excluded from this ratio.
                 </p>
             </div>
 
@@ -475,6 +493,10 @@ function buildImpactSection(context) {
                 payload.reconciliation,
                 context
             );
+            setReportExportState(
+                window.AfterlifeReportExportState?.sustainabilitySummary,
+                payload.reconciliation
+            );
             status.textContent = (
                 "Outcome reconciled · realized impact shown below."
             );
@@ -494,19 +516,23 @@ function buildImpactSection(context) {
 
 function clearImpactUi() {
     document.querySelector(`#${IMPACT_SECTION_ID}`)?.remove();
+    setReportExportState(null, null);
 }
 
 function renderNextStepImpact(event) {
     clearImpactUi();
 
+    const sustainabilitySummary = event.detail?.sustainabilitySummary;
     const context = buildImpactContext(
         event.detail?.report,
-        event.detail?.sustainabilitySummary
+        sustainabilitySummary
     );
 
     if (!context || !resultsRoot) {
         return;
     }
+
+    setReportExportState(sustainabilitySummary, null);
 
     const section = buildImpactSection(context);
     const selectedPlanSection = allocationsRoot?.closest("section");
@@ -519,6 +545,7 @@ function renderNextStepImpact(event) {
 }
 
 ensureImpactStylesheet();
+ensureMarkdownReportScript();
 
 window.addEventListener(
     IMPACT_NEXTSTEP_REPORT_EVENT,
