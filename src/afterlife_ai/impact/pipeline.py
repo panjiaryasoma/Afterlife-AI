@@ -116,6 +116,7 @@ def run_nextstep_pipeline(
         unallocated_quantities=(
             production.optimization_result.unallocated_quantities
         ),
+        batch_metrics=production.report.batch_metrics,
     )
 
     return NextStepDecisionReport(
