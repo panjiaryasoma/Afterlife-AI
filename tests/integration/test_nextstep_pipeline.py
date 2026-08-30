@@ -2,6 +2,9 @@ from datetime import UTC, datetime
 from decimal import Decimal
 from pathlib import Path
 
+import pytest
+from pydantic import ValidationError
+
 from afterlife_ai.contracts.enums import ApprovalStatus
 from afterlife_ai.impact.pipeline import (
     NextStepDecisionReport,
@@ -85,3 +88,21 @@ def test_nextstep_quantities_still_conserve_planning_scope() -> None:
         == summary.reconciled_quantity
     )
     assert summary.reconciled_quantity >= Decimal("0")
+
+
+def test_nextstep_envelope_rejects_summary_that_disagrees_with_report() -> None:
+    result = _run_nextstep()
+    invalid_summary = result.sustainability_summary.model_copy(
+        update={
+            "expected_rescue_quantity": (
+                result.sustainability_summary.expected_rescue_quantity
+                + Decimal("1")
+            )
+        }
+    )
+
+    with pytest.raises(ValidationError):
+        NextStepDecisionReport(
+            rescue_decision_report=result.rescue_decision_report,
+            sustainability_summary=invalid_summary,
+        )
