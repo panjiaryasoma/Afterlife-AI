@@ -1,10 +1,9 @@
 const resultsRoot = document.querySelector("#results");
-const reportMetaRoot = document.querySelector("#report-meta");
-const triageMetricsRoot = document.querySelector("#triage-metrics");
-const rescueMetricsRoot = document.querySelector("#metrics");
 const allocationsRoot = document.querySelector("#allocations");
 
 const IMPACT_SECTION_ID = "impact-reconciliation-section";
+const NEXTSTEP_REPORT_EVENT = "afterlife:nextstep-report";
+const NEXTSTEP_CLEAR_EVENT = "afterlife:nextstep-clear";
 
 function impactEscapeHtml(value) {
     return String(value ?? "")
@@ -13,44 +12,6 @@ function impactEscapeHtml(value) {
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
-}
-
-function parseRenderedNumber(value) {
-    const normalized = String(value ?? "")
-        .trim()
-        .replaceAll(",", "");
-
-    if (!normalized || normalized === "—") {
-        return null;
-    }
-
-    const numeric = Number(normalized.replace(/[^0-9.+-]/g, ""));
-    return Number.isFinite(numeric) ? numeric : null;
-}
-
-function metricValueByLabel(container, expectedLabel) {
-    const cards = container?.querySelectorAll(".metric") || [];
-
-    for (const card of cards) {
-        const label = card.querySelector(".metric__label")?.textContent?.trim();
-
-        if (label === expectedLabel) {
-            return card.querySelector(".metric__value")?.textContent?.trim() || null;
-        }
-    }
-
-    return null;
-}
-
-function currentRequestId() {
-    const firstMeta = reportMetaRoot?.querySelector("span")?.textContent || "";
-    const separator = "·";
-
-    if (!firstMeta.includes(separator)) {
-        return null;
-    }
-
-    return firstMeta.split(separator).slice(1).join(separator).trim() || null;
 }
 
 function impactMetric(label, value, note = "") {
@@ -64,6 +25,10 @@ function impactMetric(label, value, note = "") {
 }
 
 function formatImpactNumber(value) {
+    if (value === null || value === undefined || value === "") {
+        return "—";
+    }
+
     const numeric = Number(value);
 
     if (!Number.isFinite(numeric)) {
@@ -76,6 +41,10 @@ function formatImpactNumber(value) {
 }
 
 function formatImpactPercent(value) {
+    if (value === null || value === undefined || value === "") {
+        return "—";
+    }
+
     const numeric = Number(value);
 
     if (!Number.isFinite(numeric)) {
@@ -85,38 +54,12 @@ function formatImpactPercent(value) {
     return `${formatImpactNumber(numeric * 100)}%`;
 }
 
-function readImpactContext() {
-    const requestId = currentRequestId();
-    const reconciledQuantity = parseRenderedNumber(
-        metricValueByLabel(triageMetricsRoot, "Rescue planning")
-    );
-    const expectedRescueQuantity = parseRenderedNumber(
-        metricValueByLabel(rescueMetricsRoot, "Expected rescue")
-    );
-    const expectedWasteQuantity = parseRenderedNumber(
-        metricValueByLabel(rescueMetricsRoot, "Expected waste")
-    );
-    const expectedRescueRatio = metricValueByLabel(
-        rescueMetricsRoot,
-        "Expected rescue ratio"
-    );
-
-    if (
-        !requestId
-        || reconciledQuantity === null
-        || expectedRescueQuantity === null
-        || expectedWasteQuantity === null
-    ) {
-        return null;
+function formatImpactMass(value) {
+    if (value === null || value === undefined || value === "") {
+        return "—";
     }
 
-    return {
-        requestId,
-        reconciledQuantity,
-        expectedRescueQuantity,
-        expectedWasteQuantity,
-        expectedRescueRatio: expectedRescueRatio || "—",
-    };
+    return `${formatImpactNumber(value)} kg`;
 }
 
 function impactErrorMessage(payload, status) {
@@ -175,11 +118,51 @@ function renderReconciliationResult(container, reconciliation) {
     `;
 }
 
+function buildImpactContext(report, sustainabilitySummary) {
+    if (
+        !report?.request_id
+        || !sustainabilitySummary
+        || typeof sustainabilitySummary !== "object"
+    ) {
+        return null;
+    }
+
+    return {
+        requestId: report.request_id,
+        reconciledQuantity: sustainabilitySummary.reconciled_quantity,
+        expectedRescueQuantity: (
+            sustainabilitySummary.expected_rescue_quantity
+        ),
+        expectedWasteQuantity: (
+            sustainabilitySummary.expected_waste_quantity
+        ),
+        expectedRescueRatio: (
+            sustainabilitySummary.expected_rescue_ratio
+        ),
+        massEvidenceCoverage: (
+            sustainabilitySummary.mass_evidence_coverage || "NONE"
+        ),
+        expectedRescueMassKg: (
+            sustainabilitySummary.expected_rescue_mass_kg
+        ),
+        expectedWasteMassKg: (
+            sustainabilitySummary.expected_waste_mass_kg
+        ),
+    };
+}
+
 function buildImpactSection(context) {
     const section = document.createElement("section");
     section.id = IMPACT_SECTION_ID;
     section.className = "workspace-section result-section";
     section.setAttribute("aria-labelledby", "impact-reconciliation-title");
+
+    const completeMassEvidence = (
+        context.massEvidenceCoverage === "COMPLETE"
+    );
+    const massNote = completeMassEvidence
+        ? "Complete package-weight evidence"
+        : "Full-batch mass withheld because weight evidence is incomplete";
 
     section.innerHTML = `
         <div class="section-heading">
@@ -215,8 +198,27 @@ function buildImpactSection(context) {
                 )}
                 ${impactMetric(
                     "Expected rescue ratio",
-                    context.expectedRescueRatio,
+                    formatImpactPercent(context.expectedRescueRatio),
                     "Estimated, not observed"
+                )}
+                ${impactMetric(
+                    "Mass evidence",
+                    context.massEvidenceCoverage,
+                    massNote
+                )}
+                ${impactMetric(
+                    "Expected rescue mass",
+                    completeMassEvidence
+                        ? formatImpactMass(context.expectedRescueMassKg)
+                        : "—",
+                    massNote
+                )}
+                ${impactMetric(
+                    "Expected waste mass",
+                    completeMassEvidence
+                        ? formatImpactMass(context.expectedWasteMassKg)
+                        : "—",
+                    massNote
                 )}
             </div>
         </div>
@@ -274,16 +276,26 @@ function buildImpactSection(context) {
         <div id="realized-impact"></div>
     `;
 
-    const form = section.querySelector("#outcome-reconciliation-form");
-    const status = section.querySelector("#outcome-reconciliation-status");
+    const reconciliationForm = section.querySelector(
+        "#outcome-reconciliation-form"
+    );
+    const status = section.querySelector(
+        "#outcome-reconciliation-status"
+    );
     const realized = section.querySelector("#realized-impact");
-    const submitButton = form.querySelector("button[type='submit']");
+    const submitButton = reconciliationForm.querySelector(
+        "button[type='submit']"
+    );
 
-    form.addEventListener("submit", async (event) => {
+    reconciliationForm.addEventListener("submit", async (event) => {
         event.preventDefault();
 
-        const rescuedInput = form.querySelector("#actual-rescued-quantity");
-        const wasteInput = form.querySelector("#actual-waste-quantity");
+        const rescuedInput = reconciliationForm.querySelector(
+            "#actual-rescued-quantity"
+        );
+        const wasteInput = reconciliationForm.querySelector(
+            "#actual-waste-quantity"
+        );
         const actualRescued = Number(rescuedInput.value);
         const actualWaste = Number(wasteInput.value);
 
@@ -324,11 +336,18 @@ function buildImpactSection(context) {
             const payload = await response.json();
 
             if (!response.ok) {
-                throw new Error(impactErrorMessage(payload, response.status));
+                throw new Error(
+                    impactErrorMessage(payload, response.status)
+                );
             }
 
-            renderReconciliationResult(realized, payload.reconciliation);
-            status.textContent = "Outcome reconciled · realized impact shown below.";
+            renderReconciliationResult(
+                realized,
+                payload.reconciliation
+            );
+            status.textContent = (
+                "Outcome reconciled · realized impact shown below."
+            );
             status.dataset.state = "success";
         } catch (error) {
             status.textContent = error instanceof Error
@@ -343,19 +362,21 @@ function buildImpactSection(context) {
     return section;
 }
 
-function syncImpactUi() {
-    if (!resultsRoot || resultsRoot.classList.contains("hidden")) {
-        document.querySelector(`#${IMPACT_SECTION_ID}`)?.remove();
-        return;
-    }
-
-    const context = readImpactContext();
-
-    if (!context) {
-        return;
-    }
-
+function clearImpactUi() {
     document.querySelector(`#${IMPACT_SECTION_ID}`)?.remove();
+}
+
+function renderNextStepImpact(event) {
+    clearImpactUi();
+
+    const context = buildImpactContext(
+        event.detail?.report,
+        event.detail?.sustainabilitySummary
+    );
+
+    if (!context || !resultsRoot) {
+        return;
+    }
 
     const section = buildImpactSection(context);
     const selectedPlanSection = allocationsRoot?.closest("section");
@@ -367,20 +388,11 @@ function syncImpactUi() {
     }
 }
 
-if (resultsRoot) {
-    const observer = new MutationObserver(syncImpactUi);
-
-    observer.observe(resultsRoot, {
-        attributes: true,
-        attributeFilter: ["class"],
-    });
-
-    if (reportMetaRoot) {
-        observer.observe(reportMetaRoot, {
-            childList: true,
-            subtree: true,
-        });
-    }
-
-    syncImpactUi();
-}
+window.addEventListener(
+    NEXTSTEP_REPORT_EVENT,
+    renderNextStepImpact
+);
+window.addEventListener(
+    NEXTSTEP_CLEAR_EVENT,
+    clearImpactUi
+);
