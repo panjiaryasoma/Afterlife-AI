@@ -8,7 +8,10 @@ from afterlife_ai.contracts.impact import (
 )
 from afterlife_ai.contracts.planning import SurplusPlanningLot
 from afterlife_ai.impact.batch import build_batch_sustainability_summary
-from afterlife_ai.planner.report import ReportAllocation
+from afterlife_ai.planner.report import (
+    ReportAllocation,
+    ReportBatchMetrics,
+)
 
 ZERO = Decimal("0")
 
@@ -18,8 +21,9 @@ def build_report_sustainability_summary(
     planning_lots: list[SurplusPlanningLot],
     selected_allocations: list[ReportAllocation],
     unallocated_quantities: dict[str, Decimal],
+    batch_metrics: ReportBatchMetrics,
 ) -> BatchSustainabilitySummary:
-    """Build batch impact from report allocations plus unallocated surplus."""
+    """Build impact while preserving canonical report quantity semantics."""
 
     planning_by_id = {
         lot.planning_lot_id: lot
@@ -60,8 +64,40 @@ def build_report_sustainability_summary(
             )
         )
 
-    return build_batch_sustainability_summary(
+    detailed_summary = build_batch_sustainability_summary(
         slices=slices
+    )
+
+    expected_rescue_quantity = (
+        batch_metrics.expected_physical_rescue_quantity
+        if batch_metrics.expected_physical_rescue_quantity is not None
+        else detailed_summary.expected_rescue_quantity
+    )
+    expected_waste_quantity = (
+        batch_metrics.expected_waste_quantity
+        if batch_metrics.expected_waste_quantity is not None
+        else detailed_summary.expected_waste_quantity
+    )
+    expected_rescue_ratio = (
+        batch_metrics.expected_rescue_ratio
+        if batch_metrics.expected_rescue_ratio is not None
+        else detailed_summary.expected_rescue_ratio
+    )
+
+    return BatchSustainabilitySummary(
+        reconciled_quantity=batch_metrics.planning_quantity,
+        expected_rescue_quantity=expected_rescue_quantity,
+        expected_waste_quantity=expected_waste_quantity,
+        expected_rescue_ratio=expected_rescue_ratio,
+        mass_evidence_coverage=(
+            detailed_summary.mass_evidence_coverage
+        ),
+        expected_rescue_mass_kg=(
+            detailed_summary.expected_rescue_mass_kg
+        ),
+        expected_waste_mass_kg=(
+            detailed_summary.expected_waste_mass_kg
+        ),
     )
 
 
