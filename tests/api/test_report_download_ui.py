@@ -50,7 +50,7 @@ def test_markdown_exporter_builds_human_readable_report() -> None:
     assert "URL.createObjectURL" in javascript
     assert "stopImmediatePropagation" not in javascript
     assert "currentCanonicalReport" not in javascript
-    assert "AfterlifeMarkdownReport" not in javascript
+    assert "window.AfterlifeMarkdownReport" not in javascript
 
 
 def test_markdown_reconciliation_uses_sustainability_summary_as_expected_ssot() -> None:
