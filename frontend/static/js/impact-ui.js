@@ -4,30 +4,6 @@ const allocationsRoot = document.querySelector("#allocations");
 const IMPACT_SECTION_ID = "impact-reconciliation-section";
 const IMPACT_NEXTSTEP_REPORT_EVENT = "afterlife:nextstep-report";
 const IMPACT_NEXTSTEP_CLEAR_EVENT = "afterlife:nextstep-clear";
-const IMPACT_STYLESHEET_HREF = "/static/css/impact.css";
-const MARKDOWN_REPORT_SCRIPT_SRC = "/static/js/report-markdown.js";
-
-function ensureImpactStylesheet() {
-    if (document.querySelector(`link[href="${IMPACT_STYLESHEET_HREF}"]`)) {
-        return;
-    }
-
-    const stylesheet = document.createElement("link");
-    stylesheet.rel = "stylesheet";
-    stylesheet.href = IMPACT_STYLESHEET_HREF;
-    document.head.appendChild(stylesheet);
-}
-
-function ensureMarkdownReportScript() {
-    if (document.querySelector(`script[src="${MARKDOWN_REPORT_SCRIPT_SRC}"]`)) {
-        return;
-    }
-
-    const script = document.createElement("script");
-    script.src = MARKDOWN_REPORT_SCRIPT_SRC;
-    script.async = false;
-    document.body.appendChild(script);
-}
 
 function setReportExportState(sustainabilitySummary, reconciliation = null) {
     window.AfterlifeReportExportState = {
@@ -543,9 +519,6 @@ function renderNextStepImpact(event) {
         resultsRoot.appendChild(section);
     }
 }
-
-ensureImpactStylesheet();
-ensureMarkdownReportScript();
 
 window.addEventListener(
     IMPACT_NEXTSTEP_REPORT_EVENT,
