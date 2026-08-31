@@ -379,21 +379,15 @@ function markdownFilename(requestId) {
     return `afterlife-ai-rescue-report-${safeRequestId}.md`;
 }
 
-function currentCanonicalReport() {
-    return typeof latestReport === "undefined" ? null : latestReport;
-}
-
 function downloadAfterlifeMarkdownReport(event) {
-    const report = currentCanonicalReport();
-
-    if (!report) {
+    if (!latestReport) {
         return;
     }
 
     event.preventDefault();
 
     const exportState = window.AfterlifeReportExportState || {};
-    const markdown = buildAfterlifeMarkdownReport(report, exportState);
+    const markdown = buildAfterlifeMarkdownReport(latestReport, exportState);
     const blob = new Blob([markdown], {
         type: "text/markdown;charset=utf-8",
     });
@@ -401,18 +395,13 @@ function downloadAfterlifeMarkdownReport(event) {
     const link = document.createElement("a");
 
     link.href = objectUrl;
-    link.download = markdownFilename(report.request_id);
+    link.download = markdownFilename(latestReport.request_id);
 
     document.body.appendChild(link);
     link.click();
     link.remove();
     URL.revokeObjectURL(objectUrl);
 }
-
-window.AfterlifeMarkdownReport = Object.freeze({
-    build: buildAfterlifeMarkdownReport,
-    filename: markdownFilename,
-});
 
 if (markdownDownloadButton) {
     markdownDownloadButton.textContent = "Download Markdown Report";
