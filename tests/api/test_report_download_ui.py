@@ -48,6 +48,7 @@ def test_markdown_exporter_builds_human_readable_report() -> None:
     assert "## Evidence & Provenance" in javascript
     assert "## Limitations" in javascript
     assert "URL.createObjectURL" in javascript
+    assert "stopImmediatePropagation" not in javascript
 
 
 def test_markdown_reconciliation_uses_sustainability_summary_as_expected_ssot() -> None:
