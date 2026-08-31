@@ -27,9 +27,6 @@ const limitations = document.querySelector("#limitations");
 const scoringProvider = document.querySelector("#scoring-provider");
 const downloadReport = document.querySelector("#download-report");
 
-const NEXTSTEP_REPORT_EVENT = "afterlife:nextstep-report";
-const NEXTSTEP_CLEAR_EVENT = "afterlife:nextstep-clear";
-
 let latestReport = null;
 
 const numberFormatter = new Intl.NumberFormat("en-US", {
@@ -41,26 +38,6 @@ const currencyFormatter = new Intl.NumberFormat("id-ID", {
     currency: "IDR",
     maximumFractionDigits: 0,
 });
-
-function dispatchNextStepClear() {
-    window.dispatchEvent(
-        new CustomEvent(NEXTSTEP_CLEAR_EVENT)
-    );
-}
-
-function dispatchNextStepReport(report, sustainabilitySummary) {
-    window.dispatchEvent(
-        new CustomEvent(
-            NEXTSTEP_REPORT_EVENT,
-            {
-                detail: {
-                    report,
-                    sustainabilitySummary,
-                },
-            }
-        )
-    );
-}
 
 function validateNextStepEnvelope(payload) {
     if (
@@ -965,7 +942,7 @@ form.addEventListener("submit", async (event) => {
     }
 
     latestReport = null;
-    dispatchNextStepClear();
+    clearImpactUi();
 
     setAnalysisBusy(true);
     downloadReport.classList.add("hidden");
@@ -1008,7 +985,7 @@ form.addEventListener("submit", async (event) => {
 
         latestReport = report;
         renderReport(report);
-        dispatchNextStepReport(
+        renderNextStepImpact(
             report,
             sustainabilitySummary
         );
@@ -1029,7 +1006,7 @@ form.addEventListener("submit", async (event) => {
         });
     } catch (error) {
         latestReport = null;
-        dispatchNextStepClear();
+        clearImpactUi();
         downloadReport.classList.add("hidden");
 
         setStatus(
