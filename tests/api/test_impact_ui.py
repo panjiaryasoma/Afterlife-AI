@@ -4,21 +4,27 @@ from fastapi.testclient import TestClient
 client = TestClient(app)
 
 
-def test_root_loads_nextstep_analysis_and_impact_scripts() -> None:
+def test_root_loads_nextstep_impact_and_export_assets_explicitly() -> None:
     response = client.get("/")
 
     assert response.status_code == 200
 
     html = response.text
 
+    assert '/static/css/app.css' in html
+    assert '/static/css/impact.css' in html
     assert '/static/js/app.js' in html
     assert '/static/js/nextstep-analysis.js' in html
     assert '/static/js/impact-ui.js' in html
+    assert '/static/js/report-markdown.js' in html
     assert html.index('/static/js/app.js') < html.index(
         '/static/js/nextstep-analysis.js'
     )
     assert html.index('/static/js/nextstep-analysis.js') < html.index(
         '/static/js/impact-ui.js'
+    )
+    assert html.index('/static/js/impact-ui.js') < html.index(
+        '/static/js/report-markdown.js'
     )
 
 
@@ -94,7 +100,6 @@ def test_impact_ui_uses_editorial_layout_instead_of_metric_card_grid() -> None:
     assert "impact-ledger" in javascript
     assert "impact-entry" in javascript
     assert "impact-comparison" in javascript
-    assert "/static/css/impact.css" in javascript
     assert ".impact-overview__value" in stylesheet
     assert 'font-family: Georgia, "Times New Roman", serif;' in stylesheet
     assert ".impact-field input" in stylesheet
