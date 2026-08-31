@@ -27,6 +27,9 @@ const limitations = document.querySelector("#limitations");
 const scoringProvider = document.querySelector("#scoring-provider");
 const downloadReport = document.querySelector("#download-report");
 
+const NEXTSTEP_REPORT_EVENT = "afterlife:nextstep-report";
+const NEXTSTEP_CLEAR_EVENT = "afterlife:nextstep-clear";
+
 let latestReport = null;
 
 const numberFormatter = new Intl.NumberFormat("en-US", {
@@ -38,6 +41,46 @@ const currencyFormatter = new Intl.NumberFormat("id-ID", {
     currency: "IDR",
     maximumFractionDigits: 0,
 });
+
+function dispatchNextStepClear() {
+    window.dispatchEvent(
+        new CustomEvent(NEXTSTEP_CLEAR_EVENT)
+    );
+}
+
+function dispatchNextStepReport(report, sustainabilitySummary) {
+    window.dispatchEvent(
+        new CustomEvent(
+            NEXTSTEP_REPORT_EVENT,
+            {
+                detail: {
+                    report,
+                    sustainabilitySummary,
+                },
+            }
+        )
+    );
+}
+
+function validateNextStepEnvelope(payload) {
+    if (
+        !payload
+        || typeof payload !== "object"
+        || !payload.rescue_decision_report
+        || typeof payload.rescue_decision_report !== "object"
+        || !payload.sustainability_summary
+        || typeof payload.sustainability_summary !== "object"
+    ) {
+        throw new Error(
+            "Analysis completed with an invalid NextStep response envelope."
+        );
+    }
+
+    return {
+        report: payload.rescue_decision_report,
+        sustainabilitySummary: payload.sustainability_summary,
+    };
+}
 
 function escapeHtml(value) {
     return String(value ?? "")
@@ -805,41 +848,9 @@ function renderReport(report) {
     results.classList.add("is-visible");
 }
 
-function downloadLatestReport() {
-    if (!latestReport) {
-        return;
-    }
-
-    const json = JSON.stringify(latestReport, null, 2);
-    const blob = new Blob(
-        [json],
-        {
-            type: "application/json",
-        }
-    );
-
-    const objectUrl = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    const requestId = latestReport.request_id || "unknown";
-
-    link.href = objectUrl;
-    link.download = `rescue-decision-report-${requestId}.json`;
-
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-
-    URL.revokeObjectURL(objectUrl);
-}
-
 objectiveInput.addEventListener(
     "change",
     updateObjectiveControls
-);
-
-downloadReport.addEventListener(
-    "click",
-    downloadLatestReport
 );
 
 function renderSelectedWorkbook() {
@@ -954,6 +965,7 @@ form.addEventListener("submit", async (event) => {
     }
 
     latestReport = null;
+    dispatchNextStepClear();
 
     setAnalysisBusy(true);
     downloadReport.classList.add("hidden");
@@ -961,26 +973,21 @@ form.addEventListener("submit", async (event) => {
     results.classList.remove("is-visible");
 
     setStatus(
-        "Analyzing inventory and resolving constrained rescue actions...",
+        "Analyzing inventory and measuring expected rescue impact...",
         "loading"
     );
 
     try {
-        const response = await fetch("/api/analyze", {
+        const response = await fetch("/api/analyze-nextstep", {
             method: "POST",
             body: data,
         });
 
-        const parsed = await readResponsePayload(
-            response
-        );
+        const parsed = await readResponsePayload(response);
 
         if (!response.ok) {
             throw new Error(
-                responseErrorMessage(
-                    response,
-                    parsed
-                )
+                responseErrorMessage(response, parsed)
             );
         }
 
@@ -993,14 +1000,22 @@ form.addEventListener("submit", async (event) => {
                 "Analysis completed with an unexpected response format."
             );
         }
-        const payload = parsed.value;
 
-        latestReport = payload;
-        renderReport(payload);
+        const {
+            report,
+            sustainabilitySummary,
+        } = validateNextStepEnvelope(parsed.value);
+
+        latestReport = report;
+        renderReport(report);
+        dispatchNextStepReport(
+            report,
+            sustainabilitySummary
+        );
 
         downloadReport.classList.remove("hidden");
         setStatus(
-            "Analysis complete · report generated below.",
+            "Analysis complete · rescue and sustainability outputs generated.",
             "success"
         );
 
@@ -1014,6 +1029,7 @@ form.addEventListener("submit", async (event) => {
         });
     } catch (error) {
         latestReport = null;
+        dispatchNextStepClear();
         downloadReport.classList.add("hidden");
 
         setStatus(
