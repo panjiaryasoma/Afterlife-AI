@@ -81,6 +81,10 @@ select = ["E", "F", "I", "UP", "B"]
 ignore = ["B008"]
 
 
+[tool.ruff.lint.per-file-ignores]
+"notebooks/**/*.ipynb" = ["E501"]
+
+
 [tool.ruff.lint.isort]
 known-first-party = ["afterlife_ai"]
 
