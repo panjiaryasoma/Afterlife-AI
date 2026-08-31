@@ -65,7 +65,9 @@ Expose:
 
 The web UI consumes the typed NextStep sustainability summary directly from the impact-aware analysis envelope. It does not reconstruct expected metrics by scraping rendered DOM text. When mass-evidence coverage is incomplete, full-batch rescue and waste mass are withheld rather than presented as complete totals.
 
-The canonical browser submit flow now lives in `frontend/static/js/app.js` and calls `POST /api/analyze-nextstep` directly. The temporary `nextstep-analysis.js` capture/interception adapter has been removed. Impact CSS and Markdown export JavaScript are loaded explicitly by the page instead of being injected dynamically at runtime.
+The canonical browser submit flow lives in `frontend/static/js/app.js` and calls `POST /api/analyze-nextstep` directly. The temporary `nextstep-analysis.js` capture/interception adapter has been removed. Impact CSS and Markdown export JavaScript are loaded explicitly by the page instead of being injected dynamically at runtime.
+
+The canonical submit flow now calls the impact renderer directly rather than dispatching custom browser events between two scripts. The impact layer reuses the canonical UI escaping and number/percent formatters instead of maintaining parallel helpers.
 
 ### NEXTSTEP-04 — Impact-Aware Report Envelope
 
@@ -78,7 +80,7 @@ The wrapper validates that sustainability quantities agree with canonical batch 
 
 The web/API boundary exposes this envelope through `POST /api/analyze-nextstep`. The legacy `POST /api/analyze` route remains available with its original direct `RescueDecisionReport` response shape.
 
-The Markdown export uses the typed sustainability summary as the source of truth for expected rescue and expected waste values during outcome reconciliation. It does not reconstruct expected values by reversing realized deltas.
+The Markdown export uses the typed sustainability summary as the source of truth for expected rescue and expected waste values during outcome reconciliation. It does not reconstruct expected values by reversing realized deltas. The exporter keeps only the browser behavior that is actually consumed and does not expose an unused global export API.
 
 ## 4. Non-Goals
 
@@ -113,6 +115,9 @@ The Markdown export uses the typed sustainability summary as the source of truth
 - the browser must have one canonical analysis submit path rather than stacked submit interception handlers
 - static impact/export assets must be declared explicitly by the page
 - Markdown expected outcome values must come from the sustainability summary source of truth
+- the canonical analysis flow must call the impact UI directly without a custom browser event bridge
+- impact rendering must reuse canonical UI formatting/escaping helpers when their semantics match
+- the Markdown exporter must not expose unused browser globals
 
 ## 6. Acceptance Suite
 
@@ -147,3 +152,6 @@ NEXTSTEP-028 — incomplete mass evidence is surfaced explicitly and never displ
 NEXTSTEP-029 — the browser uses one canonical submit flow and does not load the obsolete capture adapter
 NEXTSTEP-030 — impact CSS and Markdown export JavaScript are loaded explicitly by the page
 NEXTSTEP-031 — Markdown reconciliation expected values come from the sustainability summary rather than reverse-derived deltas
+NEXTSTEP-032 — the canonical browser analysis flow invokes the impact renderer directly without a custom event bridge
+NEXTSTEP-033 — the impact UI reuses canonical escaping and number/percent formatting helpers instead of duplicating them
+NEXTSTEP-034 — the Markdown exporter does not expose unused global wrapper APIs
