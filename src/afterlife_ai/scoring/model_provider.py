@@ -36,6 +36,7 @@ def _sha256_file(path: Path) -> str:
 
     return digest.hexdigest()
 
+
 def _sha256_canonical_text_file(path: Path) -> str:
     data = path.read_bytes().replace(
         b"\r\n",
@@ -43,6 +44,7 @@ def _sha256_canonical_text_file(path: Path) -> str:
     )
 
     return sha256(data).hexdigest()
+
 
 def _require_sha256(
     value: Any,
@@ -65,11 +67,8 @@ def _require_sha256(
 
     return text
 
-def load_frozen_model_identity(
-    manifest_path: Path,
-) -> tuple[str, str]:
-    """Read frozen model version and artifact SHA-256."""
 
+def _load_manifest_payload(manifest_path: Path) -> dict[str, Any]:
     if not manifest_path.is_file():
         raise ModelIntegrityError(
             f"Model manifest tidak ditemukan: {manifest_path}"
@@ -91,6 +90,15 @@ def load_frozen_model_identity(
             "Model manifest harus berupa JSON object."
         )
 
+    return payload
+
+
+def load_frozen_model_identity(
+    manifest_path: Path,
+) -> tuple[str, str]:
+    """Read frozen model version and artifact SHA-256."""
+
+    payload = _load_manifest_payload(manifest_path)
     artifact = payload.get("artifact")
 
     if not isinstance(artifact, dict):
@@ -118,6 +126,7 @@ def load_frozen_model_identity(
         model_sha256,
     )
 
+
 def verify_frozen_model_integrity(
     *,
     artifact_path: Path,
@@ -126,27 +135,7 @@ def verify_frozen_model_integrity(
 ) -> None:
     """Verify selected artifact and feature schema before deserialization."""
 
-    if not manifest_path.is_file():
-        raise ModelIntegrityError(
-            f"Model manifest tidak ditemukan: {manifest_path}"
-        )
-
-    try:
-        payload = json.loads(
-            manifest_path.read_text(
-                encoding="utf-8",
-            )
-        )
-    except (OSError, json.JSONDecodeError) as exc:
-        raise ModelIntegrityError(
-            f"Model manifest tidak valid: {manifest_path}"
-        ) from exc
-
-    if not isinstance(payload, dict):
-        raise ModelIntegrityError(
-            "Model manifest harus berupa JSON object."
-        )
-
+    payload = _load_manifest_payload(manifest_path)
     artifact = payload.get("artifact")
     inputs = payload.get("inputs")
 
