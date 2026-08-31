@@ -237,7 +237,7 @@ function markdownSustainability(summary) {
     ].join("\n");
 }
 
-function markdownOutcomeReconciliation(reconciliation) {
+function markdownOutcomeReconciliation(reconciliation, summary) {
     if (!reconciliation || typeof reconciliation !== "object") {
         return [
             "No operator-confirmed outcome has been reconciled for this analysis.",
@@ -251,6 +251,8 @@ function markdownOutcomeReconciliation(reconciliation) {
         Number(reconciliation.actual_rescued_quantity || 0)
         + Number(reconciliation.actual_waste_quantity || 0)
     );
+    const expectedRescue = summary?.expected_rescue_quantity;
+    const expectedWaste = summary?.expected_waste_quantity;
 
     return [
         `**${markdownNumber(confirmedQuantity)} of ${markdownNumber(reconciliation.reconciled_quantity)} units confirmed · ${markdownNumber(reconciliation.unresolved_quantity)} unresolved**`,
@@ -261,8 +263,8 @@ function markdownOutcomeReconciliation(reconciliation) {
         "",
         "| Outcome | Expected | Confirmed | Delta |",
         "|---|---:|---:|---:|",
-        `| Rescued | ${markdownNumber(reconciliation.actual_rescued_quantity - reconciliation.rescue_quantity_delta)} | ${markdownNumber(reconciliation.actual_rescued_quantity)} | ${markdownSignedNumber(reconciliation.rescue_quantity_delta)} |`,
-        `| Waste | ${markdownNumber(reconciliation.actual_waste_quantity - reconciliation.waste_quantity_delta)} | ${markdownNumber(reconciliation.actual_waste_quantity)} | ${markdownSignedNumber(reconciliation.waste_quantity_delta)} |`,
+        `| Rescued | ${markdownNumber(expectedRescue)} | ${markdownNumber(reconciliation.actual_rescued_quantity)} | ${markdownSignedNumber(reconciliation.rescue_quantity_delta)} |`,
+        `| Waste | ${markdownNumber(expectedWaste)} | ${markdownNumber(reconciliation.actual_waste_quantity)} | ${markdownSignedNumber(reconciliation.waste_quantity_delta)} |`,
         `| Unresolved | — | ${markdownNumber(reconciliation.unresolved_quantity)} | — |`,
         "",
         "Operator-confirmed outcomes are not persisted by this demo.",
@@ -349,7 +351,7 @@ function buildAfterlifeMarkdownReport(report, exportState = {}) {
         "",
         "## Outcome Reconciliation",
         "",
-        markdownOutcomeReconciliation(reconciliation),
+        markdownOutcomeReconciliation(reconciliation, summary),
         "## Human Review",
         "",
         markdownHumanReview(report),
