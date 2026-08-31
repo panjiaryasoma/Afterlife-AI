@@ -391,7 +391,6 @@ function downloadAfterlifeMarkdownReport(event) {
     }
 
     event.preventDefault();
-    event.stopImmediatePropagation();
 
     const exportState = window.AfterlifeReportExportState || {};
     const markdown = buildAfterlifeMarkdownReport(report, exportState);
@@ -419,7 +418,6 @@ if (markdownDownloadButton) {
     markdownDownloadButton.textContent = "Download Markdown Report";
     markdownDownloadButton.addEventListener(
         "click",
-        downloadAfterlifeMarkdownReport,
-        true
+        downloadAfterlifeMarkdownReport
     );
 }
