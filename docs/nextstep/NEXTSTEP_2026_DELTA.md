@@ -63,7 +63,9 @@ Expose:
 - mass-evidence coverage
 - missing-data limitations
 
-The web UI now consumes the typed NextStep sustainability summary directly from the impact-aware analysis envelope. It does not reconstruct expected metrics by scraping rendered DOM text. When mass-evidence coverage is incomplete, full-batch rescue and waste mass are withheld rather than presented as complete totals.
+The web UI consumes the typed NextStep sustainability summary directly from the impact-aware analysis envelope. It does not reconstruct expected metrics by scraping rendered DOM text. When mass-evidence coverage is incomplete, full-batch rescue and waste mass are withheld rather than presented as complete totals.
+
+The canonical browser submit flow now lives in `frontend/static/js/app.js` and calls `POST /api/analyze-nextstep` directly. The temporary `nextstep-analysis.js` capture/interception adapter has been removed. Impact CSS and Markdown export JavaScript are loaded explicitly by the page instead of being injected dynamically at runtime.
 
 ### NEXTSTEP-04 — Impact-Aware Report Envelope
 
@@ -75,6 +77,8 @@ Preserve the pre-NextStep `RescueDecisionReport` contract and wrap it in a NextS
 The wrapper validates that sustainability quantities agree with canonical batch metrics. This avoids silently changing the historical report contract while still exposing impact as an official pipeline result.
 
 The web/API boundary exposes this envelope through `POST /api/analyze-nextstep`. The legacy `POST /api/analyze` route remains available with its original direct `RescueDecisionReport` response shape.
+
+The Markdown export uses the typed sustainability summary as the source of truth for expected rescue and expected waste values during outcome reconciliation. It does not reconstruct expected values by reversing realized deltas.
 
 ## 4. Non-Goals
 
@@ -106,6 +110,9 @@ The web/API boundary exposes this envelope through `POST /api/analyze-nextstep`.
 - the UI must label expected/model-derived quantities separately from operator-confirmed realized outcomes
 - the legacy `/api/analyze` response shape must remain unchanged
 - the NextStep UI must consume typed sustainability output rather than infer it from rendered text
+- the browser must have one canonical analysis submit path rather than stacked submit interception handlers
+- static impact/export assets must be declared explicitly by the page
+- Markdown expected outcome values must come from the sustainability summary source of truth
 
 ## 6. Acceptance Suite
 
@@ -137,3 +144,6 @@ NEXTSTEP-025 — `POST /api/analyze-nextstep` returns the typed NextStep report 
 NEXTSTEP-026 — the legacy `POST /api/analyze` response remains a direct canonical Rescue Decision Report
 NEXTSTEP-027 — the web analysis path consumes typed sustainability summary fields without DOM metric scraping
 NEXTSTEP-028 — incomplete mass evidence is surfaced explicitly and never displayed as a complete batch mass total
+NEXTSTEP-029 — the browser uses one canonical submit flow and does not load the obsolete capture adapter
+NEXTSTEP-030 — impact CSS and Markdown export JavaScript are loaded explicitly by the page
+NEXTSTEP-031 — Markdown reconciliation expected values come from the sustainability summary rather than reverse-derived deltas
