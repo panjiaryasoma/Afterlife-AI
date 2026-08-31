@@ -4,7 +4,7 @@ from fastapi.testclient import TestClient
 client = TestClient(app)
 
 
-def test_root_loads_nextstep_impact_and_export_assets_explicitly() -> None:
+def test_root_loads_single_analysis_flow_and_impact_assets() -> None:
     response = client.get("/")
 
     assert response.status_code == 200
@@ -14,13 +14,10 @@ def test_root_loads_nextstep_impact_and_export_assets_explicitly() -> None:
     assert '/static/css/app.css' in html
     assert '/static/css/impact.css' in html
     assert '/static/js/app.js' in html
-    assert '/static/js/nextstep-analysis.js' in html
     assert '/static/js/impact-ui.js' in html
     assert '/static/js/report-markdown.js' in html
+    assert '/static/js/nextstep-analysis.js' not in html
     assert html.index('/static/js/app.js') < html.index(
-        '/static/js/nextstep-analysis.js'
-    )
-    assert html.index('/static/js/nextstep-analysis.js') < html.index(
         '/static/js/impact-ui.js'
     )
     assert html.index('/static/js/impact-ui.js') < html.index(
@@ -28,32 +25,34 @@ def test_root_loads_nextstep_impact_and_export_assets_explicitly() -> None:
     )
 
 
-def test_nextstep_web_adapter_calls_impact_aware_analysis_endpoint() -> None:
-    response = client.get("/static/js/nextstep-analysis.js")
+def test_app_calls_impact_aware_analysis_endpoint_directly() -> None:
+    response = client.get("/static/js/app.js")
 
     assert response.status_code == 200
 
     javascript = response.text
 
     assert 'fetch("/api/analyze-nextstep"' in javascript
+    assert 'fetch("/api/analyze"' not in javascript
     assert "rescue_decision_report" in javascript
     assert "sustainability_summary" in javascript
     assert "afterlife:nextstep-report" in javascript
     assert "afterlife:nextstep-clear" in javascript
+    assert "stopImmediatePropagation" not in javascript
 
 
 def test_impact_ui_avoids_global_event_constant_collision() -> None:
-    nextstep_response = client.get("/static/js/nextstep-analysis.js")
+    app_response = client.get("/static/js/app.js")
     impact_response = client.get("/static/js/impact-ui.js")
 
-    assert nextstep_response.status_code == 200
+    assert app_response.status_code == 200
     assert impact_response.status_code == 200
 
-    nextstep_javascript = nextstep_response.text
+    app_javascript = app_response.text
     impact_javascript = impact_response.text
 
-    assert "const NEXTSTEP_REPORT_EVENT" in nextstep_javascript
-    assert "const NEXTSTEP_CLEAR_EVENT" in nextstep_javascript
+    assert "const NEXTSTEP_REPORT_EVENT" in app_javascript
+    assert "const NEXTSTEP_CLEAR_EVENT" in app_javascript
     assert "const NEXTSTEP_REPORT_EVENT" not in impact_javascript
     assert "const NEXTSTEP_CLEAR_EVENT" not in impact_javascript
     assert "const IMPACT_NEXTSTEP_REPORT_EVENT" in impact_javascript
@@ -151,5 +150,5 @@ def test_impact_ui_preserves_expected_vs_realized_claim_boundary() -> None:
     assert "not persisted by this demo" in javascript
     assert "Mass evidence" in javascript
     assert "Full-batch mass is withheld" in javascript
-    assert "units confirmed ·" in javascript
+    assert "units confirmed" in javascript
     assert "Realized diversion ratio uses confirmed outcomes only" in javascript
