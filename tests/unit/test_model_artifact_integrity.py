@@ -138,6 +138,7 @@ def test_pipeline_does_not_downgrade_integrity_failure_to_fallback(
     ):
         _load_provider(config)
 
+
 def test_frozen_model_identity_matches_selected_manifest() -> None:
     model_version, model_sha256 = (
         load_frozen_model_identity(
