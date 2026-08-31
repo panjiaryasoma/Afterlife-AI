@@ -36,12 +36,14 @@ def test_app_calls_impact_aware_analysis_endpoint_directly() -> None:
     assert 'fetch("/api/analyze"' not in javascript
     assert "rescue_decision_report" in javascript
     assert "sustainability_summary" in javascript
-    assert "afterlife:nextstep-report" in javascript
-    assert "afterlife:nextstep-clear" in javascript
+    assert "renderNextStepImpact(" in javascript
+    assert "clearImpactUi()" in javascript
+    assert "afterlife:nextstep-report" not in javascript
+    assert "afterlife:nextstep-clear" not in javascript
     assert "stopImmediatePropagation" not in javascript
 
 
-def test_impact_ui_avoids_global_event_constant_collision() -> None:
+def test_impact_ui_reuses_canonical_helpers_without_event_bus() -> None:
     app_response = client.get("/static/js/app.js")
     impact_response = client.get("/static/js/impact-ui.js")
 
@@ -51,12 +53,17 @@ def test_impact_ui_avoids_global_event_constant_collision() -> None:
     app_javascript = app_response.text
     impact_javascript = impact_response.text
 
-    assert "const NEXTSTEP_REPORT_EVENT" in app_javascript
-    assert "const NEXTSTEP_CLEAR_EVENT" in app_javascript
-    assert "const NEXTSTEP_REPORT_EVENT" not in impact_javascript
-    assert "const NEXTSTEP_CLEAR_EVENT" not in impact_javascript
-    assert "const IMPACT_NEXTSTEP_REPORT_EVENT" in impact_javascript
-    assert "const IMPACT_NEXTSTEP_CLEAR_EVENT" in impact_javascript
+    assert "function escapeHtml" in app_javascript
+    assert "function formatNumber" in app_javascript
+    assert "function formatPercent" in app_javascript
+    assert "function impactEscapeHtml" not in impact_javascript
+    assert "function formatImpactNumber" not in impact_javascript
+    assert "function formatImpactPercent" not in impact_javascript
+    assert "function renderNextStepImpact(report, sustainabilitySummary)" in (
+        impact_javascript
+    )
+    assert "afterlife:nextstep-report" not in impact_javascript
+    assert "afterlife:nextstep-clear" not in impact_javascript
 
 
 def test_impact_ui_consumes_typed_sustainability_summary() -> None:
