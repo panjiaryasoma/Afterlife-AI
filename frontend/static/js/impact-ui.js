@@ -2,39 +2,12 @@ const resultsRoot = document.querySelector("#results");
 const allocationsRoot = document.querySelector("#allocations");
 
 const IMPACT_SECTION_ID = "impact-reconciliation-section";
-const IMPACT_NEXTSTEP_REPORT_EVENT = "afterlife:nextstep-report";
-const IMPACT_NEXTSTEP_CLEAR_EVENT = "afterlife:nextstep-clear";
 
 function setReportExportState(sustainabilitySummary, reconciliation = null) {
     window.AfterlifeReportExportState = {
         sustainabilitySummary: sustainabilitySummary || null,
         reconciliation: reconciliation || null,
     };
-}
-
-function impactEscapeHtml(value) {
-    return String(value ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-}
-
-function formatImpactNumber(value) {
-    if (value === null || value === undefined || value === "") {
-        return "—";
-    }
-
-    const numeric = Number(value);
-
-    if (!Number.isFinite(numeric)) {
-        return "—";
-    }
-
-    return new Intl.NumberFormat("en-US", {
-        maximumFractionDigits: 2,
-    }).format(numeric);
 }
 
 function formatImpactSignedNumber(value) {
@@ -49,24 +22,10 @@ function formatImpactSignedNumber(value) {
     }
 
     if (numeric > 0) {
-        return `+${formatImpactNumber(numeric)}`;
+        return `+${formatNumber(numeric)}`;
     }
 
-    return formatImpactNumber(numeric);
-}
-
-function formatImpactPercent(value) {
-    if (value === null || value === undefined || value === "") {
-        return "—";
-    }
-
-    const numeric = Number(value);
-
-    if (!Number.isFinite(numeric)) {
-        return "—";
-    }
-
-    return `${formatImpactNumber(numeric * 100)}%`;
+    return formatNumber(numeric);
 }
 
 function formatImpactMass(value) {
@@ -74,7 +33,7 @@ function formatImpactMass(value) {
         return "—";
     }
 
-    return `${formatImpactNumber(value)} kg`;
+    return `${formatNumber(value)} kg`;
 }
 
 function impactErrorMessage(payload, status) {
@@ -104,22 +63,22 @@ function renderReconciliationResult(container, reconciliation, context) {
             <div>
                 <p class="impact-result__eyebrow">REALIZED OUTCOME</p>
                 <p class="impact-result__ratio">
-                    ${impactEscapeHtml(
-                        formatImpactPercent(
+                    ${escapeHtml(
+                        formatPercent(
                             reconciliation.realized_diversion_ratio
                         )
                     )}
                 </p>
                 <p class="impact-result__coverage">
-                    <strong>${impactEscapeHtml(
-                        formatImpactNumber(confirmedQuantity)
+                    <strong>${escapeHtml(
+                        formatNumber(confirmedQuantity)
                     )}</strong>
-                    of ${impactEscapeHtml(
-                        formatImpactNumber(reconciliation.reconciled_quantity)
+                    of ${escapeHtml(
+                        formatNumber(reconciliation.reconciled_quantity)
                     )} units confirmed
                     <span aria-hidden="true">·</span>
-                    ${impactEscapeHtml(
-                        formatImpactNumber(reconciliation.unresolved_quantity)
+                    ${escapeHtml(
+                        formatNumber(reconciliation.unresolved_quantity)
                     )} unresolved
                 </p>
                 <p class="impact-result__ratio-note">
@@ -141,17 +100,17 @@ function renderReconciliationResult(container, reconciliation, context) {
                     <tbody>
                         <tr>
                             <th scope="row">Actual rescued</th>
-                            <td>${impactEscapeHtml(
-                                formatImpactNumber(
+                            <td>${escapeHtml(
+                                formatNumber(
                                     context.expectedRescueQuantity
                                 )
                             )}</td>
-                            <td>${impactEscapeHtml(
-                                formatImpactNumber(
+                            <td>${escapeHtml(
+                                formatNumber(
                                     reconciliation.actual_rescued_quantity
                                 )
                             )}</td>
-                            <td>${impactEscapeHtml(
+                            <td>${escapeHtml(
                                 formatImpactSignedNumber(
                                     reconciliation.rescue_quantity_delta
                                 )
@@ -159,17 +118,17 @@ function renderReconciliationResult(container, reconciliation, context) {
                         </tr>
                         <tr>
                             <th scope="row">Actual waste</th>
-                            <td>${impactEscapeHtml(
-                                formatImpactNumber(
+                            <td>${escapeHtml(
+                                formatNumber(
                                     context.expectedWasteQuantity
                                 )
                             )}</td>
-                            <td>${impactEscapeHtml(
-                                formatImpactNumber(
+                            <td>${escapeHtml(
+                                formatNumber(
                                     reconciliation.actual_waste_quantity
                                 )
                             )}</td>
-                            <td>${impactEscapeHtml(
+                            <td>${escapeHtml(
                                 formatImpactSignedNumber(
                                     reconciliation.waste_quantity_delta
                                 )
@@ -178,8 +137,8 @@ function renderReconciliationResult(container, reconciliation, context) {
                         <tr>
                             <th scope="row">Unresolved</th>
                             <td class="impact-comparison__muted">—</td>
-                            <td>${impactEscapeHtml(
-                                formatImpactNumber(
+                            <td>${escapeHtml(
+                                formatNumber(
                                     reconciliation.unresolved_quantity
                                 )
                             )}</td>
@@ -263,26 +222,26 @@ function buildImpactSection(context) {
                 <p class="impact-overview__eyebrow">EXPECTED RESCUE</p>
                 <p class="impact-overview__measure">
                     <strong class="impact-overview__value">
-                        ${impactEscapeHtml(
-                            formatImpactNumber(context.expectedRescueQuantity)
+                        ${escapeHtml(
+                            formatNumber(context.expectedRescueQuantity)
                         )}
                     </strong>
                     <span class="impact-overview__scope">
-                        of ${impactEscapeHtml(
-                            formatImpactNumber(context.reconciledQuantity)
+                        of ${escapeHtml(
+                            formatNumber(context.reconciledQuantity)
                         )} planned units
                     </span>
                 </p>
                 <p class="impact-overview__statement">
                     The current plan estimates an
                     <span class="impact-overview__ratio">
-                        ${impactEscapeHtml(
-                            formatImpactPercent(context.expectedRescueRatio)
+                        ${escapeHtml(
+                            formatPercent(context.expectedRescueRatio)
                         )}
                     </span>
                     rescue ratio, with
-                    ${impactEscapeHtml(
-                        formatImpactNumber(context.expectedWasteQuantity)
+                    ${escapeHtml(
+                        formatNumber(context.expectedWasteQuantity)
                     )}
                     units expected to remain waste.
                 </p>
@@ -291,24 +250,24 @@ function buildImpactSection(context) {
             <dl class="impact-ledger">
                 <div class="impact-ledger__row">
                     <dt>Expected waste</dt>
-                    <dd>${impactEscapeHtml(
-                        formatImpactNumber(context.expectedWasteQuantity)
+                    <dd>${escapeHtml(
+                        formatNumber(context.expectedWasteQuantity)
                     )} units</dd>
                 </div>
                 <div class="impact-ledger__row">
                     <dt>Mass evidence</dt>
                     <dd>
                         <span class="impact-ledger__evidence">
-                            ${impactEscapeHtml(massEvidenceLabel)}
+                            ${escapeHtml(massEvidenceLabel)}
                         </span>
                     </dd>
                     <span class="impact-ledger__note">
-                        ${impactEscapeHtml(massNote)}
+                        ${escapeHtml(massNote)}
                     </span>
                 </div>
                 <div class="impact-ledger__row">
                     <dt>Expected rescue mass</dt>
-                    <dd>${impactEscapeHtml(
+                    <dd>${escapeHtml(
                         completeMassEvidence
                             ? formatImpactMass(context.expectedRescueMassKg)
                             : "—"
@@ -316,7 +275,7 @@ function buildImpactSection(context) {
                 </div>
                 <div class="impact-ledger__row">
                     <dt>Expected waste mass</dt>
-                    <dd>${impactEscapeHtml(
+                    <dd>${escapeHtml(
                         completeMassEvidence
                             ? formatImpactMass(context.expectedWasteMassKg)
                             : "—"
@@ -378,8 +337,8 @@ function buildImpactSection(context) {
                 <div class="impact-form__footer">
                     <p class="impact-form__limit">
                         Confirmed rescued + waste cannot exceed
-                        ${impactEscapeHtml(
-                            formatImpactNumber(context.reconciledQuantity)
+                        ${escapeHtml(
+                            formatNumber(context.reconciledQuantity)
                         )} units.
                     </p>
                     <button class="secondary-button" type="submit">
@@ -495,12 +454,11 @@ function clearImpactUi() {
     setReportExportState(null, null);
 }
 
-function renderNextStepImpact(event) {
+function renderNextStepImpact(report, sustainabilitySummary) {
     clearImpactUi();
 
-    const sustainabilitySummary = event.detail?.sustainabilitySummary;
     const context = buildImpactContext(
-        event.detail?.report,
+        report,
         sustainabilitySummary
     );
 
@@ -519,12 +477,3 @@ function renderNextStepImpact(event) {
         resultsRoot.appendChild(section);
     }
 }
-
-window.addEventListener(
-    IMPACT_NEXTSTEP_REPORT_EVENT,
-    renderNextStepImpact
-);
-window.addEventListener(
-    IMPACT_NEXTSTEP_CLEAR_EVENT,
-    clearImpactUi
-);
