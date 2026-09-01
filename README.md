@@ -2,11 +2,11 @@
 
 **AI-assisted surplus rescue planning with measurable sustainability outcome reconciliation.**
 
-Afterlife AI adalah decision-support system untuk membantu usaha retail dan F&B menentukan apa yang sebaiknya dilakukan terhadap inventori yang bergerak lambat, berlebih, mendekati akhir masa jual, atau berisiko menjadi waste.
+Afterlife AI is a decision-support system that helps retail and F&B businesses determine what to do with slow-moving, excess, near-end-of-sale-life inventory or inventory at risk of becoming waste.
 
-Sistem menerima **satu workbook inventori `.xlsx`**, melindungi stok yang masih normal melalui deterministic triage, membangkitkan alternatif rescue yang didukung runtime, menolak kandidat yang unsafe atau infeasible melalui hard gates, memberi **estimated rescue-success score** pada kandidat yang masih eligible menggunakan HGB-E, menghitung expected value, lalu mengalokasikan planning quantity secara global menggunakan constrained optimization.
+The system accepts **one `.xlsx` inventory workbook**, protects normal stock through deterministic triage, generates runtime-supported rescue alternatives, rejects unsafe or infeasible candidates through hard gates, assigns an **estimated rescue-success score** to eligible candidates using HGB-E, calculates expected value, and globally allocates planning quantity through constrained optimization.
 
-Output utamanya tetap **Rescue Decision Report** yang memerlukan human review. Untuk NextStep Hacks 2026, production web flow juga menghasilkan typed **Sustainability Summary** dan menyediakan **operator-confirmed Outcome Reconciliation** untuk membandingkan plan-derived impact dengan hasil yang benar-benar terkonfirmasi.
+The primary output remains a **Rescue Decision Report** that requires human review. For NextStep Hacks 2026, the production web flow also produces a typed **Sustainability Summary** and provides **operator-confirmed Outcome Reconciliation** to compare plan-derived impact with outcomes that have actually been confirmed.
 
 ```text
 One XLSX
@@ -16,7 +16,7 @@ One XLSX
 → Operator-confirmed Outcome Reconciliation
 ```
 
-Afterlife AI tidak mengeksekusi diskon, transfer, repurpose, partner allocation, disposal, atau tindakan fisik lain secara otomatis.
+Afterlife AI does not automatically execute discounts, transfers, repurposing, partner allocations, disposal, or any other physical action.
 
 ---
 
@@ -24,26 +24,26 @@ Afterlife AI tidak mengeksekusi diskon, transfer, repurpose, partner allocation,
 
 ## Why Afterlife AI
 
-Masalah surplus inventory bukan sekadar menentukan apakah suatu barang “berlebih”.
+Surplus inventory is not simply a matter of deciding whether an item is “excess.”
 
-Satu file inventori dapat mencampurkan:
+A single inventory file can contain:
 
-- stok sehat yang tidak boleh disentuh;
-- stok yang hanya perlu dimonitor;
-- surplus parsial;
-- barang near-expiry;
-- barang expired;
-- data yang tidak lengkap;
-- barang yang memiliki beberapa alternatif recovery;
-- kandidat yang tampak menarik secara ekonomi tetapi tidak aman atau tidak feasible.
+- healthy stock that must not be touched;
+- stock that only needs monitoring;
+- partial surplus;
+- near-expiry items;
+- expired items;
+- incomplete data;
+- items with multiple recovery alternatives;
+- candidates that appear economically attractive but are unsafe or infeasible.
 
-Keputusan rescue juga saling berbagi constraint.
+Rescue decisions also share constraints.
 
-Satu tindakan dapat menggunakan labor, equipment, ingredient, bundle companion, cold storage, partner capacity, logistics budget, atau waktu yang juga dibutuhkan oleh kandidat lain.
+A single action may consume labor, equipment, ingredients, bundle companion stock, cold storage, partner capacity, logistics budget, or time that other candidates also need.
 
-Karena itu, memilih alternatif terbaik satu lot pada satu waktu belum tentu menghasilkan rencana batch yang feasible.
+Therefore, choosing the best alternative one lot at a time does not necessarily produce a feasible batch plan.
 
-Afterlife AI memisahkan tanggung jawab tersebut:
+Afterlife AI separates these responsibilities:
 
 ```text
 rules determine eligibility
