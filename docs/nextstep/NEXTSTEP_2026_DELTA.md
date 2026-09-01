@@ -155,3 +155,27 @@ NEXTSTEP-031 — Markdown reconciliation expected values come from the sustainab
 NEXTSTEP-032 — the canonical browser analysis flow invokes the impact renderer directly without a custom event bridge
 NEXTSTEP-033 — the impact UI reuses canonical escaping and number/percent formatting helpers instead of duplicating them
 NEXTSTEP-034 — the Markdown exporter does not expose unused global wrapper APIs
+
+## 7. Current Verification State
+
+The NextStep implementation now uses one canonical browser analysis flow, direct impact rendering, explicit static assets, Markdown report export, and no unused browser event bridge or exporter global API.
+
+The production dependency boundary is intentionally minimal:
+
+- `pydantic-settings` removed because runtime settings are not loaded through `BaseSettings`
+- legacy `httpx` removed from dev dependencies; `httpx2` is retained dev-only because Starlette's current `TestClient` uses it
+- Uvicorn standard extras removed because the production process only requires the base HTTP server
+- Streamlit and Matplotlib remain dev-only challenger/evaluation dependencies
+
+Final verification before the submission freeze must include:
+
+```text
+uv sync --frozen
+uv run ruff check .
+uv run python -m pytest -q
+node --check frontend/static/js/app.js
+node --check frontend/static/js/impact-ui.js
+node --check frontend/static/js/report-markdown.js
+```
+
+A submission tag should only be created after the deployed production URL also passes the XLSX → analysis → outcome reconciliation → Markdown download smoke path.

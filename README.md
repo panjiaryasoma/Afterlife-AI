@@ -1,17 +1,19 @@
 # Afterlife AI
 
-**AI-assisted rescue planning for surplus inventory.**
+**AI-assisted surplus rescue planning with measurable sustainability outcome reconciliation.**
 
 Afterlife AI adalah decision-support system untuk membantu usaha retail dan F&B menentukan apa yang sebaiknya dilakukan terhadap inventori yang bergerak lambat, berlebih, mendekati akhir masa jual, atau berisiko menjadi waste.
 
 Sistem menerima **satu workbook inventori `.xlsx`**, melindungi stok yang masih normal melalui deterministic triage, membangkitkan alternatif rescue yang didukung runtime, menolak kandidat yang unsafe atau infeasible melalui hard gates, memberi **estimated rescue-success score** pada kandidat yang masih eligible menggunakan HGB-E, menghitung expected value, lalu mengalokasikan planning quantity secara global menggunakan constrained optimization.
 
-Output akhirnya adalah satu **Rescue Decision Report** yang tetap memerlukan human review.
+Output utamanya tetap **Rescue Decision Report** yang memerlukan human review. Untuk NextStep Hacks 2026, production web flow juga menghasilkan typed **Sustainability Summary** dan menyediakan **operator-confirmed Outcome Reconciliation** untuk membandingkan plan-derived impact dengan hasil yang benar-benar terkonfirmasi.
 
 ```text
 One XLSX
 → One Analysis
-→ One Rescue Decision Report
+→ Rescue Decision Report
+→ Sustainability Summary
+→ Operator-confirmed Outcome Reconciliation
 ```
 
 Afterlife AI tidak mengeksekusi diskon, transfer, repurpose, partner allocation, disposal, atau tindakan fisik lain secara otomatis.
@@ -49,6 +51,46 @@ model estimates rescue success
 optimizer allocates constrained resources
 report exposes evidence
 human retains authority
+```
+
+---
+
+---
+
+## NextStep Hacks 2026 Extension
+
+Pre-hackathon baseline:
+
+```text
+nextstep-prehackathon-baseline-2026-08-30
+```
+
+The pre-existing rescue engine is preserved. During NextStep, Afterlife AI was extended with a measurable sustainability layer rather than replacing the HGB-E model, deterministic triage, hard gates, expected-value logic, or CP-SAT optimizer.
+
+New NextStep capabilities:
+
+```text
+typed Sustainability Summary
+expected rescue / waste quantity reconciliation
+COMPLETE / PARTIAL / NONE mass-evidence coverage
+mass-based rescue / waste estimates only when weight evidence is complete
+stateless operator-confirmed Outcome Reconciliation
+realized diversion ratio from confirmed outcomes only
+explicit unresolved quantity
+expected-vs-realized rescue and waste deltas
+human-readable Markdown report export
+```
+
+Expected/model-derived impact is kept separate from realized/operator-confirmed impact. Missing package weight is never imputed, partial weight coverage is never presented as a complete batch-mass claim, and outcome observations are not persisted by this demo.
+
+Implementation and acceptance details:
+
+- [`docs/nextstep/NEXTSTEP_2026_DELTA.md`](docs/nextstep/NEXTSTEP_2026_DELTA.md)
+
+Live production application:
+
+```text
+https://afterlife-ai-xi.vercel.app/
 ```
 
 ---
@@ -201,7 +243,7 @@ Invalid input does not proceed to model scoring or optimization.
 
 Demand-signal or analytical workbooks that do not implement the
 `inventory_lots` contract are supporting data artifacts, not direct
-`/api/analyze` inputs, and are expected to be rejected with validation detail.
+`/api/analyze-nextstep` or legacy `/api/analyze` inputs, and are expected to be rejected with validation detail.
 
 ### 2. Deterministic Inventory Triage
 
@@ -431,7 +473,7 @@ manual-review items
 human approval status
 ```
 
-The report can be downloaded from the primary UI as JSON.
+The report can be downloaded from the primary UI as a human-readable Markdown file. The application APIs continue to expose typed JSON responses for programmatic use.
 
 Reports are not persisted in a runtime database.
 
@@ -677,12 +719,16 @@ validation feedback
 triage summary
 selected allocations
 alternative candidates
+expected sustainability summary
+mass-evidence coverage
+operator-confirmed outcome reconciliation
+realized diversion ratio and unresolved quantity
 warnings
 manual-review items
 model provenance
 optimizer provenance
 limitations
-JSON report download
+Markdown report download
 ```
 
 Frontend code does not duplicate triage, gate, scoring, optimizer, or report business logic.
