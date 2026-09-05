@@ -1,0 +1,205 @@
+flowchart TD
+
+    %% =========================================================
+    %% PRESENTATION
+    %% =========================================================
+
+    subgraph P1["1. Presentation Layer"]
+        USER["Business Operator"]
+        UI["FastAPI + Jinja2 Web Interface<br/>HTML · CSS · Vanilla JavaScript"]
+
+        ANALYZE_NEXTSTEP["POST /api/analyze-nextstep<br/><br/>Primary Web Analysis Endpoint"]
+        ANALYZE_LEGACY["POST /api/analyze<br/><br/>Legacy Compatibility Endpoint"]
+        OUTCOME_API["POST /api/outcomes/reconcile<br/><br/>Stateless Outcome Reconciliation Endpoint"]
+
+        USER --> UI
+        UI --> ANALYZE_NEXTSTEP
+        UI --> OUTCOME_API
+    end
+
+    %% =========================================================
+    %% SHARED ANALYSIS SERVICE
+    %% =========================================================
+
+    subgraph P2["2. Shared Intake & Validation"]
+        ANALYSIS_SERVICE["Shared Analysis Service<br/><br/>Upload Handling · Temp File Lifecycle<br/>Request Construction · Error Mapping"]
+
+        XLSX["Structured Inventory Workbook (.xlsx)"]
+        CONTEXT["Decision Context<br/><br/>Objective · Logistics Budget<br/>Minimum Rescue Ratio · Deadline"]
+
+        FILE_CHECK["Workbook / Worksheet Validation<br/>Schema · Datatype · Semantic Checks"]
+        REQUEST_CHECK["AnalysisRequest Validation"]
+
+        INVALID["Validation Feedback<br/><br/>HTTP 400 / 422"]
+
+        ANALYZE_NEXTSTEP --> ANALYSIS_SERVICE
+        ANALYZE_LEGACY --> ANALYSIS_SERVICE
+
+        ANALYSIS_SERVICE --> XLSX
+        ANALYSIS_SERVICE --> CONTEXT
+
+        XLSX --> FILE_CHECK
+        CONTEXT --> REQUEST_CHECK
+
+        FILE_CHECK -- Invalid --> INVALID
+        REQUEST_CHECK -- Invalid --> INVALID
+    end
+
+    %% =========================================================
+    %% CANONICAL PIPELINE
+    %% =========================================================
+
+    subgraph P3["3. Canonical Rescue Planning Pipeline"]
+        VALIDATED["Validated Inventory Lots"]
+
+        TRIAGE["Deterministic Inventory Triage"]
+
+        HEALTHY["HEALTHY_STOCK"]
+        MONITOR["MONITOR"]
+        SURPLUS["SURPLUS_CANDIDATE"]
+        EXPIRED["EXPIRED"]
+        REVIEW["NEEDS_REVIEW"]
+
+        LOTS["Planning-Lot Construction<br/><br/>planning_quantity"]
+        CANDIDATES["Rescue Candidate Generation"]
+        GATES["Safety & Feasibility Hard Gates<br/><br/>Safety · Timing · Compatibility<br/>Demand · Capacity · Logistics"]
+        ELIGIBLE["Gate-Eligible Candidates"]
+
+        SCORE["HGB-E Rescue-Success Scoring"]
+        SCORE_FALLBACK["Deterministic Scoring Fallback<br/><br/>Only if model unavailable"]
+
+        VALUE["Expected-Value Calculation"]
+
+        OPT["Global CP-SAT Allocation<br/><br/>Quantity Conservation<br/>Capacity · Budget · Objective<br/>Minimum Rescue Ratio"]
+
+        OPT_FALLBACK["Deterministic Optimizer Fallback<br/><br/>Only for documented non-definitive outcomes"]
+
+        UNALLOCATED["Unallocated / Review Quantities"]
+
+        REPORT["Canonical RescueDecisionReport<br/><br/>Selected Allocations · Alternatives<br/>Expected Rescue · Expected Waste<br/>Economic Metrics · Warnings<br/>Limitations · Human Review"]
+
+        FILE_CHECK -- Valid --> VALIDATED
+        REQUEST_CHECK -- Valid --> VALIDATED
+
+        VALIDATED --> TRIAGE
+
+        TRIAGE --> HEALTHY
+        TRIAGE --> MONITOR
+        TRIAGE --> SURPLUS
+        TRIAGE --> EXPIRED
+        TRIAGE --> REVIEW
+
+        SURPLUS --> LOTS
+        LOTS --> CANDIDATES
+        CANDIDATES --> GATES
+
+        GATES -- Feasible --> ELIGIBLE
+        GATES -- No feasible action --> UNALLOCATED
+
+        ELIGIBLE --> SCORE
+        SCORE -. model unavailable .-> SCORE_FALLBACK
+
+        SCORE --> VALUE
+        SCORE_FALLBACK --> VALUE
+
+        VALUE --> OPT
+        OPT -. non-definitive .-> OPT_FALLBACK
+        OPT -- infeasible residue --> UNALLOCATED
+
+        OPT --> REPORT
+        OPT_FALLBACK --> REPORT
+
+        HEALTHY --> REPORT
+        MONITOR --> REPORT
+        EXPIRED --> REPORT
+        REVIEW --> REPORT
+        UNALLOCATED --> REPORT
+    end
+
+    %% =========================================================
+    %% NEXTSTEP EXTENSION
+    %% =========================================================
+
+    subgraph P4["4. NextStep Sustainability Extension"]
+        NEXTSTEP["run_nextstep_pipeline()"]
+
+        SUSTAIN["Sustainability Summary<br/><br/>Expected Rescue Quantity<br/>Expected Waste Quantity<br/>Expected Rescue Ratio"]
+
+        MASS["Mass Evidence Evaluation<br/><br/>COMPLETE · PARTIAL · NONE<br/>No Missing-Weight Imputation"]
+
+        NEXTSTEP_REPORT["NextStepDecisionReport<br/><br/>rescue_decision_report<br/>+ sustainability_summary"]
+
+        REPORT --> NEXTSTEP
+        NEXTSTEP --> SUSTAIN
+        SUSTAIN --> MASS
+
+        REPORT --> NEXTSTEP_REPORT
+        MASS --> NEXTSTEP_REPORT
+    end
+
+    %% =========================================================
+    %% OUTCOME RECONCILIATION
+    %% =========================================================
+
+    subgraph P5["5. Outcome Reconciliation"]
+        OBS["Operator Outcome Observation<br/><br/>Actual Rescued Quantity<br/>Actual Waste Quantity"]
+
+        RECON["Stateless Outcome Reconciliation"]
+
+        REALIZED["OutcomeReconciliation<br/><br/>Confirmed Quantity<br/>Unresolved Quantity<br/>Realized Diversion Ratio<br/>Rescue Delta · Waste Delta"]
+
+        OUTCOME_API --> RECON
+        OBS --> OUTCOME_API
+        RECON --> REALIZED
+    end
+
+    %% =========================================================
+    %% HUMAN-FACING OUTPUT
+    %% =========================================================
+
+    subgraph P6["6. Human-Facing Output"]
+        RENDER["Decision Workspace Rendering<br/><br/>Rescue Plan · Sustainability Summary<br/>Outcome Reconciliation"]
+
+        MD["Markdown Report Export<br/><br/>Canonical Report<br/>+ Sustainability Summary<br/>+ Confirmed Outcome"]
+
+        REVIEW_HUMAN["Human Review / Approval<br/><br/>Advisory Output Only"]
+
+        EXTERNAL[/"Physical Rescue Execution<br/><br/>Outside Afterlife AI"/]
+
+        NEXTSTEP_REPORT --> RENDER
+        REALIZED --> RENDER
+
+        NEXTSTEP_REPORT --> MD
+        REALIZED --> MD
+
+        NEXTSTEP_REPORT --> REVIEW_HUMAN
+        REVIEW_HUMAN -. approved action .-> EXTERNAL
+        EXTERNAL -. observed outcome .-> OBS
+
+        RENDER --> UI
+    end
+
+    %% =========================================================
+    %% RUNTIME ARTIFACTS
+    %% =========================================================
+
+    subgraph P7["7. Runtime Artifacts"]
+        POLICY[("Runtime Triage Policy")]
+        CAPABILITY[("Runtime Capability Profile")]
+        PARTNER[("Partner Demand Registry")]
+        MODEL[("Frozen HGB-E Model Artifact")]
+        MANIFEST[("Selected Model Manifest")]
+        CONFIG[("Decision Config<br/>Objective · Budget · Rescue Ratio")]
+        DEADLINE[("Rescue Deadline")]
+    end
+
+    POLICY --> TRIAGE
+    CAPABILITY --> CANDIDATES
+    CAPABILITY --> GATES
+    CAPABILITY --> OPT
+    PARTNER --> CANDIDATES
+    PARTNER --> GATES
+    MODEL --> SCORE
+    MANIFEST --> SCORE
+    CONFIG --> OPT
+    DEADLINE --> GATES
