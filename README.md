@@ -18,6 +18,10 @@ One XLSX
 
 Afterlife AI does not automatically execute discounts, transfers, repurposing, partner allocations, disposal, or any other physical action.
 
+**Live app:** https://afterlife-ai-xi.vercel.app/
+
+**NextStep implementation record:** [`docs/nextstep/NEXTSTEP_2026_DELTA.md`](docs/nextstep/NEXTSTEP_2026_DELTA.md)
+
 ---
 
 ---
@@ -52,6 +56,26 @@ optimizer allocates constrained resources
 report exposes evidence
 human retains authority
 ```
+
+---
+
+---
+
+## What it does
+
+- Accepts one inventory `.xlsx` workbook plus request-level decision context.
+- Validates workbook structure, schema, rows, and decision context before any model scoring or optimization.
+- Protects healthy inventory and isolates only the quantity that is eligible for rescue planning through deterministic triage.
+- Generates rescue alternatives from the active runtime capability profile, domain rules, internal actions, external-partner evidence, and safe-disposal logic.
+- Applies deterministic hard gates for safety, verification, compatibility, timing, demand, capacity, storage, logistics, and supported-domain coverage.
+- Scores only gate-eligible rescue candidates with the HGB-E rescue-success model.
+- Calculates expected economic value and physical rescue/waste quantities without treating estimates as realized outcomes.
+- Allocates planning quantity globally with OR-Tools CP-SAT under quantity, shared-resource, partner-capacity, logistics-budget, and objective constraints.
+- Produces a Rescue Decision Report with selected allocations, rejected alternatives, provenance, warnings, limitations, and manual-review items.
+- Produces a typed Sustainability Summary with expected rescue/waste quantities, rescue ratio, and evidence-bounded mass metrics.
+- Reconciles operator-confirmed rescued and wasted quantities against the expected planning scope without mutating or persisting the original rescue plan.
+- Exports a human-readable Markdown report while keeping typed JSON available through the application APIs.
+- Keeps physical execution and final approval outside automation.
 
 ---
 
@@ -152,65 +176,15 @@ The reference workbook is a technical evaluation fixture, not real merchant tran
 
 ---
 
-## Core Decision Flow
+## Core Reasoning Flow
 
-```text
-User / Browser
-    |
-    v
-FastAPI + Jinja2 Decision Workspace
-    |
-    v
-Application Orchestration
-    |
-    v
-Inventory XLSX Intake
-    |
-    v
-Structural & Semantic Validation
-    |
-    v
-Deterministic Inventory Triage
-    |
-    +--> HEALTHY_STOCK
-    +--> MONITOR
-    +--> EXPIRED
-    +--> NEEDS_REVIEW
-    |
-    `--> SURPLUS_CANDIDATE
-             |
-             v
-      Planning-Lot Construction
-             |
-             v
-      Rescue Candidate Generation
-             |
-             v
-      Deterministic Hard Gates
-             |
-             +--> BLOCKED / REVIEW
-             |
-             `--> FEASIBLE
-                     |
-                     v
-              HGB-E Rescue-Success Scoring
-                     |
-                     v
-              Expected-Value Calculation
-                     |
-                     v
-              Global CP-SAT Allocation
-                     |
-                     v
-              Rescue Decision Report
-                     |
-                     v
-              Human Review / Approval
-```
+![Afterlife AI end-to-end rescue and impact flow](docs/architecture/E2E-DIAGRAM.png)
 
-The ordering is intentional.
+The end-to-end view follows the complete decision lifecycle from inventory input and request context through validation, deterministic triage, rescue-option construction, hard-gate eligibility, HGB-E scoring, expected-value calculation, constrained global allocation, advisory reporting, sustainability measurement, operator-confirmed outcome reconciliation, and the final human authority boundary. The important separation is preserved throughout: deterministic rules decide what is allowed, the model estimates rescue success only where prediction is permitted, the optimizer allocates constrained resources, and observed outcomes remain distinct from plan-derived expectations.
 
-A model score cannot make an unsafe candidate safe, cannot revive a blocked candidate, and cannot bypass deterministic feasibility constraints.
+![Afterlife AI operational flowchart](docs/architecture/FLOWCHART.png)
+
+The operational flowchart shows the runtime decision path in more procedural form: validate the request, route inventory through triage states, construct and gate candidates, score only eligible rescue actions, solve the constrained allocation problem, produce the report and impact summary, reconcile confirmed outcomes when supplied, surface unresolved or review-required states, and stop before automatic physical execution.
 
 ---
 
@@ -218,13 +192,16 @@ A model score cannot make an unsafe candidate safe, cannot revive a blocked cand
 
 ## Architecture
 
-![Afterlife AI judge-facing architecture](docs/architecture/ARCH-02.png)
+![Afterlife AI judge-facing architecture](docs/architecture/ARCH%20SIMPLE%20FINAL.png)
 
-The simplified architecture above is intended for product and competition review.
+The simplified final architecture is the judge-facing view. It keeps the system's core responsibility boundaries visible without exposing every supporting implementation artifact: input and validation, deterministic inventory reasoning, rescue planning and hard gates, learned rescue-success scoring, expected-value calculation, constrained allocation, reporting and impact measurement, and human review.
 
-A more detailed implementation-oriented architecture is available at:
+![Afterlife AI detailed technical architecture](docs/architecture/ARCH%20FULL%20FINAL.png)
 
-- [`docs/architecture/ARCH-01.png`](docs/architecture/ARCH-01.png)
+The full final architecture expands the same system into its implementation-oriented components and runtime boundaries. It is the more appropriate reference when inspecting how the FastAPI/Jinja2 interface, canonical application pipeline, runtime configuration, model artifact, partner evidence, optimization layer, sustainability reporting, outcome reconciliation, and advisory human-authority boundary fit together.
+
+Additional architecture interpretation:
+
 - [`docs/architecture/ARCHITECTURE_OVERVIEW.md`](docs/architecture/ARCHITECTURE_OVERVIEW.md)
 
 ### 1. Inventory Intake & Validation
@@ -946,6 +923,23 @@ invalid request context -> HTTP 422
 
 Unexpected internal failures remain server errors and are not presented as successful analysis results.
 
+### `POST /api/analyze-nextstep`
+
+Uses the same multipart analysis request fields as the legacy analysis route and returns the NextStep report envelope:
+
+```text
+rescue_decision_report
+sustainability_summary
+```
+
+The canonical browser analysis flow uses this endpoint so the UI receives rescue-planning output and typed sustainability output together. The legacy `/api/analyze` route remains available with its original direct `RescueDecisionReport` response shape.
+
+### `POST /api/outcomes/reconcile`
+
+Accepts an operator-confirmed outcome observation against the expected planning scope and returns realized reconciliation metrics, including confirmed rescued quantity, confirmed waste quantity, unresolved quantity, realized diversion ratio when computable, and expected-vs-realized deltas.
+
+This endpoint is stateless. It does not persist the observation and does not mutate the original rescue plan.
+
 ---
 
 ---
@@ -988,7 +982,30 @@ docs/frontend_comparison/
 
 ## Verification
 
-The aligned production runtime has a recorded local verification checkpoint with:
+### Current NextStep regression checkpoint
+
+The current `main`-equivalent tree has been rerun locally with the final NextStep implementation and final diagram commit present:
+
+```yaml
+full_regression:
+  tests_passed: 419
+  failed: 0
+
+ruff_full_repository: PASS
+frontend_javascript_syntax:
+  app.js: PASS
+  impact-ui.js: PASS
+  report-markdown.js: PASS
+
+working_tree: CLEAN
+local_tree_matches_origin_main: true
+```
+
+This checkpoint verifies the current repository regression state. It does not replace separate deployed-app smoke verification.
+
+### Earlier aligned runtime checkpoint
+
+The aligned production runtime also has an earlier recorded local verification checkpoint with:
 
 ```yaml
 contract_alignment: PASS
@@ -1022,32 +1039,29 @@ realistic_inventory_workbooks:
 working_tree_after_verification: CLEAN
 ```
 
-The same verification recorded:
+The same earlier verification recorded:
 
 ```yaml
 quantity_conservation: PASS
 hard_constraint_violations: 0
 ```
 
-The current runtime checkpoint passed full local regression and
-realistic-workbook validation after corrective numeric hardening.
+These earlier values describe the recorded aligned runtime checkpoint and should not be mistaken for a fresh rerun of every Docker/live-smoke item against the current NextStep commit.
 
-These values describe the recorded aligned runtime checkpoint.
-
-Final submission reproducibility must still be executed against the exact frozen submission commit before the repository is represented as fully submission-ready.
+Final submission reproducibility still requires the deployed production URL to pass the XLSX → analysis → outcome reconciliation → Markdown download smoke path before the exact submission commit is frozen.
 
 ### Developer Checks
 
 Full regression:
 
 ```powershell
-uv run pytest -q
+uv run python -m pytest -q
 ```
 
 Lint:
 
 ```powershell
-uv run ruff check src backend tests scripts
+uv run ruff check .
 ```
 
 Type checking:
@@ -1060,6 +1074,8 @@ Frontend JavaScript syntax:
 
 ```powershell
 node --check frontend/static/js/app.js
+node --check frontend/static/js/impact-ui.js
+node --check frontend/static/js/report-markdown.js
 ```
 
 Git whitespace integrity:
@@ -1104,6 +1120,7 @@ Afterlife-AI/
 │   ├── contracts/
 │   ├── evaluation_source_v1.0/
 │   ├── frontend_comparison/
+│   ├── nextstep/
 │   └── submission/
 │
 ├── frontend/
@@ -1128,6 +1145,7 @@ Afterlife-AI/
 │   └── afterlife_ai/
 │       ├── contracts/
 │       ├── evaluation/
+│       ├── impact/
 │       ├── intake/
 │       ├── integration/
 │       ├── modeling/
@@ -1238,6 +1256,26 @@ claim boundary
 architecture interpretation
 submission evidence mapping
 ```
+
+---
+
+---
+
+## Documentation
+
+Key implementation, evaluation, and submission-facing references:
+
+- [`docs/nextstep/NEXTSTEP_2026_DELTA.md`](docs/nextstep/NEXTSTEP_2026_DELTA.md) — NextStep baseline, implementation delta, invariants, and acceptance suite.
+- [`docs/architecture/E2E-DIAGRAM.png`](docs/architecture/E2E-DIAGRAM.png) — end-to-end rescue, impact, and outcome lifecycle.
+- [`docs/architecture/FLOWCHART.png`](docs/architecture/FLOWCHART.png) — operational decision flow.
+- [`docs/architecture/ARCH%20SIMPLE%20FINAL.png`](docs/architecture/ARCH%20SIMPLE%20FINAL.png) — simplified judge-facing final architecture.
+- [`docs/architecture/ARCH%20FULL%20FINAL.png`](docs/architecture/ARCH%20FULL%20FINAL.png) — detailed implementation-oriented final architecture.
+- [`docs/submission/FINAL_CLAIM_BOUNDARY.md`](docs/submission/FINAL_CLAIM_BOUNDARY.md) — supported and unsupported claim boundary.
+- [`reports/evidence/SUBMISSION_EVIDENCE_INDEX.md`](reports/evidence/SUBMISSION_EVIDENCE_INDEX.md) — technical evidence index.
+- [`BRAND_GUIDELINES.md`](BRAND_GUIDELINES.md) — visual and communication system.
+- [`DESIGN.md`](DESIGN.md) — primary interface design specification.
+
+Historical AIC submission evidence remains preserved in the repository and should not be read as a claim that the NextStep sustainability and outcome-reconciliation layer existed before the recorded NextStep baseline.
 
 ---
 
@@ -1393,28 +1431,29 @@ cloud-dependent core runtime
 
 ## Project Status
 
-Canonical runtime alignment currently records:
+Current NextStep repository state:
 
 ```yaml
-preproduction_contract_alignment:
-  ALIGNED_WITH_RECORDED_SEMANTIC_REFINEMENT
+core_rescue_runtime: PASS
+nextstep_sustainability_extension: IMPLEMENTED
+outcome_reconciliation: IMPLEMENTED
+markdown_report_export: IMPLEMENTED
 
-blocking_safety_contradiction: false
-runtime_verification: PASS
-local_code_freeze_ready: true
+final_regression:
+  tests_passed: 419
+  failed: 0
 
-production_follow_up_required: []
+ruff_full_repository: PASS
+frontend_javascript_syntax: PASS
+local_tree_matches_origin_main: true
 
-final_release_audit: PASS
-technical_repository_frozen: true
+documentation_alignment: IN_PROGRESS
+deployed_full_smoke: PENDING
+submission_freeze: PENDING
 submission_ready: false
 ```
 
-`submission_ready: false` does not indicate an unresolved production-runtime blocker.
-
-The technical repository has now passed the G10 final release audit and is frozen for recording and submission packaging.
-
-`submission_ready` remains separate because competition deliverables outside the technical repository may still be pending.
+The current blockers are submission-alignment work rather than an unresolved core-runtime defect. Historical COMPFEST/AIC release and freeze records remain preserved under `docs/submission/` and `reports/evidence/`; they describe the earlier competition checkpoint, not the final NextStep submission state.
 
 ---
 
@@ -1422,15 +1461,25 @@ The technical repository has now passed the G10 final release audit and is froze
 
 ## Competition Context
 
-Afterlife AI is developed for:
+### Current: NextStep Hacks 2026
 
-**COMPFEST 18 — AI Innovation Challenge**
+Afterlife AI's current competition build is the NextStep Hacks 2026 extension recorded against the pre-hackathon baseline tag:
 
-The project aligns most directly with the competition's **Smart Commerce** area and also overlaps with **Smart Logistics** through inventory movement, capacity, and allocation decisions.
+```text
+nextstep-prehackathon-baseline-2026-08-30
+```
 
-The rulebook defines both as competition areas; the wording above describes this project's fit rather than a separate official track assignment.
+The NextStep delta adds measurable sustainability reporting and operator-confirmed outcome reconciliation while preserving the pre-existing rescue engine and its claim boundaries.
 
-The repository follows the competition Technical MVP boundary:
+### Historical origin: COMPFEST 18 — AI Innovation Challenge
+
+Afterlife AI was originally developed for **COMPFEST 18 — AI Innovation Challenge**.
+
+The project aligned most directly with the competition's **Smart Commerce** area and also overlapped with **Smart Logistics** through inventory movement, capacity, and allocation decisions.
+
+The rulebook defined both as competition areas; the wording above describes this project's fit rather than a separate official track assignment.
+
+The earlier repository followed the COMPFEST Technical MVP boundary:
 
 ```text
 single core input
@@ -1441,9 +1490,7 @@ Docker Compose
 no unnecessary surrounding platform
 ```
 
-The competition submission additionally requires external deliverables such as proof-of-work video, promotional video, and proposal.
-
-Those deliverables are tracked separately from production runtime readiness.
+Historical COMPFEST deliverables such as proof-of-work video, promotional video, and proposal remain separate from the current NextStep submission package.
 
 ---
 
@@ -1466,6 +1513,10 @@ Supported:
 Supported:
 
 > External-partner matching is demonstrated using a static synthetic Partner Demand Registry fixture.
+
+Supported for the NextStep extension:
+
+> Afterlife AI derives expected rescue/waste impact from the canonical rescue-planning result and can reconcile that expectation against operator-confirmed rescued and wasted quantities without presenting expected impact as realized impact.
 
 Not supported:
 
@@ -1497,6 +1548,8 @@ Protect healthy stock.
 Reject unsafe or infeasible actions.
 Estimate rescue success only where prediction is allowed.
 Allocate scarce resources globally.
+Measure expected impact without pretending it already happened.
+Reconcile confirmed outcomes without rewriting the original plan.
 Expose the evidence.
 Keep the final decision human.
 ```
