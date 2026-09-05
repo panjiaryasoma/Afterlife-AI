@@ -1,0 +1,73 @@
+flowchart TB
+    START(["Start"])
+    USER[/"Operator opens Afterlife AI"/]
+    INPUT[/"Upload inventory workbook (.xlsx)<br/>+ enter decision context"/]
+    VALIDATE["Validate request<br/>file · worksheet · schema · datatype · semantics"]
+    VALID{"Input valid?"}
+    ERROR[/"Show validation errors<br/>HTTP 400 / 422"/]
+    STOP_INVALID(["Stop analysis"])
+
+    TRIAGE["Run deterministic inventory triage"]
+    TRIAGE_RESULT[/"HEALTHY_STOCK · MONITOR<br/>SURPLUS_CANDIDATE · EXPIRED · NEEDS_REVIEW"/]
+    SURPLUS{"Any rescue planning quantity?"}
+    NO_PLAN["Build report with protected / monitor / expired / review states"]
+
+    LOTS["Construct surplus planning lots"]
+    GENERATE["Generate runtime-supported rescue candidates"]
+    GATES["Apply deterministic safety & feasibility gates"]
+    FEASIBLE{"Any gate-eligible candidate?"}
+    UNALLOC["Keep affected planning quantity unallocated<br/>and require review / bounded fallback"]
+
+    MODEL{"HGB-E model available?"}
+    SCORE["Score eligible candidates with HGB-E"]
+    SCORE_FB["Use deterministic scoring fallback<br/>score = 0.50"]
+    VALUE["Calculate expected value components"]
+
+    OPT["Run global CP-SAT allocation"]
+    OPT_RESULT{"Solver result usable?"}
+    OPT_FB["Run deterministic optimizer fallback<br/>only when constraints can be preserved"]
+    INFEASIBLE["Leave quantity unallocated<br/>human exception review required"]
+
+    REPORT["Build canonical Rescue Decision Report"]
+    SUSTAIN["Build Sustainability Summary<br/>expected rescue · expected waste · rescue ratio"]
+    WEIGHT{"Complete package-weight evidence?"}
+    MASS["Calculate batch rescue / waste mass"]
+    NO_MASS["Mark mass evidence PARTIAL or NONE<br/>withhold complete batch-mass claim"]
+    NEXTSTEP["Build NextStep Decision Report"]
+    DISPLAY[/"Render rescue plan + sustainability summary<br/>in decision workspace"/]
+
+    REVIEW{"Human approves a physical action?"}
+    NO_ACTION[/"Keep recommendation advisory only"/]
+    EXTERNAL[/"Physical rescue action executed<br/>outside Afterlife AI"/]
+    OBSERVE[/"Operator enters actual rescued quantity<br/>+ actual waste quantity"/]
+    RECON["Reconcile confirmed outcome"]
+    OUTCOME["Calculate confirmed quantity · unresolved quantity<br/>realized diversion ratio · rescue / waste deltas"]
+    EXPORT[/"Download human-readable Markdown report<br/>plan + sustainability + confirmed outcome"/]
+    END(["End"])
+
+    START --> USER --> INPUT --> VALIDATE --> VALID
+    VALID -- "No" --> ERROR --> STOP_INVALID
+    VALID -- "Yes" --> TRIAGE --> TRIAGE_RESULT --> SURPLUS
+
+    SURPLUS -- "No" --> NO_PLAN --> REPORT
+    SURPLUS -- "Yes" --> LOTS --> GENERATE --> GATES --> FEASIBLE
+
+    FEASIBLE -- "No" --> UNALLOC --> REPORT
+    FEASIBLE -- "Yes" --> MODEL
+
+    MODEL -- "Yes" --> SCORE --> VALUE
+    MODEL -- "No" --> SCORE_FB --> VALUE
+
+    VALUE --> OPT --> OPT_RESULT
+    OPT_RESULT -- "Yes" --> REPORT
+    OPT_RESULT -- "Non-definitive" --> OPT_FB --> REPORT
+    OPT_RESULT -- "Infeasible" --> INFEASIBLE --> REPORT
+
+    REPORT --> SUSTAIN --> WEIGHT
+    WEIGHT -- "Yes" --> MASS --> NEXTSTEP
+    WEIGHT -- "No" --> NO_MASS --> NEXTSTEP
+
+    NEXTSTEP --> DISPLAY --> REVIEW
+    REVIEW -- "No" --> NO_ACTION --> EXPORT
+    REVIEW -- "Yes" --> EXTERNAL --> OBSERVE --> RECON --> OUTCOME --> EXPORT
+    EXPORT --> END
