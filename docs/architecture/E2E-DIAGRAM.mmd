@@ -1,0 +1,63 @@
+flowchart TB
+
+    A["Business Operator"]
+
+    B["Inventory Input<br/><br/>Inventory Workbook (.xlsx)<br/>+ Decision Context"]
+
+    C["Intake & Validation<br/><br/>File · Workbook · Worksheet · Schema<br/>Datatype · Semantic · Request Context"]
+
+    D{"Input Valid?"}
+
+    E["Validation Feedback<br/><br/>HTTP 400 / 422<br/>Analysis Stops"]
+
+    F["Deterministic Inventory Triage<br/><br/>HEALTHY_STOCK · MONITOR<br/>SURPLUS_CANDIDATE · EXPIRED<br/>NEEDS_REVIEW"]
+
+    G["Surplus Planning<br/><br/>Planning-Lot Construction<br/>Rescue Candidate Generation"]
+
+    H["Safety & Feasibility Gates<br/><br/>Safety · Verification · Timing<br/>Compatibility · Demand · Capacity<br/>Logistics · Operational Constraints"]
+
+    I["HGB-E Rescue-Success Scoring<br/><br/>Gate-Eligible Candidates Only"]
+
+    J["Expected-Value Calculation"]
+
+    K["Global CP-SAT Allocation<br/><br/>Quantity · Shared Capacity<br/>Objective · Logistics Budget<br/>Minimum Rescue Ratio"]
+
+    L["Rescue Decision Report<br/><br/>Selected Allocations · Alternatives<br/>Expected Rescue · Expected Waste<br/>Economic Value · Provenance<br/>Warnings · Limitations"]
+
+    M["Sustainability Summary<br/><br/>Expected Rescue Quantity<br/>Expected Waste Quantity<br/>Expected Rescue Ratio<br/>Mass Evidence: COMPLETE / PARTIAL / NONE"]
+
+    N["Human Review<br/><br/>Advisory Only<br/>Approval Remains Human"]
+
+    O[/"Physical Rescue Execution<br/><br/>Outside Afterlife AI"/]
+
+    P["Operator-Confirmed Outcome<br/><br/>Actual Rescued Quantity<br/>Actual Waste Quantity"]
+
+    Q["Outcome Reconciliation<br/><br/>Confirmed Coverage<br/>Unresolved Quantity<br/>Realized Diversion Ratio<br/>Rescue / Waste Delta"]
+
+    R["Human-Readable Markdown Report<br/><br/>Plan + Sustainability<br/>+ Confirmed Outcome"]
+
+    A --> B
+    B --> C
+    C --> D
+
+    D -- No --> E
+    D -- Yes --> F
+
+    F --> G
+    G --> H
+    H --> I
+    I --> J
+    J --> K
+
+    K --> L
+    L --> M
+    M --> N
+
+    N -. approved action .-> O
+    O -. observed result .-> P
+
+    P --> Q
+
+    L --> R
+    M --> R
+    Q --> R
