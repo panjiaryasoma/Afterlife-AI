@@ -1,7 +1,7 @@
 ---
-version: "1.0.1"
+version: "1.1.0"
 name: "Afterlife AI Operational Editorial"
-description: "Design system for a traceable, human-reviewed surplus inventory rescue decision workspace."
+description: "Design system for a traceable, human-reviewed surplus inventory rescue, sustainability, and outcome-reconciliation workspace."
 status: "production-ui-source-of-truth"
 
 colors:
@@ -182,7 +182,7 @@ components:
 
 Afterlife AI uses an **Operational Editorial** design language.
 
-The interface should look like a serious decision workspace used to inspect constraints, compare alternatives, and review evidence. It should not look like a generic AI dashboard, a chatbot, or a marketing landing page.
+The interface should look like a serious decision workspace used to inspect constraints, compare alternatives, review expected impact, and reconcile operator-confirmed outcomes. It should not look like a generic AI dashboard, a chatbot, or a marketing landing page.
 
 Primary visual characteristics:
 
@@ -233,7 +233,8 @@ Use the display serif only for strong editorial moments:
 
 - product name;
 - page headline;
-- short statement.
+- short statement;
+- a single dominant sustainability or realized-outcome measure when it materially aids interpretation.
 
 Do not use serif for dense metrics or input labels.
 
@@ -251,7 +252,8 @@ Use tabular numerals for:
 - distances;
 - durations;
 - timestamps;
-- optimizer metadata.
+- optimizer metadata;
+- expected and confirmed outcome comparisons.
 
 ## 3.4 Section Labels
 
@@ -267,16 +269,30 @@ Keep them small and quiet. Their purpose is orientation.
 
 ## 4.1 Canonical Page Structure
 
-The final page follows one vertical workflow:
+The current production page follows one vertical workflow:
 
 1. product identity;
 2. decision context;
 3. rescue summary;
-4. selected rescue plan;
-5. alternatives;
-6. human review;
-7. evidence & provenance;
-8. limitations + export.
+4. sustainability impact + optional outcome reconciliation;
+5. selected rescue plan;
+6. alternatives;
+7. human review;
+8. evidence & provenance;
+9. limitations + export.
+
+The rendered section numbering intentionally maps this sequence to:
+
+- `01 / DECISION CONTEXT`
+- `02 / RESCUE SUMMARY`
+- `03 / OUTCOME RECONCILIATION`
+- `04 / SELECTED RESCUE PLAN`
+- `05 / ALTERNATIVES`
+- `06 / HUMAN REVIEW`
+- `07 / EVIDENCE`
+- `08 / LIMITATIONS`
+
+`03 / OUTCOME RECONCILIATION` contains the expected Sustainability Summary first, then the optional operator-confirmed reconciliation workflow. Expected impact must be understandable before an operator supplies an actual outcome.
 
 Do not introduce a sidebar unless the application gains real multi-view navigation.
 
@@ -289,6 +305,7 @@ On desktop:
 - allow decision controls to form two columns;
 - use summary metrics in 3–4 columns;
 - use split alignment inside allocation blocks;
+- allow expected-vs-confirmed comparison tables only where they improve interpretation;
 - keep explanatory prose within a readable measure.
 
 ## 4.3 Mobile
@@ -296,9 +313,10 @@ On desktop:
 On mobile:
 
 - one column;
-- no horizontal table dependency;
+- no horizontal body-scroll dependency;
 - keep the primary CTA full-width where useful;
 - place core decision information before secondary evidence;
+- stack sustainability and reconciliation detail cleanly;
 - allow provenance detail to collapse;
 - retain limitations as visible content.
 
@@ -321,7 +339,7 @@ Approved depth hierarchy:
 3. Raised surface
 4. Floating only for temporary overlays if added later
 
-Allocation blocks should normally use borders and spacing, not large shadows.
+Allocation and impact blocks should normally use borders and spacing, not large shadows.
 
 Avoid:
 
@@ -400,7 +418,51 @@ The summary is data-first.
 
 Do not use charts unless a chart answers a decision question better than numbers.
 
-## 7.4 Selected Allocation
+## 7.4 Sustainability Impact
+
+The Sustainability Summary is expected, plan-derived output. It must remain visually distinct from operator-confirmed outcomes.
+
+Show, when available:
+
+- reconciled/planning quantity scope;
+- expected rescue quantity;
+- expected waste quantity;
+- expected rescue ratio;
+- mass evidence coverage: `COMPLETE`, `PARTIAL`, or `NONE`;
+- expected rescue mass and expected waste mass only when coverage is `COMPLETE`.
+
+Rules:
+
+- label expected impact as model/plan-derived;
+- never impute missing package weight;
+- when package-weight evidence is incomplete, withhold complete full-batch mass claims;
+- do not infer carbon, CO2, emissions, meals, trees, or other environmental proxies that the runtime does not compute.
+
+## 7.5 Outcome Reconciliation
+
+Outcome Reconciliation records what an operator has physically confirmed after the advisory plan exists.
+
+Required semantics:
+
+- actual rescued quantity;
+- actual waste quantity;
+- confirmed quantity;
+- unresolved quantity;
+- realized diversion ratio from confirmed outcomes only;
+- expected-vs-confirmed rescue and waste values;
+- rescue quantity delta;
+- waste quantity delta.
+
+Rules:
+
+- actual rescued + actual waste cannot exceed the reconciliation scope;
+- unresolved quantity remains unresolved rather than being guessed;
+- unresolved quantity is excluded from the realized diversion ratio;
+- reconciliation is stateless in the current demo;
+- reconciliation must not mutate the original Rescue Decision Report;
+- do not present a realized outcome when no operator-confirmed observation exists.
+
+## 7.6 Selected Allocation
 
 Each selected allocation must show, where available:
 
@@ -424,7 +486,7 @@ Each selected allocation must show, where available:
 
 The reading order must prioritize the decision before the supporting detail.
 
-## 7.5 Alternatives
+## 7.7 Alternatives
 
 Show feasible candidates that were not selected by the optimizer.
 
@@ -434,7 +496,7 @@ Use explicit text such as:
 
 Do not visually style them as failures.
 
-## 7.6 Human Review
+## 7.8 Human Review
 
 Human review must be visually prominent when present.
 
@@ -448,7 +510,7 @@ Show:
 
 Do not use “Approved” unless actual human approval exists.
 
-## 7.7 Evidence & Provenance
+## 7.9 Evidence & Provenance
 
 Evidence is secondary but easily accessible.
 
@@ -471,7 +533,7 @@ Use explicit labels:
 - `NOT REAL-WORLD VERIFIED`
 - `DETERMINISTIC`
 
-## 7.8 Limitations
+## 7.10 Limitations
 
 Limitations must remain visible in the page.
 
@@ -481,13 +543,28 @@ Never hide them only in:
 - tooltip;
 - footer link.
 
-## 7.9 Export
+## 7.11 Export
 
-Primary export:
+Primary human-facing browser export:
 
-`Download JSON Report`
+`Download Markdown Report`
 
-Export is secondary to analysis.
+The Markdown report may include:
+
+- canonical Rescue Decision Report values;
+- Sustainability Summary;
+- selected rescue plan;
+- alternatives;
+- operator-confirmed Outcome Reconciliation when supplied;
+- Human Review;
+- Evidence & Provenance;
+- Limitations.
+
+If no operator-confirmed outcome has been reconciled, the report must say so explicitly and must not infer an actual outcome.
+
+Typed JSON remains available through the application APIs as the programmatic contract. The browser Markdown export does not replace or redefine API semantics.
+
+Export remains secondary to analysis and review.
 
 ---
 
@@ -511,14 +588,26 @@ Errors must state:
 
 Place field-specific validation near the relevant input where possible.
 
+Outcome-reconciliation validation must explain when confirmed rescued + waste exceeds the allowed reconciliation scope.
+
 ## 8.3 Success
 
 After successful analysis:
 
-- show the report;
+- show the Rescue Decision Report;
+- show the expected Sustainability Summary;
 - show a concise completion status;
 - keep the input context visible;
-- make JSON export available.
+- make Markdown export available;
+- keep Outcome Reconciliation optional until the operator has confirmed actual quantities.
+
+After successful reconciliation:
+
+- show confirmed coverage;
+- show unresolved quantity;
+- show realized diversion ratio;
+- show expected-vs-confirmed deltas;
+- make the updated Markdown export include the confirmed outcome.
 
 ## 8.4 Empty States
 
@@ -526,6 +615,7 @@ Use plain language:
 
 - `No rescue allocation selected.`
 - `No lot requires manual review.`
+- `No operator-confirmed outcome has been reconciled.`
 
 Do not use celebratory empty-state illustrations.
 
@@ -541,7 +631,8 @@ Approved:
 - allocation-list stagger;
 - disclosure expand/collapse;
 - button/loading transition;
-- subtle numeric update.
+- subtle numeric update;
+- reconciliation-result reveal after a confirmed submission.
 
 Rules:
 
@@ -607,6 +698,8 @@ Release requirements:
 - zoom enabled;
 - `prefers-reduced-motion` respected.
 
+Expected, confirmed, unresolved, warning, and evidence-coverage states must remain understandable without relying on color alone.
+
 ---
 
 # 12. Decision Semantics
@@ -615,11 +708,22 @@ Visual design must preserve the distinction between:
 
 - feasible vs blocked;
 - selected vs feasible-not-selected;
-- rescue estimate vs observed outcome;
+- expected/model-derived impact vs operator-confirmed realized impact;
+- confirmed quantity vs unresolved quantity;
+- complete vs partial/none mass evidence;
 - synthetic fixture vs real-world verified source;
 - solver infeasible vs no candidate;
 - system recommendation vs human approval;
 - advisory output vs executed action.
+
+Rules:
+
+- `Expected rescue` is not `Actual rescued`.
+- `Expected waste` is not `Actual waste`.
+- `Realized diversion ratio` exists only from confirmed outcomes.
+- Unresolved quantity must not be silently counted as rescued or waste.
+- Full-batch mass must not be shown when package-weight evidence is `PARTIAL` or `NONE`.
+- Physical action must not be implied from an advisory plan.
 
 Examples:
 
@@ -650,6 +754,17 @@ Examples:
 
 when the candidate was not blocked.
 
+**Correct**
+
+`Mass evidence — PARTIAL`  
+`Full-batch mass withheld`
+
+**Incorrect**
+
+`Expected rescue mass — 18 kg`
+
+when full package-weight coverage is not available.
+
 ---
 
 # 13. Risk & Review States
@@ -660,9 +775,10 @@ Use consistent semantics.
 
 Use for completed technical state, not implied physical execution.
 
-Example:
+Examples:
 
-`Analysis completed`
+- `Analysis completed`
+- `Outcome reconciled`
 
 ## Warning
 
@@ -670,6 +786,8 @@ Use for:
 
 - review required;
 - evidence weakness;
+- incomplete mass evidence;
+- unresolved outcome quantity;
 - static/synthetic limitations.
 
 ## Danger
@@ -678,6 +796,7 @@ Use for:
 
 - malformed input;
 - blocked state;
+- invalid reconciliation quantities;
 - unrecoverable request failure.
 
 ## Neutral
@@ -686,7 +805,8 @@ Use for:
 
 - feasible-not-selected;
 - pending;
-- metadata.
+- metadata;
+- outcome not yet reconciled.
 
 ---
 
@@ -701,9 +821,9 @@ Prioritize:
 
 Avoid data dumping.
 
-Use concise formatting for money and quantities in the visible UI while preserving exact values in downloaded JSON.
+Use concise formatting for money and quantities in the visible UI. Human-facing Markdown may format values for readability, while typed API/JSON contracts remain the programmatic source for exact structured values.
 
-Tables are optional, not default.
+Tables are optional, not default. The expected-vs-confirmed outcome table is appropriate because it directly answers a comparison question.
 
 ## 14.1 Chart Admission Rule
 
@@ -718,7 +838,8 @@ Potentially valid Afterlife AI visualizations:
 - rescue vs waste composition;
 - allocation by rescue action;
 - value-component breakdown;
-- capacity utilization or shared-resource pressure.
+- capacity utilization or shared-resource pressure;
+- expected vs confirmed outcomes, if a chart becomes clearer than the current comparison table.
 
 No chart is required for the MVP by default.
 
@@ -745,7 +866,7 @@ Do not introduce Bklit, React, shadcn, or another framework dependency solely to
 - Never encode critical meaning by color alone.
 - Units and labels must remain explicit.
 - Use existing semantic design tokens for chart colors.
-- Preserve exact values in the downloadable JSON report.
+- Preserve the same semantics and exact structured values exposed by typed API/JSON contracts.
 - Prefer direct labels over requiring legend lookup when practical.
 - Chart animation must not delay comprehension.
 - All chart motion must respect `prefers-reduced-motion`.
@@ -754,7 +875,7 @@ Do not introduce Bklit, React, shadcn, or another framework dependency solely to
 
 # 15. AI / Model Provenance
 
-Any model-derived result must remain distinguishable from deterministic rules.
+Any model-derived result must remain distinguishable from deterministic rules and operator-confirmed outcomes.
 
 The UI must make it possible to identify:
 
@@ -762,7 +883,8 @@ The UI must make it possible to identify:
 - that model outputs are estimates;
 - whether the fixture/source is synthetic;
 - whether external partner evidence is real-world verified;
-- that deterministic hard gates cannot be bypassed by model output.
+- that deterministic hard gates cannot be bypassed by model output;
+- that operator-confirmed actual quantities are not produced by the model.
 
 Do not personify the model.
 
@@ -780,13 +902,15 @@ Do not personify the model.
 
 - standard desktop;
 - two-column decision context;
-- multi-column metrics.
+- multi-column metrics;
+- side-by-side impact ledger/comparison where it remains readable.
 
 ## 768–1023px
 
 - compact desktop/tablet;
 - 2-column metrics;
-- stack detailed allocation metadata where needed.
+- stack detailed allocation metadata where needed;
+- keep reconciliation inputs readable without horizontal overflow.
 
 ## < 768px
 
@@ -794,7 +918,8 @@ Do not personify the model.
 - core decision first;
 - full-width primary CTA;
 - wrap badges;
-- no horizontal data table requirement.
+- stack expected/confirmed comparison content when necessary;
+- no horizontal body-scroll requirement.
 
 ---
 
@@ -831,6 +956,9 @@ If external fonts are introduced later:
 - keep provenance visible;
 - surface alternatives and review states;
 - preserve human authority;
+- keep expected and realized impact visibly distinct;
+- keep unresolved quantity explicit;
+- withhold complete mass claims when evidence is incomplete;
 - make the happy path obvious;
 - adapt references to the current stack.
 
@@ -846,6 +974,10 @@ If external fonts are introduced later:
 - add fake AI chat;
 - add charts without a decision purpose;
 - imply synthetic evidence is real-world;
+- imply expected impact is realized impact;
+- infer actual rescued/waste quantities;
+- impute missing package weights for a complete batch-mass claim;
+- invent carbon/CO2 or other unsupported impact proxies;
 - imply automatic execution;
 - hide limitations;
 - claim optimizer superiority without evidence.
@@ -862,11 +994,26 @@ Current production implementation remains:
 - vanilla CSS;
 - vanilla JavaScript.
 
-Primary files:
+Primary UI files:
 
 - `frontend/templates/index.html`
 - `frontend/static/css/app.css`
+- `frontend/static/css/impact.css`
 - `frontend/static/js/app.js`
+- `frontend/static/js/impact-ui.js`
+- `frontend/static/js/report-markdown.js`
+
+Primary browser analysis path:
+
+`POST /api/analyze-nextstep`
+
+Legacy compatibility path:
+
+`POST /api/analyze`
+
+Outcome reconciliation path:
+
+`POST /api/outcomes/reconcile`
 
 The UI must satisfy the existing production acceptance tests, including:
 
@@ -874,7 +1021,13 @@ The UI must satisfy the existing production acceptance tests, including:
 - explainability sections;
 - decision-context request forwarding;
 - rich report field rendering;
-- JSON report download.
+- typed Sustainability Summary consumption;
+- evidence-bounded mass handling;
+- operator-confirmed Outcome Reconciliation;
+- expected-vs-realized semantic separation;
+- Markdown report download.
+
+Typed JSON remains available through API responses.
 
 ---
 
@@ -885,6 +1038,13 @@ Before the UI is accepted:
 - [ ] Decision Context exposes all production request fields.
 - [ ] Loading and error states are visible.
 - [ ] Rescue Summary includes rescue/waste metrics.
+- [ ] Sustainability Summary renders typed expected rescue, waste, and ratio metrics.
+- [ ] Mass evidence clearly reports `COMPLETE`, `PARTIAL`, or `NONE`.
+- [ ] Full-batch mass is withheld unless package-weight evidence is complete.
+- [ ] Outcome inputs accept operator-confirmed rescued and waste quantities only.
+- [ ] Confirmed and unresolved outcome quantities are visible after reconciliation.
+- [ ] Realized diversion ratio uses confirmed outcomes only.
+- [ ] Expected and realized values remain visually and semantically distinct.
 - [ ] Selected allocations expose destination and explainability.
 - [ ] Feasible-not-selected alternatives are visible.
 - [ ] Human review state is explicit.
@@ -892,12 +1052,14 @@ Before the UI is accepted:
 - [ ] Synthetic and real-world verification states are clear.
 - [ ] Deterministic optimizer metadata is visible.
 - [ ] Limitations are visible without a modal.
-- [ ] JSON report download works.
+- [ ] Markdown report download works.
+- [ ] An unreconciled report does not invent an operator-confirmed outcome.
+- [ ] Typed API/JSON semantics remain unchanged by browser formatting.
 - [ ] Keyboard navigation works.
 - [ ] Focus indicators are visible.
 - [ ] Mobile layout has no horizontal body scroll.
 - [ ] Motion respects reduced-motion.
-- [ ] No unsupported real-world claim appears.
+- [ ] No unsupported real-world or carbon/CO2 claim appears.
 - [ ] No dependency was added solely for aesthetics.
 - [ ] Automated UI tests pass.
 
