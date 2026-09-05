@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="frontend/static/image/logo.png" alt="Afterlife-AI" width="720">
+  <img src="frontend/static/images/logo.png" alt="Afterlife-AI" width="720">
 </p>
 
 # Afterlife AI
