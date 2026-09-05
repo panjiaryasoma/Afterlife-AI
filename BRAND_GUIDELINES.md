@@ -1,9 +1,9 @@
 # Afterlife AI — Brand Guidelines
 
-**Version:** 1.0.1  
+**Version:** 1.1.0  
 **Status:** Production UI Source of Truth  
 **Project:** Afterlife AI  
-**Product Type:** Operational decision-support system for surplus inventory rescue planning  
+**Product Type:** Operational decision-support system for surplus inventory rescue planning, sustainability reporting, and outcome reconciliation  
 **Frontend:** FastAPI + Jinja2 + semantic HTML + vanilla CSS + vanilla JavaScript
 
 ---
@@ -12,7 +12,7 @@
 
 ### 1.1 Purpose
 
-Afterlife AI helps transform surplus inventory into a traceable, constrained, human-reviewed rescue plan.
+Afterlife AI helps transform surplus inventory into a traceable, constrained, human-reviewed rescue plan, then separates expected sustainability impact from outcomes that an operator has actually confirmed.
 
 The product should feel like an operational decision workspace, not an autonomous AI assistant, chatbot, marketplace, or speculative “future of AI” showcase.
 
@@ -57,16 +57,29 @@ It:
 
 - validates and triages surplus inventory;
 - applies deterministic safety and feasibility gates;
-- scores feasible rescue actions;
+- scores only gate-eligible rescue actions;
+- calculates expected economic and rescue/waste outcomes;
 - optimizes allocation under shared constraints;
-- surfaces selected and rejected alternatives;
+- surfaces selected and non-selected alternatives;
 - produces an advisory Rescue Decision Report;
+- produces a typed Sustainability Summary from the same planned rescue scope;
+- reports mass-evidence coverage as `COMPLETE`, `PARTIAL`, or `NONE`;
+- exposes full-batch rescue/waste mass only when package-weight evidence is complete;
+- reconciles operator-confirmed rescued and waste quantities without mutating the original rescue plan;
+- shows confirmed coverage, unresolved quantity, realized diversion ratio, and expected-vs-confirmed deltas;
+- exports a human-readable Markdown report;
+- keeps typed JSON available through the application APIs;
 - keeps human approval as the final authority.
 
 It does **not**:
 
 - execute physical rescue actions automatically;
 - negotiate or transact autonomously;
+- infer an actual outcome that an operator has not confirmed;
+- silently classify unresolved quantity as rescued or waste;
+- impute missing package weights to claim complete batch mass;
+- invent carbon, CO2, emissions, meals, trees, or other impact proxies the runtime does not calculate;
+- persist outcome observations in the current demo;
 - present synthetic estimates as real-world truth;
 - claim real-world rescue probability accuracy;
 - claim global optimization is superior to greedy allocation unless the registered benchmark gate is actually passed.
@@ -95,6 +108,17 @@ Prefer:
 - “Review required”
 - “Advisory report”
 - “Static partner registry snapshot”
+- “Sustainability Summary”
+- “Expected rescue”
+- “Expected waste”
+- “Mass evidence: COMPLETE”
+- “Mass evidence: PARTIAL”
+- “Mass evidence: NONE”
+- “Operator-confirmed outcome”
+- “Outcome Reconciliation”
+- “Unresolved quantity”
+- “Realized diversion ratio”
+- “Download Markdown Report”
 
 Avoid:
 
@@ -106,17 +130,31 @@ Avoid:
 - “Real-world probability” for synthetic-model outputs
 - “Best action” when the system only selected an action under current constraints
 - “Optimizer outperforms greedy” without benchmark evidence
+- “Actual impact” before an operator-confirmed observation exists
+- “Waste diverted” as a realized outcome when only an expected value exists
+- “Carbon avoided”, “CO2 avoided”, or similar environmental claims when the runtime does not compute them.
 
 ### 2.2 Claim Discipline
 
-Every user-facing claim must respect three boundaries:
+Every user-facing claim must respect four boundaries:
 
 1. **Semantic truth**  
    The wording must match what the system actually computes.
 2. **Evidence truth**  
-   Synthetic, static, inferred, or model-derived information must be labeled as such.
+   Synthetic, static, inferred, model-derived, or incomplete-weight information must be labeled as such.
 3. **Execution truth**  
-   The interface must never imply an action has been physically executed unless external execution evidence exists.
+   The interface must never imply an action has been physically executed unless external/operator confirmation exists.
+4. **Outcome truth**  
+   Expected/model-derived impact must remain separate from operator-confirmed realized impact. Unresolved quantity remains unresolved.
+
+Additional rules:
+
+- `Expected rescue` and `Expected waste` are planning outputs, not observed outcomes.
+- `Realized diversion ratio` is calculated from confirmed outcomes only.
+- Unresolved quantity is excluded from the realized diversion ratio.
+- Full-batch mass is withheld when mass evidence is `PARTIAL` or `NONE`.
+- Missing package weight is never silently imputed.
+- Outcome reconciliation does not rewrite the original plan.
 
 ### 2.3 Preferred Labels
 
@@ -124,6 +162,8 @@ Use:
 
 - `Selected Rescue Plan`
 - `Alternatives Not Selected`
+- `Sustainability Summary`
+- `Outcome Reconciliation`
 - `Human Review`
 - `Evidence & Provenance`
 - `Limitations`
@@ -132,6 +172,15 @@ Use:
 - `Expected Waste`
 - `Expected Rescue Ratio`
 - `Expected Net Recovery`
+- `Mass Evidence`
+- `Expected Rescue Mass`
+- `Expected Waste Mass`
+- `Operator-Confirmed Outcome`
+- `Confirmed Quantity`
+- `Unresolved Quantity`
+- `Realized Diversion Ratio`
+- `Rescue Delta`
+- `Waste Delta`
 - `Binding Constraints`
 - `Partner Registry`
 - `Deterministic Execution`
@@ -163,11 +212,13 @@ The interface combines:
 - restrained sustainability cues for material/resource context;
 - minimal computational character for AI provenance.
 
+Expected impact and confirmed outcomes should feel related but not interchangeable. Typography, labels, scope notes, and explicit evidence states should do more work than decoration.
+
 ### 3.3 Reference Hierarchy
 
 Use references in this order:
 
-1. **Afterlife AI product contracts and Issue 7 requirements** — functional truth.
+1. **Afterlife AI product contracts and current production behavior** — functional truth.
 2. **Dali AI Agency / Agent Studio** — visual mood, editorial rhythm, typography hierarchy.
 3. **UI UX Pro Max** — UX, accessibility, responsive, token, and design-system reasoning.
 4. **Watermelon UI** — general component anatomy and interaction references.
@@ -216,6 +267,7 @@ It should feel closer to charcoal, paper, metal, olive, and brass than to neon s
 - No decorative rainbow gradients.
 - Avoid pure black and pure white as dominant surfaces.
 - Test foreground/background pairs for WCAG AA contrast.
+- Expected vs confirmed outcomes must not rely on color alone for distinction.
 
 ---
 
@@ -238,7 +290,8 @@ Use for:
 
 - `Afterlife AI`
 - major page title;
-- major editorial statement.
+- major editorial statement;
+- a single dominant expected or realized measure when appropriate.
 
 Do not use for dense data or control labels.
 
@@ -249,6 +302,8 @@ Use for:
 - forms;
 - metrics;
 - allocation details;
+- sustainability metadata;
+- reconciliation values;
 - labels;
 - provenance;
 - warnings;
@@ -266,7 +321,8 @@ Use tabular numerals for:
 - distances;
 - durations;
 - timestamps;
-- solver metadata.
+- solver metadata;
+- expected-vs-confirmed comparisons.
 
 ---
 
@@ -276,16 +332,17 @@ Use tabular numerals for:
 
 The product is a **single linear decision workspace**, not a multi-page admin dashboard.
 
-The canonical sequence is:
+The current production sequence is:
 
 1. Hero / product identity
 2. Decision Context
 3. Rescue Summary
-4. Selected Rescue Plan
-5. Alternatives Not Selected
-6. Human Review
-7. Evidence & Provenance
-8. Limitations + Export
+4. Sustainability Summary + optional Outcome Reconciliation
+5. Selected Rescue Plan
+6. Alternatives Not Selected
+7. Human Review
+8. Evidence & Provenance
+9. Limitations + Export
 
 ### 6.2 Hierarchy
 
@@ -302,17 +359,18 @@ Do not solve hierarchy by placing every block inside a rounded card.
 
 ### 6.3 Section Numbering
 
-Use consistent editorial numbering:
+Use the current editorial numbering:
 
 - `01 / DECISION CONTEXT`
 - `02 / RESCUE SUMMARY`
-- `03 / SELECTED RESCUE PLAN`
-- `04 / ALTERNATIVES`
-- `05 / HUMAN REVIEW`
-- `06 / EVIDENCE`
-- `07 / LIMITATIONS`
+- `03 / OUTCOME RECONCILIATION`
+- `04 / SELECTED RESCUE PLAN`
+- `05 / ALTERNATIVES`
+- `06 / HUMAN REVIEW`
+- `07 / EVIDENCE`
+- `08 / LIMITATIONS`
 
-Numbers are navigational rhythm, not decorative gimmicks.
+The `03 / OUTCOME RECONCILIATION` section includes expected Sustainability Summary content before the operator-confirmed reconciliation controls. Numbers are navigational rhythm, not decorative gimmicks.
 
 ---
 
@@ -351,9 +409,15 @@ Preferred primary label:
 
 `Analyze Inventory`
 
-Secondary:
+Primary human-facing export label:
 
-`Download JSON Report`
+`Download Markdown Report`
+
+Reconciliation action:
+
+`Reconcile outcome`
+
+Typed JSON remains available through APIs and should not be presented as the primary browser export.
 
 ### 7.3 Inputs
 
@@ -364,6 +428,8 @@ Every input must have:
 - helper text when domain semantics are non-obvious;
 - error feedback near the field;
 - visible keyboard focus.
+
+Outcome inputs must explicitly represent operator-confirmed actual rescued and actual waste quantities.
 
 ### 7.4 Statuses
 
@@ -377,6 +443,11 @@ Examples:
 - `SYNTHETIC DEMO FIXTURE`
 - `NOT REAL-WORLD VERIFIED`
 - `FEASIBLE — NOT SELECTED`
+- `MASS EVIDENCE — COMPLETE`
+- `MASS EVIDENCE — PARTIAL`
+- `MASS EVIDENCE — NONE`
+- `OUTCOME NOT RECONCILED`
+- `UNRESOLVED QUANTITY`
 
 ### 7.5 Allocation Blocks
 
@@ -393,6 +464,24 @@ Priority order:
 7. expected net recovery;
 8. binding constraints.
 
+### 7.6 Sustainability & Reconciliation Blocks
+
+Sustainability and outcome components should read like an evidence ledger, not a celebratory “impact dashboard.”
+
+Prioritize:
+
+1. expected rescue scope;
+2. expected rescue/waste quantities and ratio;
+3. mass-evidence status;
+4. mass values only when evidence is complete;
+5. operator-confirmed actuals;
+6. confirmed vs unresolved coverage;
+7. realized diversion ratio;
+8. expected-vs-confirmed deltas;
+9. explicit note that actual observations are not persisted in the current demo.
+
+Do not decorate expected impact in a way that implies it has already happened.
+
 ---
 
 ## 8. Motion Identity
@@ -405,7 +494,8 @@ Approved motion patterns:
 - staggered reveal for allocation items;
 - smooth disclosure expand/collapse;
 - loading state transition;
-- subtle numeric transition when values update.
+- subtle numeric transition when values update;
+- restrained reveal of reconciliation results after a confirmed submission.
 
 Avoid:
 
@@ -456,7 +546,8 @@ Potential valid uses:
 - rescue vs waste composition;
 - allocation by rescue action;
 - value-component breakdown;
-- capacity utilization or shared-resource pressure.
+- capacity utilization or shared-resource pressure;
+- expected vs confirmed outcomes when a chart becomes clearer than the comparison table.
 
 A chart is not required merely because the product contains data.
 
@@ -468,7 +559,8 @@ A chart is not required merely because the product contains data.
 - Labels, legends, and units must be explicit.
 - Use the same semantic color tokens as the rest of the product.
 - Avoid 3D charts, ornamental gradients, and excessive animation.
-- Preserve exact values in the JSON report even if visible labels are abbreviated.
+- Preserve the semantics and exact structured values available from typed API/JSON contracts.
+- The human-facing Markdown report may format values for readability but must not alter their meaning.
 - Motion must remain secondary to interpretation.
 
 ---
@@ -490,6 +582,8 @@ Minimum requirements:
 - zoom must remain enabled;
 - reduced-motion support.
 
+Expected, confirmed, unresolved, and evidence-coverage states must remain understandable without color.
+
 Accessibility is a release gate, not a polish task.
 
 ---
@@ -508,21 +602,24 @@ Behavior:
 **Mobile**
 - one column;
 - core decision information first;
+- stack impact and reconciliation fields;
 - secondary provenance may collapse;
-- no horizontal table dependency.
+- no horizontal body-scroll dependency.
 
 **Tablet**
 - two-column form groups where appropriate;
-- metrics may use 2 columns.
+- metrics may use 2 columns;
+- reconciliation details may stack where needed.
 
 **Desktop**
 - editorial wide layout;
 - summary may use 3–4 columns;
-- allocation detail can use split columns.
+- allocation detail can use split columns;
+- impact ledger and expected-vs-confirmed comparison may use wider layouts where readable.
 
 ---
 
-## 12. Imagery & Iconography
+## 12. Imagery, Iconography & Brand Assets
 
 ### 12.1 Imagery
 
@@ -531,12 +628,15 @@ The core application does not require decorative imagery.
 If imagery is introduced:
 
 - it must support the surplus/resource-rescue story;
-- use restrained documentary/material imagery;
-- avoid stock “AI brain”, robot, glowing network, or futuristic city imagery.
+- use restrained documentary/material or operational-artifact imagery;
+- avoid stock “AI brain”, robot, glowing network, or futuristic city imagery;
+- avoid invented environmental impact symbols that imply unsupported claims.
+
+Submission-facing campaign imagery may use the **Freight Rerouting Manifest** visual metaphor when it remains clearly illustrative and does not introduce fake product metrics.
 
 ### 12.2 Icons
 
-Use one consistent SVG icon family if icons become necessary.
+Use one consistent SVG icon family if interface icons become necessary.
 
 Preferred qualities:
 
@@ -545,6 +645,26 @@ Preferred qualities:
 - consistent stroke weight.
 
 Do not use emojis as interface icons.
+
+### 12.3 Brand Assets
+
+Current repository assets:
+
+| Asset | Path | Primary use |
+|---|---|---|
+| Afterlife AI icon | `frontend/static/images/afterlife-ai-icon.png` | favicon, compact mark, small identity contexts |
+| Full Afterlife AI logo | `frontend/static/images/logo.png` | README, brand lockup, larger identity contexts |
+| Submission thumbnail | `thumbnail.png` | Devpost/project-card and competition-facing thumbnail |
+
+Asset rules:
+
+- Treat the existing Afterlife AI icon as the canonical mark; do not redraw it into a different symbol casually.
+- Preserve the mark's reroute-arrow idea and warm neutral/brass identity.
+- Do not stretch, skew, crop through, or arbitrarily recolor the icon or full logo.
+- Use the compact icon where wordmark readability would be poor.
+- Use the full logo where horizontal space and hierarchy support it.
+- The submission thumbnail is campaign artwork, not a substitute for the application favicon or compact product mark.
+- Do not replace these assets with a generic leaf, robot, recycle symbol, brain, sparkle, or abstract AI mark.
 
 ---
 
@@ -557,9 +677,14 @@ Do not use emojis as interface icons.
 - use tabular numerals for data;
 - show provenance near model-derived outputs;
 - state synthetic status explicitly;
+- keep expected and realized impact separate;
+- keep unresolved quantity explicit;
+- expose mass-evidence coverage;
+- withhold complete mass claims when evidence is incomplete;
 - preserve human-review boundaries;
-- surface rejected alternatives;
+- surface feasible-not-selected alternatives;
 - expose constraint reasons in plain language;
+- use the approved brand assets consistently;
 - keep the happy path short;
 - keep the interface useful without animation.
 
@@ -570,31 +695,44 @@ Do not use emojis as interface icons.
 - hide limitations in a modal;
 - imply automatic execution;
 - imply synthetic estimates are observed outcomes;
+- imply expected impact is realized impact;
+- infer actual outcomes;
+- turn unresolved quantity into rescued/waste without confirmation;
+- impute missing package weight for complete mass claims;
+- invent carbon/CO2 or other unsupported environmental metrics;
 - add a chatbot just to make the product look more “AI”;
 - add a sidebar without a real navigation need;
 - add a framework dependency only for aesthetics;
 - use gradients as the primary visual identity;
 - make every section a rounded card;
+- redraw the canonical icon without a deliberate brand revision;
 - copy external components without adapting them to the current stack.
 
 ---
 
 ## 14. Brand Review Checklist
 
-Before accepting a UI change:
+Before accepting a UI or brand change:
 
 - [ ] Does the screen still feel like an operational decision workspace?
 - [ ] Are human-review boundaries explicit?
 - [ ] Are synthetic/model-derived values labeled accurately?
-- [ ] Is there only one dominant primary action?
+- [ ] Are expected and operator-confirmed realized outcomes clearly separated?
+- [ ] Does unresolved quantity remain explicit rather than guessed?
+- [ ] Is mass-evidence coverage visible and truthful?
+- [ ] Are complete batch-mass values withheld unless evidence is complete?
+- [ ] Is there only one dominant primary action per main state?
 - [ ] Is hierarchy created by type/space/layout rather than card spam?
 - [ ] Does the palette remain warm, restrained, and non-neon?
 - [ ] Are data values easy to scan?
 - [ ] Are warnings readable without relying on color alone?
 - [ ] Does the page work without animation?
 - [ ] Does the page remain understandable at mobile width?
+- [ ] Are the canonical icon/logo assets used consistently?
 - [ ] Are external inspirations adapted rather than copied?
 - [ ] Are all user-facing claims supported by actual system behavior?
+- [ ] Are carbon/CO2 or other unsupported impact proxies absent?
+- [ ] Does the primary browser export remain the human-readable Markdown report?
 
 ---
 
