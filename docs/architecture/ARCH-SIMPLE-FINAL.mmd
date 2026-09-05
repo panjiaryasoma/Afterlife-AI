@@ -1,0 +1,67 @@
+flowchart TB
+
+    A["Inventory Workbook (.xlsx)<br/>+ Decision Context"]
+
+    B["Input Validation<br/><br/>File · Schema · Request"]
+
+    C["Deterministic Inventory Triage<br/><br/>Protect Healthy Stock<br/>Identify Rescue Scope"]
+
+    D["Generate Rescue Options"]
+
+    E["Safety & Feasibility Hard Gates"]
+
+    F["HGB-E Rescue-Success Scoring"]
+
+    G["Expected-Value Calculation"]
+
+    H["Global CP-SAT Allocation"]
+
+    I["Rescue Decision Report<br/><br/>Plan · Alternatives<br/>Expected Rescue & Waste"]
+
+    J["Sustainability Summary<br/><br/>Expected Impact<br/>Mass Evidence When Available"]
+
+    K["Human Review<br/><br/>Advisory Only"]
+
+    L[/"Physical Rescue Action<br/><br/>Outside Afterlife AI"/]
+
+    M["Operator-Confirmed Outcome"]
+
+    N["Outcome Reconciliation<br/><br/>Realized Diversion Ratio<br/>Unresolved Quantity<br/>Expected vs Actual"]
+
+    O["Markdown Report Export"]
+
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+    E --> F
+    F --> G
+    G --> H
+    H --> I
+    I --> J
+    J --> K
+
+    K -. approved action .-> L
+    L -. observed result .-> M
+
+    M --> N
+
+    I --> O
+    J --> O
+    N --> O
+
+    CAP[("Runtime Capability Profile")]
+    DEMAND[("Partner Demand Registry")]
+    MODEL[("HGB-E Model")]
+    RULES[("Objective · Budget · Deadline")]
+
+    CAP --> D
+    CAP --> E
+
+    DEMAND --> D
+    DEMAND --> E
+
+    MODEL --> F
+
+    RULES --> E
+    RULES --> H
