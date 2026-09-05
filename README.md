@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="frontend/static/image/logo.png" alt="Afterlife-AI" width="720">
+</p>
+
 # Afterlife AI
 
 **AI-assisted surplus rescue planning with measurable sustainability outcome reconciliation.**
@@ -25,7 +29,7 @@ Afterlife AI does not automatically execute discounts, transfers, repurposing, p
 ---
 
 ---
-
+![Afterlife AI thumbnail](thumbnail.png)
 ## Why Afterlife AI
 
 Surplus inventory is not simply a matter of deciding whether an item is “excess.”
