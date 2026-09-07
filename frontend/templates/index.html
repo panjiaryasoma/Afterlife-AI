@@ -10,6 +10,7 @@
         name="description"
         content="Afterlife AI surplus inventory rescue decision workspace."
     >
+    <meta name="theme-color" content="#0a0b09">
     <link
         rel="icon"
         type="image/png"
@@ -20,6 +21,16 @@
     <link rel="stylesheet" href="/static/css/impact.css">
     <link rel="stylesheet" href="/static/css/emil-polish.css">
     <link rel="stylesheet" href="/static/css/extreme-ui.css">
+    <link
+        rel="stylesheet"
+        href="/static/css/extreme-convergence.css"
+        data-extreme-convergence="true"
+    >
+    <link
+        rel="stylesheet"
+        href="/static/css/extreme-compliance.css"
+        data-extreme-compliance="true"
+    >
 </head>
 <body class="extreme-ui">
     <a class="skip-link" href="#main-content">
@@ -194,7 +205,8 @@
                         min="0"
                         step="0.01"
                         inputmode="decimal"
-                        placeholder="Optional"
+                        autocomplete="off"
+                        placeholder="Optional…"
                     >
 
                     <p class="field-help">
@@ -215,7 +227,8 @@
                         max="1"
                         step="0.01"
                         inputmode="decimal"
-                        placeholder="Required for Balanced"
+                        autocomplete="off"
+                        placeholder="Required for Balanced…"
                         disabled
                     >
 
@@ -233,6 +246,7 @@
                         id="rescue-deadline"
                         name="rescue_deadline_at"
                         type="datetime-local"
+                        autocomplete="off"
                     >
 
                     <p class="field-help">
