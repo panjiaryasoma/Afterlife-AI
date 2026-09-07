@@ -368,6 +368,7 @@ function buildImpactSection(context) {
     const submitButton = reconciliationForm.querySelector(
         "button[type='submit']"
     );
+    const submitButtonIdleLabel = submitButton.textContent.trim();
 
     reconciliationForm.addEventListener("submit", async (event) => {
         event.preventDefault();
@@ -393,6 +394,8 @@ function buildImpactSection(context) {
         }
 
         submitButton.disabled = true;
+        submitButton.setAttribute("aria-busy", "true");
+        submitButton.textContent = "Reconciling...";
         status.textContent = "Reconciling operator-confirmed outcome...";
         status.dataset.state = "loading";
         realized.innerHTML = "";
@@ -443,6 +446,8 @@ function buildImpactSection(context) {
             status.dataset.state = "error";
         } finally {
             submitButton.disabled = false;
+            submitButton.removeAttribute("aria-busy");
+            submitButton.textContent = submitButtonIdleLabel;
         }
     });
 
