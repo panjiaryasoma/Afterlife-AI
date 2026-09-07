@@ -15,7 +15,10 @@ from pydantic import (
     model_validator,
 )
 
-from afterlife_ai.contracts.enums import MatchStatus
+from afterlife_ai.contracts.enums import (
+    MatchStatus,
+    ProductCategory,
+)
 
 
 class PartnerDemandRecord(BaseModel):
@@ -26,7 +29,8 @@ class PartnerDemandRecord(BaseModel):
         frozen=True,
     )
 
-    source_lot_id: str
+    source_lot_id: str | None = None
+    product_category: ProductCategory | None = None
     partner_id: str
     destination_type: str
 
@@ -37,6 +41,11 @@ class PartnerDemandRecord(BaseModel):
     offered_or_selling_price_per_unit: Decimal | None = Field(
         default=None,
         ge=Decimal("0"),
+    )
+    offered_price_fraction_of_normal: Decimal | None = Field(
+        default=None,
+        gt=Decimal("0"),
+        le=Decimal("1"),
     )
 
     direct_action_cost: Decimal = Field(
@@ -80,10 +89,34 @@ class PartnerDemandRecord(BaseModel):
     storage_compatibility_status: MatchStatus
 
     @model_validator(mode="after")
-    def validate_demand_timestamp(
+    def validate_record_contract(
         self,
     ) -> PartnerDemandRecord:
-        """Require an explicit timezone for deterministic freshness checks."""
+        """Require deterministic selector, offer source, and timestamp."""
+
+        if (
+            self.source_lot_id is None
+            and self.product_category is None
+        ):
+            raise ValueError(
+                "Partner demand record membutuhkan source_lot_id "
+                "atau product_category."
+            )
+
+        price_sources = sum(
+            value is not None
+            for value in (
+                self.offered_or_selling_price_per_unit,
+                self.offered_price_fraction_of_normal,
+            )
+        )
+
+        if price_sources != 1:
+            raise ValueError(
+                "Partner demand record membutuhkan tepat satu "
+                "sumber harga: offered_or_selling_price_per_unit "
+                "atau offered_price_fraction_of_normal."
+            )
 
         if self.demand_valid_until.tzinfo is None:
             raise ValueError(
