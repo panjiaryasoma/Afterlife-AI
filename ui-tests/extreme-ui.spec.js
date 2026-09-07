@@ -28,7 +28,10 @@ test("design lab state is keyboard reachable and URL synced", async ({ page }) =
   await expect(page).toHaveURL(/view=editorial/);
 
   const density = page.getByLabel("Density");
-  await density.fill("8");
+  await density.evaluate((element) => {
+    element.value = "8";
+    element.dispatchEvent(new Event("input", { bubbles: true }));
+  });
   await expect(page).toHaveURL(/density=8/);
 });
 
