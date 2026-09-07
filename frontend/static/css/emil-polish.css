@@ -143,3 +143,133 @@
         transform: none !important;
     }
 }
+
+/* Compact operator status. The existing aria-live region stays authoritative;
+ * this only makes the visual feedback feel like an operational signal instead
+ * of a full-width alert banner. */
+.status-message:not(:empty) {
+    width: fit-content;
+    min-width: min(420px, 100%);
+    max-width: min(560px, 100%);
+    margin: var(--space-5) 0 0 auto;
+    padding: 12px 14px 13px;
+    border: 1px solid var(--border);
+    border-left-width: 2px;
+    border-radius: var(--radius-sm);
+    background:
+        linear-gradient(
+            90deg,
+            color-mix(in srgb, var(--interactive) 5%, transparent),
+            transparent 44%
+        ),
+        var(--surface);
+    color: var(--text-secondary);
+    font-size: 12px;
+    line-height: 1.5;
+    box-shadow: none;
+    animation: operator-status-enter var(--duration-normal) var(--ease-out) both;
+}
+
+.status-message:not(:empty)::before {
+    display: block;
+    width: auto;
+    height: auto;
+    margin: 0 0 4px;
+    border-radius: 0;
+    background: none;
+    color: var(--text-primary);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    line-height: 1.35;
+    text-transform: uppercase;
+    vertical-align: initial;
+}
+
+.status-message[data-state="loading"] {
+    border-left-color: var(--interactive);
+}
+
+.status-message[data-state="loading"]::before {
+    content: "●  ANALYZING INVENTORY";
+    color: var(--interactive);
+    animation: operator-status-pulse 1.1s ease-in-out infinite;
+}
+
+.status-message[data-state="success"] {
+    border-left-color: var(--success);
+    background:
+        linear-gradient(
+            90deg,
+            color-mix(in srgb, var(--success) 6%, transparent),
+            transparent 44%
+        ),
+        var(--surface);
+}
+
+.status-message[data-state="success"]::before {
+    content: "●  ANALYSIS COMPLETE";
+    color: var(--success);
+}
+
+.status-message[data-state="error"] {
+    border-left-color: var(--danger);
+    background:
+        linear-gradient(
+            90deg,
+            color-mix(in srgb, var(--danger) 7%, transparent),
+            transparent 44%
+        ),
+        var(--surface);
+    color: var(--text-secondary);
+}
+
+.status-message[data-state="error"]::before {
+    content: "●  ANALYSIS BLOCKED";
+    color: var(--danger);
+}
+
+.status-message[data-state="neutral"]::before {
+    content: "SYSTEM STATUS";
+    color: var(--text-tertiary);
+}
+
+@keyframes operator-status-enter {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes operator-status-pulse {
+    0%,
+    100% {
+        opacity: 0.55;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+@media (max-width: 640px) {
+    .status-message:not(:empty) {
+        width: 100%;
+        min-width: 0;
+        max-width: none;
+        margin-left: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .status-message:not(:empty),
+    .status-message[data-state="loading"]::before {
+        animation: none !important;
+        transform: none !important;
+    }
+}
