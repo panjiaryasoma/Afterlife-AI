@@ -1,0 +1,48 @@
+{
+  "$schema": "https://design-tokens.github.io/community-group/format/",
+  "meta": {
+    "name": "Afterlife AI Extreme UI/UX",
+    "branch": "extreme/uiux",
+    "source": "frontend/static/css/extreme-ui.css + extreme-convergence.css",
+    "note": "Branch-scoped token snapshot. Runtime CSS remains authoritative."
+  },
+  "color": {
+    "canvas": { "$type": "color", "$value": "#0a0b09" },
+    "surface": { "$type": "color", "$value": "#11120f" },
+    "surfaceRaised": { "$type": "color", "$value": "#171914" },
+    "text": { "$type": "color", "$value": "#f1eee5" },
+    "textMuted": { "$type": "color", "$value": "#a8a399" },
+    "textDim": { "$type": "color", "$value": "#6e6b63" },
+    "accent": { "$type": "color", "$value": "#c6b36a" },
+    "accentHot": { "$type": "color", "$value": "#e2ca78" },
+    "success": { "$type": "color", "$value": "#8ca783" },
+    "warning": { "$type": "color", "$value": "#d2a164" },
+    "danger": { "$type": "color", "$value": "#c1776d" }
+  },
+  "space": {
+    "rail": { "$type": "dimension", "$value": "76px" },
+    "shellMax": { "$type": "dimension", "$value": "1320px" },
+    "sectionDefault": { "$type": "dimension", "$value": "96px" },
+    "densityGapDefault": { "$type": "dimension", "$value": "28px" }
+  },
+  "motion": {
+    "fast": { "$type": "duration", "$value": "150ms" },
+    "normal": { "$type": "duration", "$value": "280ms" },
+    "slow": { "$type": "duration", "$value": "520ms" },
+    "easing": { "$type": "cubicBezier", "$value": [0.16, 1, 0.3, 1] }
+  },
+  "radius": {
+    "control": { "$type": "dimension", "$value": "0px" },
+    "small": { "$type": "dimension", "$value": "4px" }
+  },
+  "typography": {
+    "display": {
+      "$type": "fontFamily",
+      "$value": ["Georgia", "Times New Roman", "serif"]
+    },
+    "technical": {
+      "$type": "fontFamily",
+      "$value": ["ui-monospace", "SFMono-Regular", "Consolas", "monospace"]
+    }
+  }
+}
