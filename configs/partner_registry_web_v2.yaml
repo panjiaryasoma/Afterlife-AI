@@ -14,7 +14,7 @@ matching_records:
     offered_price_fraction_of_normal: 1.00
 
     direct_action_cost: 0
-    logistics_cost: 3000
+    logistics_cost: 2000
     handling_cost: 0
 
     estimated_completion_hours: 6
@@ -40,7 +40,7 @@ matching_records:
     offered_price_fraction_of_normal: 1.00
 
     direct_action_cost: 0
-    logistics_cost: 7000
+    logistics_cost: 5000
     handling_cost: 0
 
     estimated_completion_hours: 8
