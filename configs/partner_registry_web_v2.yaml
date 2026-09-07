@@ -1,0 +1,59 @@
+registry_snapshot_id: PDR-WEB-DEMO-V2
+registry_snapshot_timestamp: 2026-09-07T00:00:00Z
+snapshot_mode: STATIC_OFFLINE
+source_type: SYNTHETIC_DEMO_FIXTURE
+real_world_verified: false
+runtime_internet_required: false
+
+matching_records:
+  - product_category: PACKAGED_BEVERAGE
+    partner_id: PARTNER-DEMO-BEVERAGE
+    destination_type: EXTERNAL_PARTNER
+
+    maximum_quantity: 250
+    offered_price_fraction_of_normal: 1.00
+
+    direct_action_cost: 0
+    logistics_cost: 1000
+    handling_cost: 0
+
+    estimated_completion_hours: 6
+
+    active_demand_quantity: 250
+    available_capacity: 250
+    minimum_order_quantity: 1
+
+    distance_km: 3
+
+    demand_valid_until: 2026-12-31T23:59:59Z
+
+    category_match_status: MATCH
+    package_size_match_status: MATCH
+    customer_segment_match_status: MATCH
+    storage_compatibility_status: MATCH
+
+  - product_category: FROZEN_PREPARED_FOOD
+    partner_id: PARTNER-DEMO-FROZEN
+    destination_type: EXTERNAL_PARTNER
+
+    maximum_quantity: 200
+    offered_price_fraction_of_normal: 1.00
+
+    direct_action_cost: 0
+    logistics_cost: 5000
+    handling_cost: 0
+
+    estimated_completion_hours: 8
+
+    active_demand_quantity: 200
+    available_capacity: 200
+    minimum_order_quantity: 1
+
+    distance_km: 5
+
+    demand_valid_until: 2026-12-31T23:59:59Z
+
+    category_match_status: MATCH
+    package_size_match_status: MATCH
+    customer_segment_match_status: MATCH
+    storage_compatibility_status: MATCH
