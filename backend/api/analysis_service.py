@@ -18,7 +18,7 @@ from afterlife_ai.contracts.request import AnalysisRequest
 
 RUNTIME_CONFIG_PATH = Path("configs/runtime_v1.yaml")
 PARTNER_REGISTRY_PATH = Path(
-    "configs/partner_registry_demo_v1.yaml"
+    "configs/partner_registry_web_v2.yaml"
 )
 MAX_UPLOAD_SIZE_BYTES = 10 * 1024 * 1024
 UPLOAD_CHUNK_SIZE_BYTES = 1024 * 1024
