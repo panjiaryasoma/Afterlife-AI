@@ -1,61 +1,70 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
-test("extreme workspace loads with core landmarks", async ({ page }) => {
+test("rebuilt workspace loads with the intended hierarchy", async ({ page }) => {
   await page.goto("/");
 
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
     "Give surplus inventory"
   );
-  await expect(page.getByRole("navigation", { name: "Workspace navigation" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Design Lab" })).toBeVisible();
-  await expect(page.getByText("Hard gates before scoring")).toBeVisible();
+  await expect(
+    page.getByRole("navigation", { name: "Workspace sections" })
+  ).toBeVisible();
+  await expect(page.getByText("Hard gates before scoring.")).toBeVisible();
+  await expect(page.getByLabel("Inventory workbook")).toBeAttached();
+  await expect(page.getByRole("button", { name: "Analyze Inventory" })).toBeVisible();
 });
 
-test("design lab state is keyboard reachable and URL synced", async ({ page }) => {
+test("phase navigation is keyboard reachable", async ({ page }) => {
   await page.goto("/");
 
-  const toggle = page.getByRole("button", { name: "Design Lab" });
-  await toggle.focus();
-  await expect(toggle).toBeFocused();
-  await toggle.press("Enter");
+  const configure = page.getByRole("link", { name: /01 Configure/ });
+  await configure.focus();
+  await expect(configure).toBeFocused();
 
-  const panel = page.getByRole("region", { name: "Design Lab" });
-  await expect(panel).toBeVisible();
-
-  await page.getByRole("button", { name: "Editorial" }).click();
-  await expect(page.locator("body")).toHaveAttribute("data-lab-mode", "editorial");
-  await expect(page).toHaveURL(/view=editorial/);
-
-  const density = page.getByLabel("Density");
-  await density.evaluate((element) => {
-    element.value = "8";
-    element.dispatchEvent(new Event("input", { bubbles: true }));
-  });
-  await expect(page).toHaveURL(/density=8/);
-});
-
-test("workspace keeps a visible focus treatment", async ({ page }) => {
-  await page.goto("/");
-
-  const firstRailLink = page.getByRole("link", { name: "Mission brief" });
-  await firstRailLink.focus();
-  await expect(firstRailLink).toBeFocused();
-
-  const outlineStyle = await firstRailLink.evaluate((element) => {
+  const outline = await configure.evaluate((element) => {
     const style = getComputedStyle(element);
     return {
-      outlineStyle: style.outlineStyle,
-      outlineWidth: style.outlineWidth,
+      style: style.outlineStyle,
+      width: style.outlineWidth,
     };
   });
 
-  expect(outlineStyle.outlineStyle).not.toBe("none");
-  expect(outlineStyle.outlineWidth).not.toBe("0px");
+  expect(outline.style).not.toBe("none");
+  expect(outline.width).not.toBe("0px");
+
+  await configure.press("Enter");
+  await expect(page.locator("#decision-context")).toBeInViewport();
 });
 
-test("layout does not create horizontal page overflow", async ({ page }) => {
+test("required workbook is enforced before analysis", async ({ page }) => {
   await page.goto("/");
+
+  const analyze = page.getByRole("button", { name: "Analyze Inventory" });
+  await analyze.click();
+
+  const file = page.locator("#inventory-file");
+  const valid = await file.evaluate((element) => element.checkValidity());
+  expect(valid).toBe(false);
+  await expect(page.locator("#results")).toHaveClass(/hidden/);
+});
+
+test("desktop layout has no horizontal page overflow", async ({ page }) => {
+  await page.goto("/");
+
+  const overflow = await page.evaluate(() => ({
+    scrollWidth: document.documentElement.scrollWidth,
+    clientWidth: document.documentElement.clientWidth,
+  }));
+
+  expect(overflow.scrollWidth).toBeLessThanOrEqual(overflow.clientWidth + 1);
+});
+
+test("mobile layout keeps the primary action reachable", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+
+  await expect(page.getByRole("button", { name: "Analyze Inventory" })).toBeVisible();
 
   const overflow = await page.evaluate(() => ({
     scrollWidth: document.documentElement.scrollWidth,
