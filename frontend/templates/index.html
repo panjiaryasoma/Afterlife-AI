@@ -10,93 +10,98 @@
         name="description"
         content="Afterlife AI surplus inventory rescue decision workspace."
     >
-    <meta name="theme-color" content="#0a0b09">
+    <meta name="theme-color" content="#0d0e0b">
     <link
         rel="icon"
         type="image/png"
         href="/static/images/afterlife-ai-icon.png"
     >
     <title>Afterlife AI</title>
-    <link rel="stylesheet" href="/static/css/app.css">
-    <link rel="stylesheet" href="/static/css/impact.css">
-    <link rel="stylesheet" href="/static/css/emil-polish.css">
-    <link rel="stylesheet" href="/static/css/extreme-ui.css">
-    <link
-        rel="stylesheet"
-        href="/static/css/extreme-convergence.css"
-        data-extreme-convergence="true"
-    >
-    <link
-        rel="stylesheet"
-        href="/static/css/extreme-compliance.css"
-        data-extreme-compliance="true"
-    >
+    <link rel="stylesheet" href="/static/css/rebuild.css">
 </head>
-<body class="extreme-ui">
-    <a class="skip-link" href="#main-content">
-        Skip to content
-    </a>
-
-    <aside class="ops-rail" aria-label="Workspace navigation">
-        <div class="ops-rail__brand" aria-hidden="true">AL / OPS</div>
-
-        <nav class="ops-rail__nav">
-            <a class="ops-rail__link is-active" href="#brief" aria-label="Mission brief">00</a>
-            <a class="ops-rail__link" href="#decision-context" aria-label="Decision context">01</a>
-            <a class="ops-rail__link" href="#rescue-summary" aria-label="Rescue summary">02</a>
-            <a class="ops-rail__link" href="#selected-plan" aria-label="Selected rescue plan">03</a>
-            <a class="ops-rail__link" href="#impact-reconciliation-section" aria-label="Sustainability outcome">04</a>
-            <a class="ops-rail__link" href="#evidence" aria-label="Evidence">05</a>
-        </nav>
-
-        <div class="ops-rail__foot" aria-hidden="true">HUMAN AUTHORITY</div>
-    </aside>
+<body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
 
     <header class="site-header">
         <div class="shell site-header__inner">
             <a class="wordmark" href="/" aria-label="Afterlife AI home">
-                AFTERLIFE AI / RESCUE OPERATIONS
+                AFTERLIFE AI
             </a>
 
-            <div class="system-state" aria-label="System status">
-                <span class="system-state__dot" aria-hidden="true"></span>
-                SYSTEM READY
+            <div class="header-state">
+                <span>Human-approved rescue planning</span>
+                <div class="system-state" data-state="ready" aria-live="polite">
+                    <span class="system-state__dot" aria-hidden="true"></span>
+                    <span id="system-state-label">System ready</span>
+                </div>
             </div>
         </div>
     </header>
 
+    <nav class="phase-nav" aria-label="Workspace sections">
+        <div class="shell phase-nav__inner">
+            <a class="phase-nav__link is-active" href="#brief">
+                <span>00</span> Brief
+            </a>
+            <a class="phase-nav__link" href="#decision-context">
+                <span>01</span> Configure
+            </a>
+            <a class="phase-nav__link" href="#rescue-summary">
+                <span>02</span> Summary
+            </a>
+            <a class="phase-nav__link" href="#impact-reconciliation-section">
+                <span>03</span> Outcome
+            </a>
+            <a class="phase-nav__link" href="#selected-plan">
+                <span>04</span> Plan
+            </a>
+            <a class="phase-nav__link" href="#evidence">
+                <span>07</span> Evidence
+            </a>
+        </div>
+    </nav>
+
     <main id="main-content" class="shell">
         <section id="brief" class="hero" aria-labelledby="hero-title">
             <div class="hero__copy">
-                <p class="section-kicker">RESCUE INVENTORY PLANNING</p>
+                <p class="hero__eyebrow">CONSTRAINED SURPLUS RESCUE</p>
                 <h1 id="hero-title">
                     Give surplus inventory
                     <span>another useful life.</span>
                 </h1>
+                <p class="hero__lead">
+                    Turn one inventory workbook into a traceable rescue plan.
+                    Safety and feasibility rules run before model evidence;
+                    allocation remains advisory until a human approves it.
+                </p>
             </div>
 
-            <div class="hero__aside">
-                <p>
-                    Decision support for constrained surplus rescue.
-                    Validate inventory, enforce hard gates, compare feasible
-                    actions, and produce a traceable advisory plan.
-                </p>
-
-                <dl class="hero__facts">
+            <aside class="hero__doctrine" aria-label="Operating doctrine">
+                <p class="panel-label">OPERATING DOCTRINE</p>
+                <dl class="doctrine-list">
                     <div>
-                        <dt>Execution</dt>
-                        <dd>Advisory only</dd>
+                        <dt>01</dt>
+                        <dd>
+                            <strong>Protect stock before rescue.</strong>
+                            <span>Healthy, monitored, expired, and review inventory never enter rescue planning by accident.</span>
+                        </dd>
                     </div>
                     <div>
-                        <dt>Approval</dt>
-                        <dd>Human required</dd>
+                        <dt>02</dt>
+                        <dd>
+                            <strong>Hard gates before scoring.</strong>
+                            <span>Safety, timing, compatibility, demand, capacity, and logistics constraints can block a candidate outright.</span>
+                        </dd>
                     </div>
                     <div>
-                        <dt>Runtime</dt>
-                        <dd>Deterministic gates</dd>
+                        <dt>03</dt>
+                        <dd>
+                            <strong>Human authority stays final.</strong>
+                            <span>The system recommends allocations. It does not execute discounts, transfers, repurposing, or disposal.</span>
+                        </dd>
                     </div>
                 </dl>
-            </div>
+            </aside>
         </section>
 
         <section
@@ -106,172 +111,119 @@
         >
             <div class="section-heading">
                 <div>
-                    <p class="section-index">
-                        01 / DECISION CONTEXT
-                    </p>
-                    <h2 id="decision-context-title">
-                        Define the rescue boundary.
-                    </h2>
+                    <p class="section-index">01 / DECISION CONTEXT</p>
+                    <h2 id="decision-context-title">Define the rescue boundary.</h2>
                 </div>
-
                 <p class="section-note">
-                    One XLSX request. Constraints are evaluated before
-                    allocation.
+                    Upload one valid XLSX workbook, then define the objective and request-level operating constraints. The same request drives triage, feasibility, scoring, and allocation.
                 </p>
             </div>
 
-            <form id="analysis-form" class="analysis-form">
-                <div class="field field--wide">
-                    <label for="inventory-file">
-                        Inventory workbook
-                        <span class="required-mark" aria-hidden="true">*</span>
-                    </label>
+            <div class="intake-shell">
+                <form id="analysis-form" class="analysis-form" novalidate>
+                    <div class="intake-file">
+                        <div class="field">
+                            <label for="inventory-file">
+                                Inventory workbook
+                                <span class="required-mark" aria-hidden="true">*</span>
+                            </label>
 
-                    <div
-                        id="file-dropzone"
-                        class="file-dropzone"
-                    >
-                        <input
-                            id="inventory-file"
-                            class="file-input-native"
-                            name="inventory_file"
-                            type="file"
-                            accept=".xlsx"
-                            required
-                        >
+                            <div id="file-dropzone" class="file-dropzone" data-state="empty">
+                                <input
+                                    id="inventory-file"
+                                    class="file-input-native"
+                                    name="inventory_file"
+                                    type="file"
+                                    accept=".xlsx"
+                                    required
+                                >
 
-                        <label
-                            class="file-dropzone__surface"
-                            for="inventory-file"
-                        >
-                            <span
-                                id="file-dropzone-title"
-                                class="file-dropzone__title"
-                            >
-                                Choose workbook
-                            </span>
+                                <label class="file-dropzone__surface" for="inventory-file">
+                                    <span class="dropzone-symbol">XLSX / INVENTORY INPUT</span>
+                                    <span>
+                                        <span id="file-dropzone-title" class="file-dropzone__title">Choose workbook</span>
+                                        <span id="file-dropzone-prompt" class="file-dropzone__prompt">or drag a .xlsx file onto this surface</span>
+                                    </span>
+                                    <span id="file-name" class="file-dropzone__file">No workbook selected</span>
+                                </label>
+                            </div>
 
-                            <span
-                                id="file-dropzone-prompt"
-                                class="file-dropzone__prompt"
-                            >
-                                or drag .xlsx here
-                            </span>
-
-                            <span
-                                id="file-name"
-                                class="file-dropzone__file"
-                            >
-                                No workbook selected
-                            </span>
-                        </label>
+                            <p class="field-help">
+                                Use the structured inventory workbook expected by the current schema.
+                            </p>
+                        </div>
                     </div>
 
-                    <p class="field-help">
-                        Upload one valid .xlsx inventory workbook.
-                    </p>
-                </div>
+                    <div class="intake-controls">
+                        <div class="field">
+                            <label for="optimization-objective">Optimization objective</label>
+                            <select
+                                id="optimization-objective"
+                                name="optimization_objective"
+                                autocomplete="off"
+                            >
+                                <option value="MAXIMIZE_RECOVERY_VALUE" selected>Maximize recovery value</option>
+                                <option value="MINIMIZE_WASTE">Minimize waste</option>
+                                <option value="BALANCED">Balanced</option>
+                            </select>
+                            <p class="field-help">Defines the optimizer objective for this request.</p>
+                        </div>
 
-                <div class="field">
-                    <label for="optimization-objective">
-                        Optimization objective
-                    </label>
+                        <div class="field">
+                            <label for="max-logistics-budget">Max logistics budget (IDR)</label>
+                            <input
+                                id="max-logistics-budget"
+                                name="max_logistics_budget"
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                inputmode="decimal"
+                                autocomplete="off"
+                                placeholder="Optional…"
+                            >
+                            <p class="field-help">Optional request-level logistics cap.</p>
+                        </div>
 
-                    <select
-                        id="optimization-objective"
-                        name="optimization_objective"
-                    >
-                        <option value="MAXIMIZE_RECOVERY_VALUE" selected>
-                            Maximize recovery value
-                        </option>
-                        <option value="MINIMIZE_WASTE">
-                            Minimize waste
-                        </option>
-                        <option value="BALANCED">
-                            Balanced
-                        </option>
-                    </select>
-                </div>
+                        <div class="field">
+                            <label for="minimum-rescue-ratio">Minimum expected rescue ratio</label>
+                            <input
+                                id="minimum-rescue-ratio"
+                                name="minimum_expected_rescue_ratio"
+                                type="number"
+                                min="0"
+                                max="1"
+                                step="0.01"
+                                inputmode="decimal"
+                                autocomplete="off"
+                                placeholder="Required for Balanced…"
+                                disabled
+                            >
+                            <p id="rescue-ratio-help" class="field-help">Enabled only when the Balanced objective is selected.</p>
+                        </div>
 
-                <div class="field">
-                    <label for="max-logistics-budget">
-                        Max logistics budget (IDR)
-                    </label>
+                        <div class="field">
+                            <label for="rescue-deadline">Rescue deadline</label>
+                            <input
+                                id="rescue-deadline"
+                                name="rescue_deadline_at"
+                                type="datetime-local"
+                                autocomplete="off"
+                            >
+                            <p class="field-help">Optional latest acceptable completion time.</p>
+                        </div>
+                    </div>
 
-                    <input
-                        id="max-logistics-budget"
-                        name="max_logistics_budget"
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        inputmode="decimal"
-                        autocomplete="off"
-                        placeholder="Optional…"
-                    >
-
-                    <p class="field-help">
-                        Optional request-level budget cap.
-                    </p>
-                </div>
-
-                <div class="field">
-                    <label for="minimum-rescue-ratio">
-                        Minimum expected rescue ratio
-                    </label>
-
-                    <input
-                        id="minimum-rescue-ratio"
-                        name="minimum_expected_rescue_ratio"
-                        type="number"
-                        min="0"
-                        max="1"
-                        step="0.01"
-                        inputmode="decimal"
-                        autocomplete="off"
-                        placeholder="Required for Balanced…"
-                        disabled
-                    >
-
-                    <p id="rescue-ratio-help" class="field-help">
-                        Enabled when the Balanced objective is selected.
-                    </p>
-                </div>
-
-                <div class="field">
-                    <label for="rescue-deadline">
-                        Rescue deadline
-                    </label>
-
-                    <input
-                        id="rescue-deadline"
-                        name="rescue_deadline_at"
-                        type="datetime-local"
-                        autocomplete="off"
-                    >
-
-                    <p class="field-help">
-                        Optional rescue deadline.
-                    </p>
-                </div>
-
-                <div class="form-actions field--wide">
-                    <div>
+                    <div class="form-actions">
                         <p class="form-assurance">
-                            Hard safety and feasibility gates cannot be
-                            overridden by model scoring.
+                            Hard safety and feasibility gates cannot be overridden by model scoring. Blocked candidates remain blocked.
                         </p>
+                        <button id="analyze-button" class="primary-button" type="submit">
+                            <span class="button-label">Analyze Inventory</span>
+                            <span class="button-arrow" aria-hidden="true">→</span>
+                        </button>
                     </div>
-
-                    <button
-                        id="analyze-button"
-                        class="primary-button"
-                        type="submit"
-                    >
-                        <span class="button-label">Analyze Inventory</span>
-                        <span class="button-arrow" aria-hidden="true">→</span>
-                    </button>
-                </div>
-            </form>
+                </form>
+            </div>
 
             <div
                 id="status-message"
@@ -281,11 +233,7 @@
             ></div>
         </section>
 
-        <section
-            id="results"
-            class="results hidden"
-            aria-labelledby="report-title"
-        >
+        <section id="results" class="results hidden" aria-labelledby="report-title">
             <div class="report-heading">
                 <div>
                     <p class="section-kicker">RESCUE DECISION REPORT</p>
@@ -295,7 +243,6 @@
                 <div class="report-heading__actions">
                     <span id="report-attention" class="badge hidden"></span>
                     <span id="scoring-provider" class="badge"></span>
-
                     <button id="download-report" class="secondary-button hidden" type="button">
                         Download Markdown Report
                     </button>
@@ -304,17 +251,16 @@
 
             <div id="report-meta" class="report-meta"></div>
 
-            <div
-                class="rescue-route"
-                aria-label="Afterlife AI rescue decision flow"
-            >
+            <div class="rescue-route" aria-label="Afterlife AI rescue decision flow">
                 <span>Inventory</span>
                 <span aria-hidden="true">→</span>
                 <span>Triage</span>
                 <span aria-hidden="true">→</span>
-                <span>Rescue</span>
+                <span>Hard gates</span>
                 <span aria-hidden="true">→</span>
-                <span>Recovery</span>
+                <span>Evidence</span>
+                <span aria-hidden="true">→</span>
+                <span>Allocation</span>
             </div>
 
             <section
@@ -325,11 +271,8 @@
                 <div class="section-heading">
                     <div>
                         <p class="section-index">02 / RESCUE SUMMARY</p>
-                        <h2 id="rescue-summary-title">
-                            What the plan preserves.
-                        </h2>
+                        <h2 id="rescue-summary-title">What the plan preserves.</h2>
                     </div>
-
                     <div id="solver-state" class="solver-state"></div>
                 </div>
 
@@ -351,20 +294,13 @@
             >
                 <div class="section-heading">
                     <div>
-                        <p class="section-index">
-                            04 / SELECTED RESCUE PLAN
-                        </p>
-                        <h2 id="selected-plan-title">
-                            Allocations selected under current constraints.
-                        </h2>
+                        <p class="section-index">04 / SELECTED RESCUE PLAN</p>
+                        <h2 id="selected-plan-title">Allocations selected under current constraints.</h2>
                     </div>
-
                     <p class="section-note">
-                        Model outputs are estimates. Final execution requires
-                        human approval.
+                        Model outputs are estimates. The optimizer can only select candidates that survive deterministic gates, and final execution still requires human approval.
                     </p>
                 </div>
-
                 <div id="allocations" class="allocation-list"></div>
             </section>
 
@@ -376,16 +312,13 @@
                 <div class="section-heading">
                     <div>
                         <p class="section-index">05 / ALTERNATIVES</p>
-                        <h2 id="alternatives-title">
-                            Candidates not carried into the final allocation.
-                        </h2>
+                        <h2 id="alternatives-title">Candidates not carried into the final allocation.</h2>
                     </div>
+                    <p class="section-note">
+                        Feasible-but-unselected and blocked alternatives stay visible so the operator can inspect what the system did not choose.
+                    </p>
                 </div>
-
-                <div
-                    id="rejected-candidates"
-                    class="alternative-list"
-                ></div>
+                <div id="rejected-candidates" class="alternative-list"></div>
             </section>
 
             <section
@@ -396,12 +329,12 @@
                 <div class="section-heading">
                     <div>
                         <p class="section-index">06 / HUMAN REVIEW</p>
-                        <h2 id="human-review-title">
-                            Human authority remains final.
-                        </h2>
+                        <h2 id="human-review-title">Human authority remains final.</h2>
                     </div>
+                    <p class="section-note">
+                        Uncertain inventory and exception cases remain explicit instead of being forced through an automated decision.
+                    </p>
                 </div>
-
                 <div id="review-banner" class="review-banner"></div>
                 <div id="reviews" class="review-list"></div>
             </section>
@@ -414,17 +347,12 @@
                 <div class="section-heading">
                     <div>
                         <p class="section-index">07 / EVIDENCE</p>
-                        <h2 id="evidence-title">
-                            Provenance before confidence.
-                        </h2>
+                        <h2 id="evidence-title">Provenance before confidence.</h2>
                     </div>
-
                     <p class="section-note">
-                        Synthetic, static, and model-derived evidence is
-                        labeled explicitly.
+                        Synthetic, static, deterministic, and model-derived evidence is labeled instead of being flattened into one confidence claim.
                     </p>
                 </div>
-
                 <div id="provenance" class="provenance-grid"></div>
             </section>
 
@@ -436,9 +364,7 @@
                 <div class="section-heading">
                     <div>
                         <p class="section-index">08 / LIMITATIONS</p>
-                        <h2 id="limitations-title">
-                            What this report does not claim.
-                        </h2>
+                        <h2 id="limitations-title">What this report does not claim.</h2>
                     </div>
                 </div>
 
@@ -447,9 +373,7 @@
                 <div class="advisory-note">
                     <strong>Advisory boundary</strong>
                     <p>
-                        Afterlife AI does not execute discounts, transfers,
-                        repurposing, partner handoffs, or disposal actions
-                        automatically.
+                        Afterlife AI does not execute discounts, transfers, repurposing, partner handoffs, or disposal actions automatically.
                     </p>
                 </div>
             </section>
@@ -466,6 +390,6 @@
     <script src="/static/js/app.js"></script>
     <script src="/static/js/impact-ui.js"></script>
     <script src="/static/js/report-markdown.js"></script>
-    <script src="/static/js/extreme-ui.js"></script>
+    <script src="/static/js/rebuild-ui.js"></script>
 </body>
 </html>
