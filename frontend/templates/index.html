@@ -181,7 +181,9 @@
                     >
 
                     <p class="field-help">
-                        Optional request-level budget cap.
+                        Optional cap on candidate-level logistics cost. It only
+                        changes the plan when non-zero logistics-cost candidates
+                        compete for that budget.
                     </p>
                 </div>
 
@@ -219,7 +221,9 @@
                     >
 
                     <p class="field-help">
-                        Optional rescue deadline.
+                        Optional completion cutoff. It only changes the plan
+                        when it is tighter than candidate or product timing
+                        windows.
                     </p>
                 </div>
 
@@ -428,6 +432,7 @@
 
     <script src="/static/js/app.js"></script>
     <script src="/static/js/impact-ui.js"></script>
+    <script src="/static/js/request-context-ui.js"></script>
     <script src="/static/js/report-markdown.js"></script>
 </body>
 </html>
