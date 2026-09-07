@@ -10,6 +10,31 @@
     const statusMessage = document.querySelector("#status-message");
     const results = document.querySelector("#results");
 
+    function normalizeLoadingStatus(element) {
+        if (
+            !(element instanceof HTMLElement)
+            || !element.classList.contains("status-message")
+            || element.dataset.state !== "loading"
+        ) {
+            return;
+        }
+
+        const normalized = element.textContent.replace(/(?:\.{3}|…)\s*$/, "");
+
+        if (normalized !== element.textContent) {
+            element.textContent = normalized;
+        }
+    }
+
+    function normalizeAllLoadingStatuses(root = document) {
+        if (root instanceof HTMLElement && root.classList.contains("status-message")) {
+            normalizeLoadingStatus(root);
+        }
+
+        root.querySelectorAll?.(".status-message[data-state='loading']")
+            .forEach(normalizeLoadingStatus);
+    }
+
     function setSystemState(state, label) {
         if (!systemState || !systemStateLabel) {
             return;
@@ -38,6 +63,22 @@
         }
 
         setSystemState("ready", "System ready");
+    }
+
+    if (analysisForm) {
+        analysisForm.addEventListener(
+            "submit",
+            (event) => {
+                if (analysisForm.checkValidity()) {
+                    return;
+                }
+
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                analysisForm.reportValidity();
+            },
+            true
+        );
     }
 
     function resolveNavTarget(link) {
@@ -162,6 +203,14 @@
         for (const mutation of mutations) {
             if (
                 mutation.type === "attributes"
+                && mutation.target instanceof HTMLElement
+                && mutation.target.classList.contains("status-message")
+            ) {
+                normalizeLoadingStatus(mutation.target);
+            }
+
+            if (
+                mutation.type === "attributes"
                 && (
                     mutation.target === analysisForm
                     || mutation.target === statusMessage
@@ -171,11 +220,21 @@
                 syncSystemState();
             }
 
+            if (
+                mutation.type === "childList"
+                && mutation.target instanceof HTMLElement
+                && mutation.target.classList.contains("status-message")
+            ) {
+                normalizeLoadingStatus(mutation.target);
+                syncSystemState();
+            }
+
             for (const node of mutation.addedNodes) {
                 if (!(node instanceof Element)) {
                     continue;
                 }
 
+                normalizeAllLoadingStatuses(node);
                 registerRevealTargets(node);
 
                 if (
@@ -197,5 +256,6 @@
 
     registerSections();
     registerRevealTargets();
+    normalizeAllLoadingStatuses();
     syncSystemState();
 })();
