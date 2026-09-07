@@ -1,0 +1,50 @@
+/* Branch-only compliance overrides for the extreme experiment. */
+
+/* Keep animated properties compositor-friendly. Density changes are allowed to
+ * snap; spatial orientation gets the motion. */
+.extreme-ui .section-heading {
+    transition: transform var(--lab-motion) var(--x-ease) !important;
+}
+
+.x-lab-panel {
+    transition:
+        opacity var(--lab-motion) var(--x-ease),
+        transform var(--lab-motion) var(--x-ease) !important;
+}
+
+/* Avoid sticky hover states on touch/coarse pointers. */
+@media (hover: none), (pointer: coarse) {
+    .x-lab-toggle:hover {
+        background: var(--x-brass);
+        color: var(--x-ink);
+    }
+
+    .x-lab-mode:hover,
+    .x-lab-reset:hover {
+        background: transparent;
+        color: inherit;
+    }
+
+    .extreme-ui .file-dropzone__surface:hover {
+        border-color: var(--x-line-strong);
+    }
+}
+
+/* Browsers that expose reduced-transparency preference get a fully solid path. */
+@media (prefers-reduced-transparency: reduce) {
+    .extreme-ui .site-header,
+    .x-signal-strip,
+    .x-lab-panel {
+        -webkit-backdrop-filter: none !important;
+        backdrop-filter: none !important;
+        background: var(--x-ink) !important;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .extreme-ui .section-heading,
+    .x-lab-panel {
+        transition-duration: 0.01ms !important;
+        transform: none !important;
+    }
+}
