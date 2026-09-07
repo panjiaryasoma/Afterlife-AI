@@ -8,19 +8,12 @@
     const field = budgetInput.closest(".field");
     const help = field?.querySelector(".field-help");
 
-    budgetInput.value = "";
-    budgetInput.disabled = true;
-    budgetInput.placeholder = "Unavailable in current runtime";
-    budgetInput.setAttribute("aria-disabled", "true");
-    budgetInput.title = (
-        "Current demo runtime has no non-zero logistics-cost routes, "
-        + "so a logistics budget cap would have no effect."
-    );
+    budgetInput.disabled = false;
+    budgetInput.removeAttribute("aria-disabled");
+    budgetInput.placeholder = "Optional";
+    budgetInput.removeAttribute("title");
 
     if (help) {
-        help.textContent = (
-            "Unavailable in the current demo runtime because no "
-            + "non-zero logistics-cost routes are configured."
-        );
+        help.textContent = "Optional request-level budget cap.";
     }
 })();
