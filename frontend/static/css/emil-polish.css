@@ -143,3 +143,69 @@
         transform: none !important;
     }
 }
+
+/* Match the analysis-loading signal to the lightweight completion feedback.
+ * The existing aria-live text stays intact for assistive technology; the visual
+ * copy is mirrored so the trailing ellipsis can cycle without JS timers. */
+.status-message[data-state="loading"] {
+    min-height: 0;
+    margin-top: var(--space-5);
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: transparent;
+    font-size: 0;
+}
+
+.status-message[data-state="loading"]::before {
+    content: "";
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    margin-right: var(--space-2);
+    border-radius: 999px;
+    background: var(--interactive);
+    vertical-align: 1px;
+    animation: status-pulse 1.1s ease-in-out infinite;
+}
+
+.status-message[data-state="loading"]::after {
+    content: "Analyzing inventory and measuring expected rescue impact.";
+    color: var(--text-secondary);
+    font-size: 13px;
+    animation: analysis-loading-copy 1.2s steps(1, end) infinite;
+}
+
+@keyframes analysis-loading-copy {
+    0%,
+    24% {
+        content: "Analyzing inventory and measuring expected rescue impact.";
+    }
+
+    25%,
+    49% {
+        content: "Analyzing inventory and measuring expected rescue impact..";
+    }
+
+    50%,
+    74% {
+        content: "Analyzing inventory and measuring expected rescue impact...";
+    }
+
+    75%,
+    100% {
+        content: "Analyzing inventory and measuring expected rescue impact";
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .status-message[data-state="loading"]::before,
+    .status-message[data-state="loading"]::after {
+        animation: none !important;
+    }
+
+    .status-message[data-state="loading"]::after {
+        content: "Analyzing inventory and measuring expected rescue impact...";
+    }
+}
