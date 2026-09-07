@@ -9,6 +9,7 @@ from afterlife_ai.contracts.candidate import CandidateAction
 from afterlife_ai.contracts.enums import ActionType
 from afterlife_ai.contracts.planning import SurplusPlanningLot
 from afterlife_ai.pipeline.partner_registry import (
+    PartnerDemandRecord,
     PartnerDemandRegistry,
 )
 from afterlife_ai.pipeline.runtime_config import RuntimeConfig
@@ -50,6 +51,51 @@ def _local_discount_price(
 
     return calculated
 
+
+def _partner_record_matches(
+    *,
+    record: PartnerDemandRecord,
+    planning_lot: SurplusPlanningLot,
+) -> bool:
+    """Match an explicit lot record or a category-scoped demo record."""
+
+    if (
+        record.source_lot_id is not None
+        and record.source_lot_id
+        != planning_lot.source_lot_id
+    ):
+        return False
+
+    if (
+        record.product_category is not None
+        and record.product_category
+        is not planning_lot.product_category
+    ):
+        return False
+
+    return True
+
+
+def _partner_offer_price(
+    *,
+    record: PartnerDemandRecord,
+    planning_lot: SurplusPlanningLot,
+) -> Decimal:
+    """Resolve either an explicit partner offer or a demo price fraction."""
+
+    if record.offered_or_selling_price_per_unit is not None:
+        return record.offered_or_selling_price_per_unit
+
+    fraction = record.offered_price_fraction_of_normal
+
+    if fraction is None:
+        raise RuntimeError(
+            "Partner demand record tidak memiliki sumber harga."
+        )
+
+    return planning_lot.normal_selling_price * fraction
+
+
 def _build_safe_disposal_spec(
     *,
     planning_lot: SurplusPlanningLot,
@@ -80,6 +126,7 @@ def _build_safe_disposal_spec(
             planning_lot.planning_quantity
         ),
     )
+
 
 def _build_external_partner_specs(
     *,
@@ -113,9 +160,9 @@ def _build_external_partner_specs(
     specs: list[CandidateActionSpec] = []
 
     for record in partner_registry.matching_records:
-        if (
-            record.source_lot_id
-            != planning_lot.source_lot_id
+        if not _partner_record_matches(
+            record=record,
+            planning_lot=planning_lot,
         ):
             continue
 
@@ -151,7 +198,10 @@ def _build_external_partner_specs(
                     record.destination_type
                 ),
                 offered_or_selling_price_per_unit=(
-                    record.offered_or_selling_price_per_unit
+                    _partner_offer_price(
+                        record=record,
+                        planning_lot=planning_lot,
+                    )
                 ),
                 direct_action_cost=(
                     record.direct_action_cost
@@ -367,6 +417,7 @@ def generate_production_candidates(
         )
 
     return candidates
+
 
 def generate_safe_disposal_candidates(
     *,
