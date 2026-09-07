@@ -21,6 +21,21 @@
     transform: scale(0.97);
 }
 
+/* Secondary actions can enter a busy state during reconciliation. Keep the
+ * feedback explicit and prevent hover styling from making a disabled control
+ * look interactive. */
+.secondary-button:disabled {
+    opacity: 0.55;
+    cursor: wait;
+}
+
+.secondary-button:disabled:hover {
+    border-color: var(--border-strong);
+    background: transparent;
+    color: var(--text-primary);
+    transform: none;
+}
+
 /* Keep hover-only feedback off coarse/touch pointers. Existing hover rules in
  * app.css are intentionally neutralized here instead of duplicating the
  * production component system. */
@@ -32,7 +47,7 @@
         transform: none;
     }
 
-    .secondary-button:hover:not(:disabled) {
+    .secondary-button:hover {
         border-color: var(--border-strong);
         background: transparent;
         color: var(--text-primary);
