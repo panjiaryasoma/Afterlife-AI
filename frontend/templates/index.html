@@ -19,16 +19,32 @@
     <link rel="stylesheet" href="/static/css/app.css">
     <link rel="stylesheet" href="/static/css/impact.css">
     <link rel="stylesheet" href="/static/css/emil-polish.css">
+    <link rel="stylesheet" href="/static/css/extreme-ui.css">
 </head>
-<body>
+<body class="extreme-ui">
     <a class="skip-link" href="#main-content">
         Skip to content
     </a>
 
+    <aside class="ops-rail" aria-label="Workspace navigation">
+        <div class="ops-rail__brand" aria-hidden="true">AL / OPS</div>
+
+        <nav class="ops-rail__nav">
+            <a class="ops-rail__link is-active" href="#brief" aria-label="Mission brief">00</a>
+            <a class="ops-rail__link" href="#decision-context" aria-label="Decision context">01</a>
+            <a class="ops-rail__link" href="#rescue-summary" aria-label="Rescue summary">02</a>
+            <a class="ops-rail__link" href="#selected-plan" aria-label="Selected rescue plan">03</a>
+            <a class="ops-rail__link" href="#impact-reconciliation-section" aria-label="Sustainability outcome">04</a>
+            <a class="ops-rail__link" href="#evidence" aria-label="Evidence">05</a>
+        </nav>
+
+        <div class="ops-rail__foot" aria-hidden="true">HUMAN AUTHORITY</div>
+    </aside>
+
     <header class="site-header">
         <div class="shell site-header__inner">
             <a class="wordmark" href="/" aria-label="Afterlife AI home">
-                AFTERLIFE AI
+                AFTERLIFE AI / RESCUE OPERATIONS
             </a>
 
             <div class="system-state" aria-label="System status">
@@ -39,7 +55,7 @@
     </header>
 
     <main id="main-content" class="shell">
-        <section class="hero" aria-labelledby="hero-title">
+        <section id="brief" class="hero" aria-labelledby="hero-title">
             <div class="hero__copy">
                 <p class="section-kicker">RESCUE INVENTORY PLANNING</p>
                 <h1 id="hero-title">
@@ -73,6 +89,7 @@
         </section>
 
         <section
+            id="decision-context"
             class="workspace-section"
             aria-labelledby="decision-context-title"
         >
@@ -287,6 +304,7 @@
             </div>
 
             <section
+                id="rescue-summary"
                 class="workspace-section result-section"
                 aria-labelledby="rescue-summary-title"
             >
@@ -313,6 +331,7 @@
             </section>
 
             <section
+                id="selected-plan"
                 class="workspace-section result-section"
                 aria-labelledby="selected-plan-title"
             >
@@ -336,6 +355,7 @@
             </section>
 
             <section
+                id="alternatives"
                 class="workspace-section result-section"
                 aria-labelledby="alternatives-title"
             >
@@ -355,6 +375,7 @@
             </section>
 
             <section
+                id="human-review"
                 class="workspace-section result-section"
                 aria-labelledby="human-review-title"
             >
@@ -372,6 +393,7 @@
             </section>
 
             <section
+                id="evidence"
                 class="workspace-section result-section"
                 aria-labelledby="evidence-title"
             >
@@ -393,6 +415,7 @@
             </section>
 
             <section
+                id="limitations-section"
                 class="workspace-section result-section"
                 aria-labelledby="limitations-title"
             >
@@ -429,5 +452,6 @@
     <script src="/static/js/app.js"></script>
     <script src="/static/js/impact-ui.js"></script>
     <script src="/static/js/report-markdown.js"></script>
+    <script src="/static/js/extreme-ui.js"></script>
 </body>
 </html>
