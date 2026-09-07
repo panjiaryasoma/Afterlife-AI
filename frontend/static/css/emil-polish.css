@@ -1,0 +1,130 @@
+/*
+ * Emil Kowalski skills pass.
+ *
+ * Scope: high-leverage interaction polish only. The production design language
+ * stays Operational Editorial, and the existing motion tokens remain the
+ * source of truth. This layer adds feedback, pointer gating, restrained state
+ * transitions, and a gentler reduced-motion path without introducing a motion
+ * library or decorative animation system.
+ */
+
+/* Immediate press feedback for deliberate pointer/touch actions. */
+.primary-button,
+.secondary-button,
+.file-dropzone__surface {
+    touch-action: manipulation;
+}
+
+.primary-button:active:not(:disabled),
+.secondary-button:active:not(:disabled),
+#analyze-button:active:not(:disabled) {
+    transform: scale(0.97);
+}
+
+/* Keep hover-only feedback off coarse/touch pointers. Existing hover rules in
+ * app.css are intentionally neutralized here instead of duplicating the
+ * production component system. */
+@media (hover: none), (pointer: coarse) {
+    #analyze-button:hover:not(:disabled) {
+        border-color: var(--interactive);
+        background: transparent;
+        color: var(--interactive);
+        transform: none;
+    }
+
+    .secondary-button:hover:not(:disabled) {
+        border-color: var(--border-strong);
+        background: transparent;
+        color: var(--text-primary);
+        transform: none;
+    }
+
+    #analysis-form .field:not(.field--wide) input:not([type="file"]):hover:not(:disabled),
+    #analysis-form .field:not(.field--wide) select:hover {
+        border-bottom-color: var(--border-strong);
+    }
+
+    .file-dropzone:not([data-state="dragover"]) .file-dropzone__surface:hover {
+        border-color: var(--border-strong);
+    }
+
+    .file-dropzone[data-state="selected"] .file-dropzone__surface:hover {
+        border-color: var(--border-strong);
+    }
+}
+
+/* State indication should be fast and local. No layout properties animate. */
+.file-dropzone__surface {
+    transition:
+        border-color var(--duration-fast) var(--ease-out),
+        background-color var(--duration-fast) var(--ease-out),
+        transform var(--duration-fast) var(--ease-out);
+}
+
+.impact-field input {
+    transition: border-color var(--duration-fast) var(--ease-out);
+}
+
+/* Reconciliation is an occasional, operator-triggered state change. A small
+ * reveal helps connect the confirmed input to the new evidence block. */
+#realized-impact:not(:empty) .impact-result {
+    animation: realized-impact-enter var(--duration-normal) var(--ease-out) both;
+}
+
+@keyframes realized-impact-enter {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Data uses stable-width numerals so expected/confirmed comparisons do not
+ * visually jump as values change. */
+.impact-overview__value,
+.impact-ledger dd,
+.impact-field input,
+.impact-result__ratio,
+.impact-result__coverage,
+.impact-comparison td {
+    font-variant-numeric: tabular-nums;
+}
+
+/* Reduced motion remains informative rather than becoming a blanket zero-time
+ * mode. Positional motion is removed; color, border, and opacity feedback stay
+ * short enough to preserve state legibility. */
+@media (prefers-reduced-motion: reduce) {
+    .primary-button,
+    .secondary-button,
+    .field input,
+    .field select,
+    .file-dropzone__surface,
+    .impact-field input,
+    .analysis-form[data-state="loading"] .field {
+        transition-duration: var(--duration-fast) !important;
+        transition-timing-function: var(--ease-out) !important;
+    }
+
+    .primary-button,
+    .secondary-button,
+    #analyze-button,
+    .file-dropzone__surface {
+        transform: none !important;
+    }
+
+    .results.is-visible,
+    #realized-impact:not(:empty) .impact-result {
+        animation: none !important;
+        transform: none !important;
+    }
+
+    .status-message[data-state="loading"]::before {
+        animation: none !important;
+        opacity: 1;
+        transform: none !important;
+    }
+}
