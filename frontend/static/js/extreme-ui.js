@@ -13,16 +13,27 @@
     const root = document.documentElement;
     const storageKey = "afterlife-extreme-lab";
 
-    function ensureConvergenceStyles() {
-        if (document.querySelector('link[data-extreme-convergence="true"]')) {
+    function ensureStyle(href, marker) {
+        if (document.querySelector(`link[data-${marker}="true"]`)) {
             return;
         }
 
         const link = document.createElement("link");
         link.rel = "stylesheet";
-        link.href = "/static/css/extreme-convergence.css";
-        link.dataset.extremeConvergence = "true";
+        link.href = href;
+        link.setAttribute(`data-${marker}`, "true");
         document.head.appendChild(link);
+    }
+
+    function ensureExtremeStyles() {
+        ensureStyle(
+            "/static/css/extreme-convergence.css",
+            "extreme-convergence"
+        );
+        ensureStyle(
+            "/static/css/extreme-compliance.css",
+            "extreme-compliance"
+        );
     }
 
     function ensureThemeColor() {
@@ -47,7 +58,7 @@
             });
     }
 
-    ensureConvergenceStyles();
+    ensureExtremeStyles();
     ensureThemeColor();
     hardenFormDefaults();
 
@@ -191,7 +202,9 @@
             }
 
             event.preventDefault();
-            history.replaceState(null, "", selector);
+            const url = new URL(location.href);
+            url.hash = selector;
+            history.replaceState(null, "", url);
             target.scrollIntoView({
                 behavior: reduceMotion ? "auto" : "smooth",
                 block: "start",
