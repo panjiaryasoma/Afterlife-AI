@@ -5,6 +5,12 @@ source_type: SYNTHETIC_DEMO_FIXTURE
 real_world_verified: false
 runtime_internet_required: false
 
+# DEMO-ONLY OPERATIONAL FIXTURE
+# The demand, capacity, price fraction, timing, distance, and logistics-cost
+# values below are synthetic inputs used to exercise deterministic runtime
+# constraints. They are not observed or validated real-world partner terms or
+# shipping prices. Logistics cost uses the candidate-level fixed-cost semantics
+# documented by the optimizer/report contracts.
 matching_records:
   - product_category: PACKAGED_BEVERAGE
     partner_id: PARTNER-DEMO-BEVERAGE

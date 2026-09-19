@@ -24,9 +24,13 @@ Afterlife AI does not automatically execute discounts, transfers, repurposing, p
 
 **Live app:** https://afterlife-ai-xi.vercel.app/
 
-**NextStep implementation record:** [`docs/nextstep/NEXTSTEP_2026_DELTA.md`](docs/nextstep/NEXTSTEP_2026_DELTA.md)
+**Demo video:** https://youtu.be/Awr7sEmpzBg
 
----
+**NextStep submission:** https://devpost.com/software/afterlife-ai
+
+**Team:** built by a three-person team for NextStep Hacks 2026.
+
+**NextStep implementation record:** [`docs/nextstep/NEXTSTEP_2026_DELTA.md`](docs/nextstep/NEXTSTEP_2026_DELTA.md)
 
 ---
 ![Afterlife AI thumbnail](thumbnail.png)
@@ -63,8 +67,6 @@ human retains authority
 
 ---
 
----
-
 ## What it does
 
 - Accepts one inventory `.xlsx` workbook plus request-level decision context.
@@ -80,8 +82,6 @@ human retains authority
 - Reconciles operator-confirmed rescued and wasted quantities against the expected planning scope without mutating or persisting the original rescue plan.
 - Exports a human-readable Markdown report while keeping typed JSON available through the application APIs.
 - Keeps physical execution and final approval outside automation.
-
----
 
 ---
 
@@ -120,8 +120,6 @@ Live production application:
 ```text
 https://afterlife-ai-xi.vercel.app/
 ```
-
----
 
 ---
 
@@ -178,8 +176,6 @@ The reference workbook is a technical evaluation fixture, not real merchant tran
 
 ---
 
----
-
 ## Core Reasoning Flow
 
 ![Afterlife AI end-to-end rescue and impact flow](docs/architecture/E2E-DIAGRAM.png)
@@ -189,8 +185,6 @@ The end-to-end view follows the complete decision lifecycle from inventory input
 ![Afterlife AI operational flowchart](docs/architecture/FLOWCHART.png)
 
 The operational flowchart shows the runtime decision path in more procedural form: validate the request, route inventory through triage states, construct and gate candidates, score only eligible rescue actions, solve the constrained allocation problem, produce the report and impact summary, reconcile confirmed outcomes when supplied, surface unresolved or review-required states, and stop before automatic physical execution.
-
----
 
 ---
 
@@ -460,8 +454,6 @@ Reports are not persisted in a runtime database.
 
 ---
 
----
-
 ## Supported Runtime Rescue Actions
 
 The domain contracts define a broader rescue-action vocabulary, but the active Technical MVP intentionally enables a narrower production profile.
@@ -484,8 +476,6 @@ Candidate generation, compatibility, timing, capacity, demand, safety, resource,
 
 ---
 
----
-
 ## Partner Demand Registry
 
 `EXTERNAL_PARTNER` candidates use a controlled Partner Demand Registry.
@@ -498,6 +488,12 @@ runtime_internet: false
 source: synthetic demo fixture
 real_world_verified: false
 ```
+
+The web demo registry uses **synthetic operational values** for partner demand,
+capacity, pricing fractions, completion time, distance, and logistics cost. In
+particular, the current IDR 2,000 and IDR 5,000 logistics-cost values are demo
+fixtures chosen to exercise the request-level budget constraint. They are not
+observed or validated real-world shipping prices.
 
 The registry can provide controlled evidence such as:
 
@@ -527,8 +523,6 @@ internet-connected partner discovery
 
 ---
 
----
-
 ## Decision Context
 
 One analysis request may include:
@@ -550,13 +544,11 @@ BALANCED
 
 `rescue_deadline_at` may affect timing feasibility.
 
-`max_logistics_budget` constrains allocation rather than treating every positive logistics cost as infeasible.
+`max_logistics_budget` is a global request-level cap over fixed candidate-level logistics costs. An empty value means no budget cap; `0` means a zero-logistics-cost cap. Positive logistics cost does not itself make a candidate infeasible.
 
 `minimum_expected_rescue_ratio` is used where required by the `BALANCED` objective.
 
 Optimization policy never overrides deterministic safety or feasibility decisions.
-
----
 
 ---
 
@@ -582,8 +574,6 @@ The AI component answers a narrow question:
 > Among candidates that are already allowed and feasible, which candidates have stronger estimated rescue-success evidence?
 
 This separation prevents model confidence from being mistaken for safety authority.
-
----
 
 ---
 
@@ -645,8 +635,6 @@ They do not establish field accuracy or real-world rescue probability calibratio
 
 ---
 
----
-
 ## Synthetic Data Artifacts
 
 Frozen synthetic artifacts are included in the repository for inspection and reproducibility.
@@ -678,8 +666,6 @@ reports/evidence/modeling/
 Synthetic data is used to evaluate the technical mechanism under controlled scenarios.
 
 It should not be interpreted as representative statistics for Indonesian merchants or as evidence of real-world business impact.
-
----
 
 ---
 
@@ -720,8 +706,6 @@ Visual and interface references:
 
 - [`BRAND_GUIDELINES.md`](BRAND_GUIDELINES.md)
 - [`DESIGN.md`](DESIGN.md)
-
----
 
 ---
 
@@ -767,8 +751,6 @@ runtime_internet_dependency: none
 
 ---
 
----
-
 ## Local Development
 
 ### Requirements
@@ -803,8 +785,6 @@ tests/fixtures/integration_001/RAW_INVENTORY_FIXTURE.xlsx
 ```
 
 The fixture is a technical evaluation fixture, not real merchant transaction data.
-
----
 
 ---
 
@@ -851,8 +831,6 @@ docker compose down
 ```
 
 The core runtime is local-first and does not require a runtime database or internet-connected business service.
-
----
 
 ---
 
@@ -946,8 +924,6 @@ This endpoint is stateless. It does not persist the observation and does not mut
 
 ---
 
----
-
 ## Streamlit Challenger
 
 A Streamlit presentation layer is retained as a thin challenger/reference implementation.
@@ -982,8 +958,6 @@ docs/frontend_comparison/
 
 ---
 
----
-
 ## Verification
 
 ### Current NextStep regression checkpoint
@@ -992,7 +966,7 @@ The current `main`-equivalent tree has been rerun locally with the final NextSte
 
 ```yaml
 full_regression:
-  tests_passed: 419
+  tests_passed: 420
   failed: 0
 
 ruff_full_repository: PASS
@@ -1090,8 +1064,6 @@ git diff --check
 
 ---
 
----
-
 ## Repository Structure
 
 ```text
@@ -1179,8 +1151,6 @@ Afterlife-AI/
 
 ---
 
----
-
 ## Evidence Map
 
 The repository intentionally preserves implementation and evaluation evidence rather than reducing the project to a single headline metric.
@@ -1263,8 +1233,6 @@ submission evidence mapping
 
 ---
 
----
-
 ## Documentation
 
 Key implementation, evaluation, and submission-facing references:
@@ -1280,8 +1248,6 @@ Key implementation, evaluation, and submission-facing references:
 - [`DESIGN.md`](DESIGN.md) — primary interface design specification.
 
 Historical AIC submission evidence remains preserved in the repository and should not be read as a claim that the NextStep sustainability and outcome-reconciliation layer existed before the recorded NextStep baseline.
-
----
 
 ---
 
@@ -1310,8 +1276,6 @@ Locked preproduction contracts remain historical source-of-truth records.
 Where production semantics required a narrower or safer refinement, the difference is recorded explicitly rather than silently rewriting the original contract.
 
 Executable tests remain part of the implementation source of truth.
-
----
 
 ---
 
@@ -1344,8 +1308,6 @@ Human decision authority remains outside automatic execution.
 
 ---
 
----
-
 ## Runtime Boundary
 
 The current Technical MVP is intentionally:
@@ -1360,8 +1322,6 @@ automatic_execution: none
 ```
 
 This scope follows the competition requirement to prioritize one working core interaction instead of adding surrounding platform infrastructure.
-
----
 
 ---
 
@@ -1404,8 +1364,6 @@ A technically functioning decision mechanism should not be presented as field va
 
 ---
 
----
-
 ## Non-Goals
 
 The competition Technical MVP intentionally excludes:
@@ -1431,8 +1389,6 @@ cloud-dependent core runtime
 
 ---
 
----
-
 ## Project Status
 
 Current NextStep repository state:
@@ -1444,22 +1400,22 @@ outcome_reconciliation: IMPLEMENTED
 markdown_report_export: IMPLEMENTED
 
 final_regression:
-  tests_passed: 419
+  tests_passed: 420
   failed: 0
 
 ruff_full_repository: PASS
 frontend_javascript_syntax: PASS
-local_tree_matches_origin_main: true
+github_actions_ci: PASS
+budget_monotonicity_regression: PASS
+partner_capacity_regression: PASS
 
-documentation_alignment: IN_PROGRESS
+documentation_alignment: PASS
 deployed_full_smoke: PENDING
 submission_freeze: PENDING
 submission_ready: false
 ```
 
-The current blockers are submission-alignment work rather than an unresolved core-runtime defect. Historical COMPFEST/AIC release and freeze records remain preserved under `docs/submission/` and `reports/evidence/`; they describe the earlier competition checkpoint, not the final NextStep submission state.
-
----
+The current automated repository verification is green. The remaining submission blocker is the deployed browser smoke path, which must still be checked against the production URL before the final submission tag is created. Historical COMPFEST/AIC release and freeze records remain preserved under `docs/submission/` and `reports/evidence/`; they describe the earlier competition checkpoint, not the final NextStep submission state.
 
 ---
 
@@ -1495,8 +1451,6 @@ no unnecessary surrounding platform
 ```
 
 Historical COMPFEST deliverables such as proof-of-work video, promotional video, and proposal remain separate from the current NextStep submission package.
-
----
 
 ---
 
@@ -1538,8 +1492,6 @@ nationally representative merchant data
 The complete canonical claim register is maintained in:
 
 [`docs/submission/FINAL_CLAIM_BOUNDARY.md`](docs/submission/FINAL_CLAIM_BOUNDARY.md)
-
----
 
 ---
 

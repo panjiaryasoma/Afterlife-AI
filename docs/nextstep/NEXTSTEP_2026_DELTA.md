@@ -158,6 +158,32 @@ NEXTSTEP-034 — the Markdown exporter does not expose unused global wrapper API
 
 ## 7. Current Verification State
 
+Repository CI now runs on every push and pull request to `main` through
+`.github/workflows/ci.yml`.
+
+Current verified checkpoint:
+
+```yaml
+full_regression:
+  tests_passed: 420
+  failed: 0
+ruff_full_repository: PASS
+frontend_javascript_syntax: PASS
+budget_monotonicity_regression: PASS
+partner_capacity_regression: PASS
+```
+
+The realistic budget regression locks the same workbook, analysis timestamp,
+objective, and candidate context while comparing IDR 0, IDR 5,000, and IDR
+50,000. Category-scoped partner records are also covered by a regression that
+requires one partner's capacity to remain shared across all matching planning
+lots.
+
+The production web Partner Demand Registry remains a
+`SYNTHETIC_DEMO_FIXTURE`. Its IDR 2,000 and IDR 5,000 logistics-cost values,
+demand, capacity, pricing fractions, completion times, and distances are
+synthetic demo parameters, not validated real-world operating values.
+
 The NextStep implementation now uses one canonical browser analysis flow, direct impact rendering, explicit static assets, Markdown report export, and no unused browser event bridge or exporter global API.
 
 The production dependency boundary is intentionally minimal:

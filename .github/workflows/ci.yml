@@ -44,4 +44,3 @@ jobs:
           node --check frontend/static/js/app.js
           node --check frontend/static/js/impact-ui.js
           node --check frontend/static/js/report-markdown.js
-          node --check frontend/static/js/request-context-ui.js
