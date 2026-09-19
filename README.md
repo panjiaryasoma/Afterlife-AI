@@ -966,7 +966,7 @@ The current `main`-equivalent tree has been rerun locally with the final NextSte
 
 ```yaml
 full_regression:
-  tests_passed: 420
+  tests_passed: 421
   failed: 0
 
 ruff_full_repository: PASS
@@ -1400,7 +1400,7 @@ outcome_reconciliation: IMPLEMENTED
 markdown_report_export: IMPLEMENTED
 
 final_regression:
-  tests_passed: 420
+  tests_passed: 421
   failed: 0
 
 ruff_full_repository: PASS
