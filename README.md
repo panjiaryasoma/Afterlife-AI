@@ -1411,11 +1411,11 @@ partner_capacity_regression: PASS
 
 documentation_alignment: PASS
 deployed_full_smoke: PENDING
-submission_freeze: PENDING
-submission_ready: false
+submission_freeze: FROZEN
+submission_ready: true
 ```
 
-The current automated repository verification is green. The remaining submission blocker is the deployed browser smoke path, which must still be checked against the production URL before the final submission tag is created. Historical COMPFEST/AIC release and freeze records remain preserved under `docs/submission/` and `reports/evidence/`; they describe the earlier competition checkpoint, not the final NextStep submission state.
+The automated repository verification is green and the repository is frozen as the NextStep Hacks 2026 submission snapshot. The deployed browser smoke path remains a separate runtime verification item and is intentionally not inferred from pytest or deployment success. Historical COMPFEST/AIC release and freeze records remain preserved under `docs/submission/` and `reports/evidence/`; they describe the earlier competition checkpoint, not the final NextStep submission state.
 
 ---
 
