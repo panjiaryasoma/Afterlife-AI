@@ -178,6 +178,120 @@ matching_records:
 
     return target
 
+
+def _category_scoped_shared_capacity_partner_registry(
+    tmp_path: Path,
+) -> Path:
+    target = (
+        tmp_path
+        / "partner_registry_category_shared_capacity.yaml"
+    )
+
+    target.write_text(
+        """registry_snapshot_id: PDR-CATEGORY-SHARED-CAPACITY-001
+registry_snapshot_timestamp: 2026-08-05T00:00:00Z
+snapshot_mode: STATIC_OFFLINE
+source_type: SYNTHETIC_DEMO_FIXTURE
+real_world_verified: false
+runtime_internet_required: false
+
+matching_records:
+  - product_category: PACKAGED_BEVERAGE
+    partner_id: PARTNER-CATEGORY-SHARED-001
+    destination_type: EXTERNAL_PARTNER
+
+    maximum_quantity: 6
+    offered_or_selling_price_per_unit: 10000
+
+    direct_action_cost: 0
+    logistics_cost: 0
+    handling_cost: 0
+
+    estimated_completion_hours: 2
+
+    active_demand_quantity: 6
+    available_capacity: 6
+    minimum_order_quantity: 1
+
+    distance_km: 1
+
+    demand_valid_until: 2026-08-31T23:59:59Z
+
+    category_match_status: MATCH
+    package_size_match_status: MATCH
+    customer_segment_match_status: MATCH
+    storage_compatibility_status: MATCH
+""",
+        encoding="utf-8",
+    )
+
+    return target
+
+
+def test_category_scoped_partner_capacity_is_shared_across_matching_lots(
+    tmp_path: Path,
+) -> None:
+    runtime_config_path = (
+        _enabled_runtime_config(
+            tmp_path
+        )
+    )
+
+    partner_registry_path = (
+        _category_scoped_shared_capacity_partner_registry(
+            tmp_path
+        )
+    )
+
+    result = run_production_pipeline(
+        workbook_path=Path(
+            "tests/fixtures/integration_001/"
+            "RAW_INVENTORY_FIXTURE.xlsx"
+        ),
+        runtime_config_path=runtime_config_path,
+        partner_registry_path=partner_registry_path,
+        analysis_at=ANALYSIS_AT,
+        request_id=(
+            "PRODUCTION-CATEGORY-SHARED-PARTNER-CAPACITY"
+        ),
+    )
+
+    partner_candidates = [
+        candidate
+        for candidate in result.valued_candidates
+        if (
+            candidate.destination_id
+            == "PARTNER-CATEGORY-SHARED-001"
+        )
+    ]
+
+    assert {
+        candidate.planning_lot_id
+        for candidate in partner_candidates
+    } == {
+        "PLAN-LOT-003",
+        "PLAN-LOT-006",
+    }
+
+    partner_allocations = [
+        allocation
+        for allocation in result.report.selected_allocations
+        if (
+            allocation.destination_id
+            == "PARTNER-CATEGORY-SHARED-001"
+        )
+    ]
+
+    total_partner_quantity = sum(
+        (
+            allocation.allocated_quantity
+            for allocation in partner_allocations
+        ),
+        Decimal("0"),
+    )
+
+    assert total_partner_quantity <= Decimal("6")
+
 def test_production_optimizer_enforces_shared_partner_capacity_across_lots(
     tmp_path: Path,
 ) -> None:
